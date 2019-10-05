@@ -19,6 +19,12 @@ jobs:
       - uses: actions/checkout@v1
       - uses: goto-bus-stop/setup-zig@v1.0.0
       - run: zig build test
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: goto-bus-stop/setup-zig@v1.0.0
+      - run: zig fmt --check src/*.zig
 ```
 
 Optionally set a Zig version:
