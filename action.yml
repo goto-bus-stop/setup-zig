@@ -1,0 +1,11 @@
+name: 'Setup Zig'
+description: 'Setup a Zig compiler and add it to the path'
+author: 'goto-bus-stop'
+inputs:
+  version:
+    description: 'Version of the zig compiler to use (must be 0.3.0 or up)'
+    required: true
+    default: '0.5.0'
+runs:
+  using: 'node12'
+  main: 'index.js'
