@@ -2,6 +2,7 @@ name: CI
 on: push
 jobs:
   smoke-test:
+    runs-on: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v1
       - uses: .
