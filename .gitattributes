@@ -1,0 +1,2 @@
+# Zig only accepts \n, never \r\n
+*.zig text eol=lf
