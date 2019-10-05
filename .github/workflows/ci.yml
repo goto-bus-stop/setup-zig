@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: .
-        inputs:
+        with:
           version: 0.5.0
       - run: zig run src/main.zig
         working-directory: test
