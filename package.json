@@ -7,8 +7,7 @@
     "url": "https://github.com/goto-bus-stop/setup-zig/issues"
   },
   "devDependencies": {
-    "standard": "^14.3.1",
-    "tape": "^4.10.0"
+    "standard": "^14.3.1"
   },
   "homepage": "https://github.com/goto-bus-stop/setup-zig",
   "keywords": [
@@ -24,7 +23,7 @@
     "url": "https://github.com/goto-bus-stop/setup-zig.git"
   },
   "scripts": {
-    "test": "standard && node test"
+    "test": "standard"
   },
   "dependencies": {
     "@actions/core": "^1.1.3",
