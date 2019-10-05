@@ -1,6 +1,16 @@
 name: CI
 on: push
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: goto-bus-stop/standard-action@v1.0.0
+        with:
+          annotate: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
   smoke-test:
     strategy:
       matrix:
