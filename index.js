@@ -35,7 +35,10 @@ async function main () {
     return
   }
 
-  const zigPath = await downloadZig(version)
+  let zigPath = cache.find('zig', version)
+  if (!zigPath) {
+    zigPath = await downloadZig(version)
+  }
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
