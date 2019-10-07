@@ -1,25 +1,51 @@
 const os = require('os')
 const path = require('path')
 const semver = require('semver')
+const get = require('simple-get').concat
 const actions = require('@actions/core')
 const cache = require('@actions/tool-cache')
 
+function getJSON (opts) {
+  return new Promise((resolve, reject) => {
+    get({ ...opts, json: true }, (err, req, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+  })
+}
+
 async function downloadZig (version) {
   const host = {
-    linux: 'linux-x86_64',
-    darwin: 'macos-x86_64',
-    win32: 'windows-x86_64'
-  }[os.platform()]
+    linux: 'x86_64-linux',
+    darwin: 'x86_64-macos',
+    win32: 'x86_64-windows'
+  }[os.platform()] || os.platform()
   const ext = {
     linux: 'tar.xz',
     darwin: 'tar.xz',
     win32: 'zip'
   }[os.platform()]
 
-  const variantName = `zig-${host}-${version}`
-  const url = `https://github.com/ziglang/zig/releases/download/${version}/${variantName}.${ext}`
+  const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
 
-  const downloadPath = await cache.downloadTool(url)
+  const availableVersions = Object.keys(index).filter((v) => semver.valid(v))
+  const useVersion = semver.maxSatisfying(availableVersions, version)
+
+  const meta = index[useVersion || version]
+  if (!meta || !meta[host]) {
+    throw new Error(`Could not find version ${version} for platform ${host}`)
+  }
+
+  const hostVariantName = {
+    linux: 'linux-x86_64',
+    darwin: 'macos-x86_64',
+    win32: 'windows-x86_64'
+  }[os.platform()]
+  const variantName = `zig-${hostVariantName}-${version}`
+  const downloadPath = await cache.downloadTool(meta[host].tarball)
   const zigPath = ext === 'zip'
     ? await cache.extractZip(downloadPath)
     : await cache.extractTar(downloadPath, undefined, 'x')
