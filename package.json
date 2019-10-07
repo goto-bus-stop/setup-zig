@@ -7,6 +7,7 @@
     "url": "https://github.com/goto-bus-stop/setup-zig/issues"
   },
   "devDependencies": {
+    "@zeit/ncc": "^0.20.5",
     "standard": "^14.3.1"
   },
   "homepage": "https://github.com/goto-bus-stop/setup-zig",
@@ -23,6 +24,7 @@
     "url": "https://github.com/goto-bus-stop/setup-zig.git"
   },
   "scripts": {
+    "build": "ncc build index.js -o dist",
     "test": "standard"
   },
   "dependencies": {
@@ -30,5 +32,10 @@
     "@actions/tool-cache": "^1.1.2",
     "semver": "^6.3.0",
     "simple-get": "^3.1.0"
+  },
+  "standard": {
+    "ignore": [
+      "dist/**/*.js"
+    ]
   }
 }

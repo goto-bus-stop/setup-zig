@@ -10,4 +10,4 @@ inputs:
     default: '0.5.0'
 runs:
   using: 'node12'
-  main: 'index.js'
+  main: 'dist/index.js'
