@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v1
-      - uses: goto-bus-stop/setup-zig@default
+      - uses: goto-bus-stop/setup-zig@use-download-index
         with:
           version: 0.5.0
       - run: zig run src/main.zig
