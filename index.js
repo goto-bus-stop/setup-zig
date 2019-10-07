@@ -1,7 +1,6 @@
 const os = require('os')
 const path = require('path')
 const semver = require('semver')
-const { promisify } = require('util')
 const get = require('simple-get').concat
 const actions = require('@actions/core')
 const cache = require('@actions/tool-cache')
