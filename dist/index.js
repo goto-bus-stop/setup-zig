@@ -1125,8 +1125,10 @@ async function downloadZig (version) {
 
   const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
 
-  const availableVersions = Object.keys(index).filter((v) => semver.valid(v))
-  const useVersion = semver.maxSatisfying(availableVersions, version)
+  const availableVersions = Object.keys(index)
+  const useVersion = semver.valid(version)
+    ? semver.maxSatisfying(availableVersions.filter((v) => semver.valid(v)), version)
+    : null
 
   const meta = index[useVersion || version]
   if (!meta || !meta[host]) {
@@ -1150,7 +1152,7 @@ async function downloadZig (version) {
 
 async function main () {
   const version = actions.getInput('version') || '0.5.0'
-  if (semver.lt(version, '0.3.0')) {
+  if (semver.valid(version) && semver.lt(version, '0.3.0')) {
     actions.setFailed('This action does not work with Zig 0.1.0 and Zig 0.2.0')
     return
   }
