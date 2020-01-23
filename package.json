@@ -30,7 +30,7 @@
     "url": "https://github.com/goto-bus-stop/setup-zig.git"
   },
   "scripts": {
-    "build": "ncc build index.js -o dist",
+    "prepare": "ncc build index.js -o dist",
     "test": "standard"
   },
   "standard": {
