@@ -34,6 +34,13 @@ Optionally set a Zig version:
     version: 0.4.0 # The default is 0.5.0
 ```
 
+To use the nightly builds, set:
+```yaml
+- uses: goto-bus-stop/setup-zig@v1.0.0
+  with:
+    version: master
+```
+
 If you are running Zig on Windows machines, you need to make sure that your .zig files use \n line endings and not \r\n. The `actions/checkout` action auto-converts line endings to \r\n, so add a `.gitattributes` file:
 ```
 *.zig text eol=lf
