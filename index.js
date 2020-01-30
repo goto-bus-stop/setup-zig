@@ -46,7 +46,7 @@ async function downloadZig (version) {
     darwin: 'macos-x86_64',
     win32: 'windows-x86_64'
   }[os.platform()]
-  const variantName = `zig-${hostVariantName}-${version}`
+  const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
   const downloadPath = await cache.downloadTool(meta[host].tarball)
   const zigPath = ext === 'zip'
     ? await cache.extractZip(downloadPath)
