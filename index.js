@@ -67,4 +67,8 @@ async function main () {
   actions.addPath(zigPath)
 }
 
-main()
+main().catch((err) => {
+  console.error(err.stack)
+  actions.setFailed(err.message)
+  process.exit(1)
+})
