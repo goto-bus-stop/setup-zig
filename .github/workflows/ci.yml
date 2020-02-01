@@ -22,5 +22,5 @@ jobs:
       - uses: goto-bus-stop/setup-zig@fix-4
         with:
           version: ${{matrix.zig-version}}
-      - run: zig run src/main.zig
+      - run: zig build test
         working-directory: test

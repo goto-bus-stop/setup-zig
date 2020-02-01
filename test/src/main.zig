@@ -1,5 +1,5 @@
 const debug = @import("std").debug;
 
-pub fn main() anyerror!void {
-    debug.warn("it works!\n");
+test "it works" {
+    debug.assert(1 == 1);
 }

@@ -2,13 +2,9 @@ const Builder = @import("std").build.Builder;
 
 pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
-    const exe = b.addExecutable("test", "src/main.zig");
-    exe.setBuildMode(mode);
-    exe.install();
+    const test_build = b.addTest("src/main.zig");
+    test_build.setBuildMode(mode);
 
-    const run_cmd = exe.run();
-    run_cmd.step.dependOn(b.getInstallStep());
-
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
+    const test_step = b.step("test", "Run the app");
+    test_step.dependOn(&test_build.step);
 }
