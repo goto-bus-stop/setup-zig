@@ -1136,7 +1136,6 @@ async function downloadZig (version) {
   }
 
   const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
-  actions.debug(variantName)
 
   const downloadPath = await cache.downloadTool(meta[host].tarball)
   const zigPath = ext === 'zip'
