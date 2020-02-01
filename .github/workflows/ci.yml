@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v1
-      - uses: goto-bus-stop/setup-zig@fix-4
+      - uses: goto-bus-stop/setup-zig@default
         with:
           version: ${{matrix.zig-version}}
       - run: zig build test
