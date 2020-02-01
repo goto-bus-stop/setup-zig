@@ -50,14 +50,6 @@ async function downloadZig (version) {
     : await cache.extractTar(downloadPath, undefined, 'x')
 
   const binPath = path.join(zigPath, variantName)
-
-  console.log({
-    variantName,
-    downloadPath,
-    zigPath,
-    binPath,
-  })
-
   const cachePath = await cache.cacheDir(binPath, 'zig', variantName)
 
   return cachePath
