@@ -1,6 +1,5 @@
-const io = @import("std").io;
+const debug = @import("std").debug;
 
-pub fn main() anyerror!void {
-    const stdout = try io.getStdOut();
-    try stdout.write("it works!\n");
+test "it works" {
+    debug.assert(1 == 1);
 }
