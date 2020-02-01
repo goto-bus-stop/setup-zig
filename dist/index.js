@@ -1135,18 +1135,21 @@ async function downloadZig (version) {
     throw new Error(`Could not find version ${version} for platform ${host}`)
   }
 
-  const hostVariantName = {
-    linux: 'linux-x86_64',
-    darwin: 'macos-x86_64',
-    win32: 'windows-x86_64'
-  }[os.platform()]
-  const variantName = `zig-${hostVariantName}-${version}`
+  const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
   const downloadPath = await cache.downloadTool(meta[host].tarball)
   const zigPath = ext === 'zip'
     ? await cache.extractZip(downloadPath)
     : await cache.extractTar(downloadPath, undefined, 'x')
 
   const binPath = path.join(zigPath, variantName)
+
+  console.log({
+    variantName,
+    downloadPath,
+    zigPath,
+    binPath,
+    version
+  })
   return cache.cacheDir(binPath, 'zig', version)
 }
 
@@ -1166,7 +1169,11 @@ async function main () {
   actions.addPath(zigPath)
 }
 
-main()
+main().catch((err) => {
+  console.error(err.stack)
+  actions.setFailed(err.message)
+  process.exit(1)
+})
 
 
 /***/ }),
