@@ -16,27 +16,27 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{matrix.os}}
     steps:
-      - uses: actions/checkout@v1
-      - uses: goto-bus-stop/setup-zig@v1.2.1
+      - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v1
       - run: zig build test
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: goto-bus-stop/setup-zig@v1.2.1
+      - uses: actions/checkout@v2
+      - uses: goto-bus-stop/setup-zig@v1
       - run: zig fmt --check src/*.zig
 ```
 
 Optionally set a Zig version:
 ```yaml
-- uses: goto-bus-stop/setup-zig@v1.2.1
+- uses: goto-bus-stop/setup-zig@v1
   with:
     version: 0.4.0 # The default is 0.5.0
 ```
 
 To use the nightly builds, set:
 ```yaml
-- uses: goto-bus-stop/setup-zig@v1.2.1
+- uses: goto-bus-stop/setup-zig@v1
   with:
     version: master
 ```
