@@ -1,7 +1,9 @@
 name: Build
 on:
   push:
-    branches: [default, v1]
+    branches:
+      - 'default'
+      - 'v[0-9]+'
 
 jobs:
   build:
