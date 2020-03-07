@@ -1,6 +1,20 @@
 name: CI
 on: push
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - uses: EndBug/add-and-commit@v4
+        with:
+          add: dist
+          message: Rebuild
+          author_name: Automated
+          author_email: github@asdf.kooi.me
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
   lint:
     runs-on: ubuntu-latest
     steps:
