@@ -1,7 +1,8 @@
 name: 'Setup Zig'
 description: 'Setup a Zig compiler and add it to the path'
-icon: play
-color: orange
+branding:
+  icon: play
+  color: orange
 author: 'goto-bus-stop'
 inputs:
   version:
