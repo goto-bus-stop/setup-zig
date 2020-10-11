@@ -1,7 +1,7 @@
 {
   "name": "setup-zig",
   "description": "Use the zig compiler in your Github Action",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "author": "Renée Kooi <renee@kooi.me>",
   "bugs": {
     "url": "https://github.com/goto-bus-stop/setup-zig/issues"
@@ -13,7 +13,7 @@
     "simple-get": "^4.0.0"
   },
   "devDependencies": {
-    "@zeit/ncc": "^0.22.0",
+    "@vercel/ncc": "^0.24.1",
     "standard": "^14.3.1"
   },
   "homepage": "https://github.com/goto-bus-stop/setup-zig",

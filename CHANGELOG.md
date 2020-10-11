@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.2.5
+* Update dependencies to fix #11.
+
 ## 1.2.4
 * Update dependencies simple-get and ncc.
 
