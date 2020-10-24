@@ -31,8 +31,13 @@ async function downloadZig (version) {
 
   if (version.includes('+')) {
     // use exact commit hash
-    const downloadUrl = `https://ziglang.org/builds/zig-${host}-${version}.${ext}`
-    const variantName = `zig-${host}-${version}`
+    const addrhost = {
+      linux: 'linux-x86_64',
+      darwin: 'macos-x86_64',
+      win32: 'windows-x86_64'
+    }[os.platform()]
+    const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
+    const variantName = `zig-${addrhost}-${version}`
 
     const downloadPath = await cache.downloadTool(downloadUrl)
     const zigPath = ext === 'zip'
