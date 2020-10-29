@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@vercel/ncc": "^0.24.1",
-    "standard": "^15.0.0"
+    "standard": "^16.0.0"
   },
   "homepage": "https://github.com/goto-bus-stop/setup-zig",
   "keywords": [
