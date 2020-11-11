@@ -17,62 +17,70 @@ function getJSON (opts) {
   })
 }
 
-async function downloadZig (version) {
+function extForPlatform (platform) {
+  return {
+    linux: 'tar.xz',
+    darwin: 'tar.xz',
+    win32: 'zip'
+  }[platform]
+}
+
+function resolveCommit (platform, version) {
+  const ext = extForPlatform(platform)
+  const addrhost = {
+    linux: 'linux-x86_64',
+    darwin: 'macos-x86_64',
+    win32: 'windows-x86_64'
+  }[platform]
+
+  const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
+  const variantName = `zig-${addrhost}-${version}`
+
+  return { downloadUrl, variantName }
+}
+
+async function resolveVersion (platform, version) {
+  const ext = extForPlatform(platform)
   const host = {
     linux: 'x86_64-linux',
     darwin: 'x86_64-macos',
     win32: 'x86_64-windows'
-  }[os.platform()] || os.platform()
-  const ext = {
-    linux: 'tar.xz',
-    darwin: 'tar.xz',
-    win32: 'zip'
-  }[os.platform()]
+  }[platform] || platform
 
-  if (version.includes('+')) {
-    // use exact commit hash
-    const addrhost = {
-      linux: 'linux-x86_64',
-      darwin: 'macos-x86_64',
-      win32: 'windows-x86_64'
-    }[os.platform()]
-    const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
-    const variantName = `zig-${addrhost}-${version}`
+  const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
 
-    const downloadPath = await cache.downloadTool(downloadUrl)
-    const zigPath = ext === 'zip'
-      ? await cache.extractZip(downloadPath)
-      : await cache.extractTar(downloadPath, undefined, 'x')
+  const availableVersions = Object.keys(index)
+  const useVersion = semver.valid(version)
+    ? semver.maxSatisfying(availableVersions.filter((v) => semver.valid(v)), version)
+    : null
 
-    const binPath = path.join(zigPath, variantName)
-    const cachePath = await cache.cacheDir(binPath, 'zig', variantName)
-
-    return cachePath
-  } else {
-    const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
-
-    const availableVersions = Object.keys(index)
-    const useVersion = semver.valid(version)
-      ? semver.maxSatisfying(availableVersions.filter((v) => semver.valid(v)), version)
-      : null
-
-    const meta = index[useVersion || version]
-    if (!meta || !meta[host]) {
-      throw new Error(`Could not find version ${version} for platform ${host}`)
-    }
-
-    const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
-
-    const downloadPath = await cache.downloadTool(meta[host].tarball)
-    const zigPath = ext === 'zip'
-      ? await cache.extractZip(downloadPath)
-      : await cache.extractTar(downloadPath, undefined, 'x')
-
-    const binPath = path.join(zigPath, variantName)
-    const cachePath = await cache.cacheDir(binPath, 'zig', variantName)
-
-    return cachePath
+  const meta = index[useVersion || version]
+  if (!meta || !meta[host]) {
+    throw new Error(`Could not find version ${version} for platform ${host}`)
   }
+
+  const downloadUrl = meta[host].tarball
+  const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
+
+  return { downloadUrl, variantName }
+}
+
+async function downloadZig (platform, version) {
+  const ext = extForPlatform(platform)
+
+  const { downloadUrl, variantName } = version.includes('+')
+    ? resolveCommit(platform, version)
+    : await resolveVersion(platform, version)
+
+  const downloadPath = await cache.downloadTool(downloadUrl)
+  const zigPath = ext === 'zip'
+    ? await cache.extractZip(downloadPath)
+    : await cache.extractTar(downloadPath, undefined, 'x')
+
+  const binPath = path.join(zigPath, variantName)
+  const cachePath = await cache.cacheDir(binPath, 'zig', variantName)
+
+  return cachePath
 }
 
 async function main () {
@@ -84,7 +92,7 @@ async function main () {
 
   let zigPath = cache.find('zig', version)
   if (!zigPath) {
-    zigPath = await downloadZig(version)
+    zigPath = await downloadZig(os.platform(), version)
   }
 
   // Add the `zig` binary to the $PATH
