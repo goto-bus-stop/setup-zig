@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.3.0
+* Support pinning to a specific commit of the zig compiler. ([@codehz](https://github.com/codehz) in [#14](https://github.com/goto-bus-stop/setup-zig/pull/14))
+  ```yaml
+  uses: goto-bus-stop/setup-zig@v1
+  with:
+    version: 0.6.0+4b48fccad
+  ```
+* Add tests for the version -> URL resolution code.
+
 ## 1.2.5
 * Update dependencies to fix #11.
 
@@ -14,7 +23,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * Configure Actions to build releases automatically.
 
 ## 1.2.2
-* Update examples. (#7)
+* Update examples. ([#7](https://github.com/goto-bus-stop/setup-zig/pull/7))
 * Upgrade dependencies.
 * Recommend using @v1 instead of pinning to a version.
 
