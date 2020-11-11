@@ -1,26 +1,31 @@
 name: CI
 on: push
 jobs:
-  lint:
+  test:
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: goto-bus-stop/standard-action@v1
-        with:
-          annotate: true
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Checkout sources
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
 
   smoke-test:
+    name: Build test
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         zig-version: [0.5.0, master]
     runs-on: ${{matrix.os}}
     steps:
-      - uses: actions/checkout@v2
-      - uses: goto-bus-stop/setup-zig@default
+      - name: Checkout sources
+        uses: actions/checkout@v2
+      - name: Install Zig
+        uses: goto-bus-stop/setup-zig@default
         with:
           version: ${{matrix.zig-version}}
-      - run: zig build test
+      - name: Run tests
+        run: zig build test
         working-directory: test

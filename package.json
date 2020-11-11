@@ -31,7 +31,7 @@
   },
   "scripts": {
     "prepare": "ncc build index.js -o dist",
-    "test": "standard"
+    "test": "standard && node test"
   },
   "standard": {
     "ignore": [
