@@ -31,7 +31,7 @@ Optionally set a Zig version:
 ```yaml
 - uses: goto-bus-stop/setup-zig@v1
   with:
-    version: 0.4.0 # The default is 0.5.0
+    version: 0.7.0 # The default is 0.5.0
 ```
 
 To use the nightly builds, set:
