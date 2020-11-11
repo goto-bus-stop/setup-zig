@@ -1,49 +1,22 @@
 const os = require('os')
 const path = require('path')
 const semver = require('semver')
-const get = require('simple-get').concat
 const actions = require('@actions/core')
 const cache = require('@actions/tool-cache')
+const {
+  extForPlatform,
+  resolveCommit,
+  resolveVersion
+} = require('./versions')
 
-function getJSON (opts) {
-  return new Promise((resolve, reject) => {
-    get({ ...opts, json: true }, (err, req, data) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(data)
-      }
-    })
-  })
-}
+async function downloadZig (platform, version) {
+  const ext = extForPlatform(platform)
 
-async function downloadZig (version) {
-  const host = {
-    linux: 'x86_64-linux',
-    darwin: 'x86_64-macos',
-    win32: 'x86_64-windows'
-  }[os.platform()] || os.platform()
-  const ext = {
-    linux: 'tar.xz',
-    darwin: 'tar.xz',
-    win32: 'zip'
-  }[os.platform()]
+  const { downloadUrl, variantName } = version.includes('+')
+    ? resolveCommit(platform, version)
+    : await resolveVersion(platform, version)
 
-  const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
-
-  const availableVersions = Object.keys(index)
-  const useVersion = semver.valid(version)
-    ? semver.maxSatisfying(availableVersions.filter((v) => semver.valid(v)), version)
-    : null
-
-  const meta = index[useVersion || version]
-  if (!meta || !meta[host]) {
-    throw new Error(`Could not find version ${version} for platform ${host}`)
-  }
-
-  const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
-
-  const downloadPath = await cache.downloadTool(meta[host].tarball)
+  const downloadPath = await cache.downloadTool(downloadUrl)
   const zigPath = ext === 'zip'
     ? await cache.extractZip(downloadPath)
     : await cache.extractTar(downloadPath, undefined, 'x')
@@ -63,7 +36,7 @@ async function main () {
 
   let zigPath = cache.find('zig', version)
   if (!zigPath) {
-    zigPath = await downloadZig(version)
+    zigPath = await downloadZig(os.platform(), version)
   }
 
   // Add the `zig` binary to the $PATH

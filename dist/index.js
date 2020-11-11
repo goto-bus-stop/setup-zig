@@ -8,49 +8,22 @@ module.exports =
 const os = __webpack_require__(2087)
 const path = __webpack_require__(5622)
 const semver = __webpack_require__(1383)
-const get = __webpack_require__(2522).concat
 const actions = __webpack_require__(2186)
 const cache = __webpack_require__(7784)
+const {
+  extForPlatform,
+  resolveCommit,
+  resolveVersion
+} = __webpack_require__(3470)
 
-function getJSON (opts) {
-  return new Promise((resolve, reject) => {
-    get({ ...opts, json: true }, (err, req, data) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(data)
-      }
-    })
-  })
-}
+async function downloadZig (platform, version) {
+  const ext = extForPlatform(platform)
 
-async function downloadZig (version) {
-  const host = {
-    linux: 'x86_64-linux',
-    darwin: 'x86_64-macos',
-    win32: 'x86_64-windows'
-  }[os.platform()] || os.platform()
-  const ext = {
-    linux: 'tar.xz',
-    darwin: 'tar.xz',
-    win32: 'zip'
-  }[os.platform()]
+  const { downloadUrl, variantName } = version.includes('+')
+    ? resolveCommit(platform, version)
+    : await resolveVersion(platform, version)
 
-  const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
-
-  const availableVersions = Object.keys(index)
-  const useVersion = semver.valid(version)
-    ? semver.maxSatisfying(availableVersions.filter((v) => semver.valid(v)), version)
-    : null
-
-  const meta = index[useVersion || version]
-  if (!meta || !meta[host]) {
-    throw new Error(`Could not find version ${version} for platform ${host}`)
-  }
-
-  const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
-
-  const downloadPath = await cache.downloadTool(meta[host].tarball)
+  const downloadPath = await cache.downloadTool(downloadUrl)
   const zigPath = ext === 'zip'
     ? await cache.extractZip(downloadPath)
     : await cache.extractTar(downloadPath, undefined, 'x')
@@ -70,7 +43,7 @@ async function main () {
 
   let zigPath = cache.find('zig', version)
   if (!zigPath) {
-    zigPath = await downloadZig(version)
+    zigPath = await downloadZig(os.platform(), version)
   }
 
   // Add the `zig` binary to the $PATH
@@ -1143,7 +1116,6 @@ class ExecState extends events.EventEmitter {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const url = __webpack_require__(8835);
 const http = __webpack_require__(8605);
 const https = __webpack_require__(7211);
 const pm = __webpack_require__(6443);
@@ -1192,7 +1164,7 @@ var MediaTypes;
  * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
  */
 function getProxyUrl(serverUrl) {
-    let proxyUrl = pm.getProxyUrl(url.parse(serverUrl));
+    let proxyUrl = pm.getProxyUrl(new URL(serverUrl));
     return proxyUrl ? proxyUrl.href : '';
 }
 exports.getProxyUrl = getProxyUrl;
@@ -1211,6 +1183,15 @@ const HttpResponseRetryCodes = [
 const RetryableHttpVerbs = ['OPTIONS', 'GET', 'DELETE', 'HEAD'];
 const ExponentialBackoffCeiling = 10;
 const ExponentialBackoffTimeSlice = 5;
+class HttpClientError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.name = 'HttpClientError';
+        this.statusCode = statusCode;
+        Object.setPrototypeOf(this, HttpClientError.prototype);
+    }
+}
+exports.HttpClientError = HttpClientError;
 class HttpClientResponse {
     constructor(message) {
         this.message = message;
@@ -1229,7 +1210,7 @@ class HttpClientResponse {
 }
 exports.HttpClientResponse = HttpClientResponse;
 function isHttps(requestUrl) {
-    let parsedUrl = url.parse(requestUrl);
+    let parsedUrl = new URL(requestUrl);
     return parsedUrl.protocol === 'https:';
 }
 exports.isHttps = isHttps;
@@ -1334,7 +1315,7 @@ class HttpClient {
         if (this._disposed) {
             throw new Error('Client has already been disposed.');
         }
-        let parsedUrl = url.parse(requestUrl);
+        let parsedUrl = new URL(requestUrl);
         let info = this._prepareRequest(verb, parsedUrl, headers);
         // Only perform retries on reads since writes may not be idempotent.
         let maxTries = this._allowRetries && RetryableHttpVerbs.indexOf(verb) != -1
@@ -1373,7 +1354,7 @@ class HttpClient {
                     // if there's no location to redirect to, we won't
                     break;
                 }
-                let parsedRedirectUrl = url.parse(redirectUrl);
+                let parsedRedirectUrl = new URL(redirectUrl);
                 if (parsedUrl.protocol == 'https:' &&
                     parsedUrl.protocol != parsedRedirectUrl.protocol &&
                     !this._allowRedirectDowngrade) {
@@ -1489,7 +1470,7 @@ class HttpClient {
      * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
      */
     getAgent(serverUrl) {
-        let parsedUrl = url.parse(serverUrl);
+        let parsedUrl = new URL(serverUrl);
         return this._getAgent(parsedUrl);
     }
     _prepareRequest(method, requestUrl, headers) {
@@ -1562,7 +1543,7 @@ class HttpClient {
                 maxSockets: maxSockets,
                 keepAlive: this._keepAlive,
                 proxy: {
-                    proxyAuth: proxyUrl.auth,
+                    proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`,
                     host: proxyUrl.hostname,
                     port: proxyUrl.port
                 }
@@ -1657,12 +1638,8 @@ class HttpClient {
                 else {
                     msg = 'Failed request: (' + statusCode + ')';
                 }
-                let err = new Error(msg);
-                // attach statusCode and body obj (if available) to the error object
-                err['statusCode'] = statusCode;
-                if (response.result) {
-                    err['result'] = response.result;
-                }
+                let err = new HttpClientError(msg, statusCode);
+                err.result = response.result;
                 reject(err);
             }
             else {
@@ -1677,12 +1654,11 @@ exports.HttpClient = HttpClient;
 /***/ }),
 
 /***/ 6443:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const url = __webpack_require__(8835);
 function getProxyUrl(reqUrl) {
     let usingSsl = reqUrl.protocol === 'https:';
     let proxyUrl;
@@ -1697,7 +1673,7 @@ function getProxyUrl(reqUrl) {
         proxyVar = process.env['http_proxy'] || process.env['HTTP_PROXY'];
     }
     if (proxyVar) {
-        proxyUrl = url.parse(proxyVar);
+        proxyUrl = new URL(proxyVar);
     }
     return proxyUrl;
 }
@@ -2474,7 +2450,7 @@ class HTTPError extends Error {
     constructor(httpStatusCode) {
         super(`Unexpected HTTP response: ${httpStatusCode}`);
         this.httpStatusCode = httpStatusCode;
-        Object.setPrototypeOf(this, /* unsupported import.meta.prototype */ undefined);
+        Object.setPrototypeOf(this, new.target.prototype);
     }
 }
 exports.HTTPError = HTTPError;
@@ -7524,11 +7500,87 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 3470:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+const path = __webpack_require__(5622)
+const get = __webpack_require__(2522).concat
+const semver = __webpack_require__(1383)
+
+function extForPlatform (platform) {
+  return {
+    linux: 'tar.xz',
+    darwin: 'tar.xz',
+    win32: 'zip'
+  }[platform]
+}
+
+function resolveCommit (platform, version) {
+  const ext = extForPlatform(platform)
+  const addrhost = {
+    linux: 'linux-x86_64',
+    darwin: 'macos-x86_64',
+    win32: 'windows-x86_64'
+  }[platform]
+
+  const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
+  const variantName = `zig-${addrhost}-${version}`
+
+  return { downloadUrl, variantName }
+}
+
+function getJSON (opts) {
+  return new Promise((resolve, reject) => {
+    get({ ...opts, json: true }, (err, req, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(data)
+      }
+    })
+  })
+}
+
+async function resolveVersion (platform, version) {
+  const ext = extForPlatform(platform)
+  const host = {
+    linux: 'x86_64-linux',
+    darwin: 'x86_64-macos',
+    win32: 'x86_64-windows'
+  }[platform] || platform
+
+  const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
+
+  const availableVersions = Object.keys(index)
+  const useVersion = semver.valid(version)
+    ? semver.maxSatisfying(availableVersions.filter((v) => semver.valid(v)), version)
+    : null
+
+  const meta = index[useVersion || version]
+  if (!meta || !meta[host]) {
+    throw new Error(`Could not find version ${useVersion || version} for platform ${host}`)
+  }
+
+  const downloadUrl = meta[host].tarball
+  const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
+
+  return { downloadUrl, variantName }
+}
+
+module.exports = {
+  extForPlatform,
+  resolveCommit,
+  resolveVersion
+}
+
+
+/***/ }),
+
 /***/ 2357:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("assert");
+module.exports = require("assert");;
 
 /***/ }),
 
@@ -7536,7 +7588,7 @@ module.exports = require("assert");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("child_process");
+module.exports = require("child_process");;
 
 /***/ }),
 
@@ -7544,7 +7596,7 @@ module.exports = require("child_process");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("crypto");
+module.exports = require("crypto");;
 
 /***/ }),
 
@@ -7552,7 +7604,7 @@ module.exports = require("crypto");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("events");
+module.exports = require("events");;
 
 /***/ }),
 
@@ -7560,7 +7612,7 @@ module.exports = require("events");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("fs");
+module.exports = require("fs");;
 
 /***/ }),
 
@@ -7568,7 +7620,7 @@ module.exports = require("fs");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("http");
+module.exports = require("http");;
 
 /***/ }),
 
@@ -7576,7 +7628,7 @@ module.exports = require("http");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("https");
+module.exports = require("https");;
 
 /***/ }),
 
@@ -7584,7 +7636,7 @@ module.exports = require("https");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("net");
+module.exports = require("net");;
 
 /***/ }),
 
@@ -7592,7 +7644,7 @@ module.exports = require("net");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("os");
+module.exports = require("os");;
 
 /***/ }),
 
@@ -7600,7 +7652,7 @@ module.exports = require("os");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("path");
+module.exports = require("path");;
 
 /***/ }),
 
@@ -7608,7 +7660,7 @@ module.exports = require("path");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("querystring");
+module.exports = require("querystring");;
 
 /***/ }),
 
@@ -7616,7 +7668,7 @@ module.exports = require("querystring");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("stream");
+module.exports = require("stream");;
 
 /***/ }),
 
@@ -7624,7 +7676,7 @@ module.exports = require("stream");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("tls");
+module.exports = require("tls");;
 
 /***/ }),
 
@@ -7632,7 +7684,7 @@ module.exports = require("tls");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("url");
+module.exports = require("url");;
 
 /***/ }),
 
@@ -7640,7 +7692,7 @@ module.exports = require("url");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("util");
+module.exports = require("util");;
 
 /***/ }),
 
@@ -7648,7 +7700,7 @@ module.exports = require("util");
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("zlib");
+module.exports = require("zlib");;
 
 /***/ })
 
