@@ -1,63 +1,5 @@
-module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
-
-/***/ 2932:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const os = __nccwpck_require__(2087)
-const path = __nccwpck_require__(5622)
-const semver = __nccwpck_require__(1383)
-const actions = __nccwpck_require__(2186)
-const cache = __nccwpck_require__(7784)
-const {
-  extForPlatform,
-  resolveCommit,
-  resolveVersion
-} = __nccwpck_require__(3470)
-
-async function downloadZig (platform, version) {
-  const ext = extForPlatform(platform)
-
-  const { downloadUrl, variantName } = version.includes('+')
-    ? resolveCommit(platform, version)
-    : await resolveVersion(platform, version)
-
-  const downloadPath = await cache.downloadTool(downloadUrl)
-  const zigPath = ext === 'zip'
-    ? await cache.extractZip(downloadPath)
-    : await cache.extractTar(downloadPath, undefined, 'x')
-
-  const binPath = path.join(zigPath, variantName)
-  const cachePath = await cache.cacheDir(binPath, 'zig', variantName)
-
-  return cachePath
-}
-
-async function main () {
-  const version = actions.getInput('version') || '0.5.0'
-  if (semver.valid(version) && semver.lt(version, '0.3.0')) {
-    actions.setFailed('This action does not work with Zig 0.1.0 and Zig 0.2.0')
-    return
-  }
-
-  let zigPath = cache.find('zig', version)
-  if (!zigPath) {
-    zigPath = await downloadZig(os.platform(), version)
-  }
-
-  // Add the `zig` binary to the $PATH
-  actions.addPath(zigPath)
-}
-
-main().catch((err) => {
-  console.error(err.stack)
-  actions.setFailed(err.message)
-  process.exit(1)
-})
-
-
-/***/ }),
 
 /***/ 7351:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
@@ -255,6 +197,7 @@ exports.getInput = getInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
+    process.stdout.write(os.EOL);
     command_1.issueCommand('set-output', { name }, value);
 }
 exports.setOutput = setOutput;
@@ -8659,8 +8602,9 @@ module.exports = require("zlib");;
 /******/ 	// The require function
 /******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		if(__webpack_module_cache__[moduleId]) {
-/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
@@ -8685,10 +8629,63 @@ module.exports = require("zlib");;
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(2932);
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+const os = __nccwpck_require__(2087)
+const path = __nccwpck_require__(5622)
+const semver = __nccwpck_require__(1383)
+const actions = __nccwpck_require__(2186)
+const cache = __nccwpck_require__(7784)
+const {
+  extForPlatform,
+  resolveCommit,
+  resolveVersion
+} = __nccwpck_require__(3470)
+
+async function downloadZig (platform, version) {
+  const ext = extForPlatform(platform)
+
+  const { downloadUrl, variantName } = version.includes('+')
+    ? resolveCommit(platform, version)
+    : await resolveVersion(platform, version)
+
+  const downloadPath = await cache.downloadTool(downloadUrl)
+  const zigPath = ext === 'zip'
+    ? await cache.extractZip(downloadPath)
+    : await cache.extractTar(downloadPath, undefined, 'x')
+
+  const binPath = path.join(zigPath, variantName)
+  const cachePath = await cache.cacheDir(binPath, 'zig', variantName)
+
+  return cachePath
+}
+
+async function main () {
+  const version = actions.getInput('version') || '0.5.0'
+  if (semver.valid(version) && semver.lt(version, '0.3.0')) {
+    actions.setFailed('This action does not work with Zig 0.1.0 and Zig 0.2.0')
+    return
+  }
+
+  let zigPath = cache.find('zig', version)
+  if (!zigPath) {
+    zigPath = await downloadZig(os.platform(), version)
+  }
+
+  // Add the `zig` binary to the $PATH
+  actions.addPath(zigPath)
+}
+
+main().catch((err) => {
+  console.error(err.stack)
+  actions.setFailed(err.message)
+  process.exit(1)
+})
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;
