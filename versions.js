@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import get from 'simple-get'
 import semver from 'semver'
 
