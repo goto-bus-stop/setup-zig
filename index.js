@@ -28,7 +28,7 @@ async function downloadZig (platform, version) {
 }
 
 async function main () {
-  const version = actions.getInput('version') || '0.5.0'
+  const version = actions.getInput('version')
   if (semver.valid(version) && semver.lt(version, '0.3.0')) {
     actions.setFailed('This action does not work with Zig 0.1.0 and Zig 0.2.0')
     return
