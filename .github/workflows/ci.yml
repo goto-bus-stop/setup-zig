@@ -23,20 +23,9 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Install Zig
-        uses: goto-bus-stop/setup-zig@nodefault
+        uses: goto-bus-stop/setup-zig@default
         with:
           version: ${{matrix.zig-version}}
-      - name: Run tests
-        run: zig build test
-        working-directory: test
-  no-default:
-    name: Build test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Install Zig
-        uses: goto-bus-stop/setup-zig@nodefault
       - name: Run tests
         run: zig build test
         working-directory: test
