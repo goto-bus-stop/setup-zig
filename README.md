@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: goto-bus-stop/setup-zig@v1
+        with:
+          version: 0.8.0
       - run: zig build test
   lint:
     runs-on: ubuntu-latest
@@ -27,11 +29,11 @@ jobs:
       - run: zig fmt --check src/*.zig
 ```
 
-Optionally set a Zig version:
+You must provide the Zig compiler version you want to use in `with.version`:
 ```yaml
 - uses: goto-bus-stop/setup-zig@v1
   with:
-    version: 0.7.0 # The default is 0.5.0
+    version: 0.8.0
 ```
 
 To use the nightly builds, set:
