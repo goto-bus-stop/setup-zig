@@ -1,6 +1,6 @@
-const path = require('path')
-const get = require('simple-get').concat
-const semver = require('semver')
+import path from 'path'
+import get from 'simple-get'
+import semver from 'semver'
 
 function extForPlatform (platform) {
   return {
@@ -26,7 +26,7 @@ function resolveCommit (platform, version) {
 
 function getJSON (opts) {
   return new Promise((resolve, reject) => {
-    get({ ...opts, json: true }, (err, req, data) => {
+    get.concat({ ...opts, json: true }, (err, req, data) => {
       if (err) {
         reject(err)
       } else {
@@ -62,7 +62,7 @@ async function resolveVersion (platform, version) {
   return { downloadUrl, variantName }
 }
 
-module.exports = {
+export {
   extForPlatform,
   resolveCommit,
   resolveVersion

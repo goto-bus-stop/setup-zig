@@ -10,5 +10,5 @@ inputs:
     required: true
     default: '0.5.0'
 runs:
-  using: 'node12'
+  using: 'node14'
   main: 'dist/index.js'

@@ -1,13 +1,9 @@
-const os = require('os')
-const path = require('path')
-const semver = require('semver')
-const actions = require('@actions/core')
-const cache = require('@actions/tool-cache')
-const {
-  extForPlatform,
-  resolveCommit,
-  resolveVersion
-} = require('./versions')
+import os from 'os'
+import path from 'path'
+import semver from 'semver'
+import actions from '@actions/core'
+import cache from '@actions/tool-cache'
+import { extForPlatform, resolveCommit, resolveVersion } from './versions.js'
 
 async function downloadZig (platform, version) {
   const ext = extForPlatform(platform)
@@ -27,11 +23,10 @@ async function downloadZig (platform, version) {
   return cachePath
 }
 
-async function main () {
+try {
   const version = actions.getInput('version') || '0.5.0'
   if (semver.valid(version) && semver.lt(version, '0.3.0')) {
-    actions.setFailed('This action does not work with Zig 0.1.0 and Zig 0.2.0')
-    return
+    throw new Error('This action does not work with Zig 0.1.0 and Zig 0.2.0')
   }
 
   let zigPath = cache.find('zig', version)
@@ -41,10 +36,8 @@ async function main () {
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
-}
-
-main().catch((err) => {
+} catch (err) {
   console.error(err.stack)
   actions.setFailed(err.message)
   process.exit(1)
-})
+}
