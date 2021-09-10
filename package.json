@@ -13,7 +13,7 @@
     "simple-get": "^4.0.0"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.30.0",
+    "@vercel/ncc": "^0.31.0",
     "standard": "^16.0.1"
   },
   "homepage": "https://github.com/goto-bus-stop/setup-zig",
