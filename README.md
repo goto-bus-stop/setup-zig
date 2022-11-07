@@ -17,19 +17,19 @@ jobs:
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
-      - uses: goto-bus-stop/setup-zig@v1
+      - uses: goto-bus-stop/setup-zig@v2
       - run: zig build test
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: goto-bus-stop/setup-zig@v1
+      - uses: goto-bus-stop/setup-zig@v2
       - run: zig fmt --check src/*.zig
 ```
 
 Optionally set a Zig version:
 ```yaml
-- uses: goto-bus-stop/setup-zig@v1
+- uses: goto-bus-stop/setup-zig@v2
   with:
     version: 0.7.0
 ```
@@ -38,7 +38,7 @@ The default is to use the nightly `master` builds.
 
 Or [pin to a specific commit](https://github.com/goto-bus-stop/setup-zig/issues/13) using `version+commithash` syntax:
 ```yaml
-- uses: goto-bus-stop/setup-zig@v1
+- uses: goto-bus-stop/setup-zig@v2
   with:
     version: 0.6.0+4b48fccad
 ```
