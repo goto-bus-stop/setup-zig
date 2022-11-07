@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.0.1
+* Update docs to v2
+
 ## 2.0.0
 * Change `version` option default to `master`. See [#24](https://github.com/goto-bus-stop/setup-zig/issues/24)
 
