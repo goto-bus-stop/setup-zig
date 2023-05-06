@@ -7968,6 +7968,12 @@ var {
 async function downloadZig(platform, version) {
   const ext = extForPlatform(platform);
   const { downloadUrl, variantName } = version.includes("+") ? resolveCommit(platform, version) : await resolveVersion(platform, version);
+  const cachedPath = cache.find("zig", variantName);
+  if (cachedPath) {
+    actions.info("using cached version");
+    return cachedPath;
+  }
+  actions.info(`downloading zig ${variantName}`);
   const downloadPath = await cache.downloadTool(downloadUrl);
   const zigPath = ext === "zip" ? await cache.extractZip(downloadPath) : await cache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
@@ -7980,14 +7986,7 @@ async function main() {
     actions.setFailed("This action does not work with Zig 0.1.0 and Zig 0.2.0");
     return;
   }
-  console.log(cache.findAllVersions("zig"));
-  let zigPath = cache.find("zig", version);
-  if (!zigPath) {
-    actions.info(`downloading zig ${version}`);
-    zigPath = await downloadZig(os.platform(), version);
-  } else {
-    actions.info("using cached version");
-  }
+  const zigPath = await downloadZig(os.platform(), version);
   actions.addPath(zigPath);
   actions.info(zigPath);
 }
