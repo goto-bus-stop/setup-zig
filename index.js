@@ -18,6 +18,13 @@ async function downloadZig (platform, version) {
     ? resolveCommit(platform, version)
     : await resolveVersion(platform, version)
 
+  const cachedPath = cache.find('zig', variantName)
+  if (cachedPath) {
+    actions.info('using cached version')
+    return cachedPath
+  }
+
+  actions.info(`downloading zig ${variantName}`)
   const downloadPath = await cache.downloadTool(downloadUrl)
   const zigPath = ext === 'zip'
     ? await cache.extractZip(downloadPath)
@@ -36,14 +43,7 @@ async function main () {
     return
   }
 
-	console.log(cache.findAllVersions('zig'))
-  let zigPath = cache.find('zig', version)
-  if (!zigPath) {
-    actions.info(`downloading zig ${version}`)
-    zigPath = await downloadZig(os.platform(), version)
-  } else {
-    actions.info('using cached version')
-  }
+  const zigPath = await downloadZig(os.platform(), version)
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
