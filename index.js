@@ -1,3 +1,5 @@
+'use strict'
+
 const os = require('os')
 const path = require('path')
 const semver = require('semver')
@@ -36,7 +38,10 @@ async function main () {
 
   let zigPath = cache.find('zig', version)
   if (!zigPath) {
+    actions.info('downloading zig', version)
     zigPath = await downloadZig(os.platform(), version)
+  } else {
+    actions.info('using cached version')
   }
 
   // Add the `zig` binary to the $PATH

@@ -1,3 +1,4 @@
+"use strict";
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -7981,7 +7982,10 @@ async function main() {
   }
   let zigPath = cache.find("zig", version);
   if (!zigPath) {
+    actions.info("downloading zig", version);
     zigPath = await downloadZig(os.platform(), version);
+  } else {
+    actions.info("using cached version");
   }
   actions.addPath(zigPath);
 }
