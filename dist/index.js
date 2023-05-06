@@ -7980,6 +7980,7 @@ async function main() {
     actions.setFailed("This action does not work with Zig 0.1.0 and Zig 0.2.0");
     return;
   }
+  console.log(cache.findAllVersions("zig"));
   let zigPath = cache.find("zig", version);
   if (!zigPath) {
     actions.info(`downloading zig ${version}`);
