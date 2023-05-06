@@ -7982,12 +7982,13 @@ async function main() {
   }
   let zigPath = cache.find("zig", version);
   if (!zigPath) {
-    actions.info("downloading zig", version);
+    actions.info(`downloading zig ${version}`);
     zigPath = await downloadZig(os.platform(), version);
   } else {
     actions.info("using cached version");
   }
   actions.addPath(zigPath);
+  actions.info(zigPath);
 }
 main().catch((err) => {
   console.error(err.stack);

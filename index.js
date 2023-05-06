@@ -38,7 +38,7 @@ async function main () {
 
   let zigPath = cache.find('zig', version)
   if (!zigPath) {
-    actions.info('downloading zig', version)
+    actions.info(`downloading zig ${version}`)
     zigPath = await downloadZig(os.platform(), version)
   } else {
     actions.info('using cached version')
@@ -46,6 +46,7 @@ async function main () {
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
+  actions.info(zigPath)
 }
 
 main().catch((err) => {
