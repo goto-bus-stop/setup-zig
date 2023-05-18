@@ -7944,7 +7944,7 @@ var require_versions = __commonJS({
       }
       const downloadUrl = meta[host].tarball;
       const variantName = path2.basename(meta[host].tarball).replace(`.${ext}`, "");
-      return { downloadUrl, variantName };
+      return { downloadUrl, variantName, version: useVersion || version };
     }
     module2.exports = {
       extForPlatform: extForPlatform2,
@@ -7968,8 +7968,8 @@ var {
 var TOOL_NAME = "zig";
 async function downloadZig(platform, version) {
   const ext = extForPlatform(platform);
-  const { downloadUrl, variantName } = version.includes("+") ? resolveCommit(platform, version) : await resolveVersion(platform, version);
-  const cachedPath = cache.find(TOOL_NAME, variantName);
+  const { downloadUrl, variantName, version: useVersion } = version.includes("+") ? resolveCommit(platform, version) : await resolveVersion(platform, version);
+  const cachedPath = cache.find(TOOL_NAME, useVersion);
   actions.info(`cachedPath=${cachedPath}`);
   if (cachedPath) {
     actions.info("using cached version");
@@ -7979,8 +7979,8 @@ async function downloadZig(platform, version) {
   const downloadPath = await cache.downloadTool(downloadUrl);
   const zigPath = ext === "zip" ? await cache.extractZip(downloadPath) : await cache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
-  const cachePath = await cache.cacheDir(binPath, TOOL_NAME, variantName);
-  actions.info(`cachePath=${cachePath}, find=${cache.find(TOOL_NAME, variantName)}`);
+  const cachePath = await cache.cacheDir(binPath, TOOL_NAME, useVersion);
+  actions.info(`cachePath=${cachePath}, find=${cache.find(TOOL_NAME, useVersion)}`);
   return cachePath;
 }
 async function main() {

@@ -59,7 +59,7 @@ async function resolveVersion (platform, version) {
   const downloadUrl = meta[host].tarball
   const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
 
-  return { downloadUrl, variantName }
+  return { downloadUrl, variantName, version: useVersion || version }
 }
 
 module.exports = {
