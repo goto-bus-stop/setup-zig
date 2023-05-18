@@ -7,7 +7,7 @@ const {
 async function test () {
   assert.deepEqual(resolveCommit('linux', '0.6.0+4b48fccad'), {
     downloadUrl: 'https://ziglang.org/builds/zig-linux-x86_64-0.6.0+4b48fccad.tar.xz',
-    variantName: 'zig-linux-x87_64-0.6.0+4b48fccad',
+    variantName: 'zig-linux-x86_64-0.6.0+4b48fccad',
     version: '0.6.0+4b48fccad'
   })
   assert.deepEqual(resolveCommit('win32', '0.6.0+4b48fccad'), {
@@ -24,7 +24,7 @@ async function test () {
   assert.deepEqual(await resolveVersion('win32', '0.4.0'), {
     downloadUrl: 'https://ziglang.org/download/0.4.0/zig-windows-x86_64-0.4.0.zip',
     variantName: 'zig-windows-x86_64-0.4.0',
-    version: '0.7.0'
+    version: '0.4.0'
   })
   await assert.doesNotReject(resolveVersion('linux', 'master'))
   await assert.doesNotReject(resolveVersion('win32', 'master'))
