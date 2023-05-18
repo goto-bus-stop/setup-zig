@@ -11,6 +11,8 @@ const {
   resolveVersion
 } = require('./versions')
 
+const TOOL_NAME = 'zig'
+
 async function downloadZig (platform, version) {
   const ext = extForPlatform(platform)
 
@@ -18,7 +20,7 @@ async function downloadZig (platform, version) {
     ? resolveCommit(platform, version)
     : await resolveVersion(platform, version)
 
-  const cachedPath = cache.find('zig', variantName)
+  const cachedPath = cache.find(TOOL_NAME, variantName)
   if (cachedPath) {
     actions.info('using cached version')
     return cachedPath
@@ -31,7 +33,8 @@ async function downloadZig (platform, version) {
     : await cache.extractTar(downloadPath, undefined, 'x')
 
   const binPath = path.join(zigPath, variantName)
-  const cachePath = await cache.cacheDir(binPath, 'zig', variantName)
+  const cachePath = await cache.cacheDir(binPath, TOOL_NAME, variantName)
+  console.log(cache.find(TOOL_NAME, variantName))
 
   return cachePath
 }
