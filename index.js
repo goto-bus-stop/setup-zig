@@ -50,7 +50,7 @@ async function main () {
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
-  actions.info(zigPath)
+  actions.info(`zig installed at ${zigPath}`)
 }
 
 main().catch((err) => {

@@ -8068,7 +8068,7 @@ async function main() {
   }
   const zigPath = await downloadZig(os.platform(), version2);
   actions.addPath(zigPath);
-  actions.info(zigPath);
+  actions.info(`zig installed at ${zigPath}`);
 }
 main().catch((err) => {
   console.error(err.stack);
