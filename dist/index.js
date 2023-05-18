@@ -8048,17 +8048,16 @@ async function downloadZig(platform, version2) {
   const ext = extForPlatform(platform);
   const { downloadUrl, variantName, version: useVersion } = version2.includes("+") ? resolveCommit(platform, version2) : await resolveVersion(platform, version2);
   const cachedPath = cache.find(TOOL_NAME, useVersion);
-  actions.info(`cachedPath=${cachedPath}`);
   if (cachedPath) {
-    actions.info("using cached version");
+    actions.info(`using cached zig install: ${cachedPath}`);
     return cachedPath;
   }
-  actions.info(`downloading zig ${variantName}`);
+  actions.warn(`no cached version found: downloading zig ${variantName}`);
   const downloadPath = await cache.downloadTool(downloadUrl);
   const zigPath = ext === "zip" ? await cache.extractZip(downloadPath) : await cache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
   const cachePath = await cache.cacheDir(binPath, TOOL_NAME, useVersion);
-  actions.info(`cachePath=${cachePath}, find=${cache.find(TOOL_NAME, useVersion)}`);
+  actions.info(`added zig ${useVersion} to the tool cache`);
   return cachePath;
 }
 async function main() {
