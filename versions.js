@@ -21,7 +21,7 @@ function resolveCommit (platform, version) {
   const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
   const variantName = `zig-${addrhost}-${version}`
 
-  return { downloadUrl, variantName }
+  return { downloadUrl, variantName, version }
 }
 
 function getJSON (opts) {

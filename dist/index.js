@@ -7993,7 +7993,7 @@ var require_versions = __commonJS({
       }[platform];
       const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version2}.${ext}`;
       const variantName = `zig-${addrhost}-${version2}`;
-      return { downloadUrl, variantName };
+      return { downloadUrl, variantName, version: version2 };
     }
     function getJSON(opts) {
       return new Promise((resolve, reject) => {
