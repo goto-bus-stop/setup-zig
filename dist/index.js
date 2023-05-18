@@ -7965,10 +7965,12 @@ var {
   resolveCommit,
   resolveVersion
 } = require_versions();
+var TOOL_NAME = "zig";
 async function downloadZig(platform, version) {
   const ext = extForPlatform(platform);
   const { downloadUrl, variantName } = version.includes("+") ? resolveCommit(platform, version) : await resolveVersion(platform, version);
-  const cachedPath = cache.find("zig", variantName);
+  const cachedPath = cache.find(TOOL_NAME, variantName);
+  actions.info(`cachedPath=${cachedPath}`);
   if (cachedPath) {
     actions.info("using cached version");
     return cachedPath;
@@ -7977,7 +7979,8 @@ async function downloadZig(platform, version) {
   const downloadPath = await cache.downloadTool(downloadUrl);
   const zigPath = ext === "zip" ? await cache.extractZip(downloadPath) : await cache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
-  const cachePath = await cache.cacheDir(binPath, "zig", variantName);
+  const cachePath = await cache.cacheDir(binPath, TOOL_NAME, variantName);
+  actions.info(`cachePath=${cachePath}, find=${cache.find(TOOL_NAME, variantName)}`);
   return cachePath;
 }
 async function main() {

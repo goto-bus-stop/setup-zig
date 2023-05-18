@@ -21,6 +21,7 @@ async function downloadZig (platform, version) {
     : await resolveVersion(platform, version)
 
   const cachedPath = cache.find(TOOL_NAME, variantName)
+  actions.info(`cachedPath=${cachedPath}`)
   if (cachedPath) {
     actions.info('using cached version')
     return cachedPath
@@ -34,7 +35,7 @@ async function downloadZig (platform, version) {
 
   const binPath = path.join(zigPath, variantName)
   const cachePath = await cache.cacheDir(binPath, TOOL_NAME, variantName)
-  console.log(cache.find(TOOL_NAME, variantName))
+  actions.info(`cachePath=${cachePath}, find=${cache.find(TOOL_NAME, variantName)}`)
 
   return cachePath
 }
