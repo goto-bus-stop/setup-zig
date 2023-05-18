@@ -8052,7 +8052,7 @@ async function downloadZig(platform, version2) {
     actions.info(`using cached zig install: ${cachedPath}`);
     return cachedPath;
   }
-  actions.warn(`no cached version found: downloading zig ${variantName}`);
+  actions.info(`no cached version found. downloading zig ${variantName}`);
   const downloadPath = await cache.downloadTool(downloadUrl);
   const zigPath = ext === "zip" ? await cache.extractZip(downloadPath) : await cache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
