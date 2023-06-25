@@ -4,7 +4,8 @@ const os = require('os')
 const path = require('path')
 const semver = require('semver')
 const actions = require('@actions/core')
-const cache = require('@actions/tool-cache')
+const cache = require('@actions/cache')
+const toolCache = require('@actions/tool-cache')
 const {
   extForPlatform,
   resolveCommit,
@@ -13,40 +14,60 @@ const {
 
 const TOOL_NAME = 'zig'
 
-async function downloadZig (platform, version) {
+async function downloadZig (platform, version, useCache = true) {
   const ext = extForPlatform(platform)
 
   const { downloadUrl, variantName, version: useVersion } = version.includes('+')
     ? resolveCommit(platform, version)
     : await resolveVersion(platform, version)
 
-  const cachedPath = cache.find(TOOL_NAME, useVersion)
+  const cachedPath = toolCache.find(TOOL_NAME, useVersion)
   if (cachedPath) {
     actions.info(`using cached zig install: ${cachedPath}`)
     return cachedPath
   }
 
+  const cacheKey = `${TOOL_NAME}-${variantName}`
+  if (useCache) {
+    const restorePath = path.join(process.env.RUNNER_TOOL_CACHE, TOOL_NAME, useVersion, os.arch())
+    actions.info(`attempting restore of ${cacheKey} to ${restorePath}`)
+    const restoredKey = await cache.restoreCache([restorePath], cacheKey)
+    if (restoredKey) {
+      actions.info(`using cached zig install: ${restorePath}`)
+      return restorePath
+    }
+  }
+
   actions.info(`no cached version found. downloading zig ${variantName}`)
-  const downloadPath = await cache.downloadTool(downloadUrl)
+  const downloadPath = await toolCache.downloadTool(downloadUrl)
   const zigPath = ext === 'zip'
-    ? await cache.extractZip(downloadPath)
-    : await cache.extractTar(downloadPath, undefined, 'x')
+    ? await toolCache.extractZip(downloadPath)
+    : await toolCache.extractTar(downloadPath, undefined, 'x')
 
   const binPath = path.join(zigPath, variantName)
-  const cachePath = await cache.cacheDir(binPath, TOOL_NAME, useVersion)
-  actions.info(`added zig ${useVersion} to the tool cache`)
+  const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion)
+
+  if (useCache) {
+    actions.info(`adding zig ${useVersion} at ${cachePath} to local cache ${cacheKey}`)
+    await cache.saveCache([cachePath], cacheKey)
+  }
 
   return cachePath
 }
 
 async function main () {
   const version = actions.getInput('version') || 'master'
+  const useCache = actions.getInput('cache') || 'true'
   if (semver.valid(version) && semver.lt(version, '0.3.0')) {
     actions.setFailed('This action does not work with Zig 0.1.0 and Zig 0.2.0')
     return
   }
+  if (useCache !== 'false' && useCache !== 'true') {
+    actions.setFailed('`with.cache` must be "true" or "false"')
+    return
+  }
 
-  const zigPath = await downloadZig(os.platform(), version)
+  const zigPath = await downloadZig(os.platform(), version, Boolean(useCache))
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
