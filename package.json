@@ -1,7 +1,7 @@
 {
   "name": "setup-zig",
   "description": "Use the zig compiler in your Github Action",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "author": "Renée Kooi <renee@kooi.me>",
   "bugs": {
     "url": "https://github.com/goto-bus-stop/setup-zig/issues"
