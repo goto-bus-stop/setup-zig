@@ -64006,7 +64006,7 @@ async function downloadZig(platform, version3, useCache = true) {
   }
   const cacheKey = `${TOOL_NAME}-${variantName}`;
   if (useCache) {
-    const restorePath = `${process.env.RUNNER_TOOL_CACHE}/${TOOL_NAME}/${useVersion}/${os.arch()}`;
+    const restorePath = path.join(process.env.RUNNER_TOOL_CACHE, TOOL_NAME, useVersion, os.arch());
     actions.info(`attempting restore of ${cacheKey} to ${restorePath}`);
     const restoredKey = await cache.restoreCache([restorePath], cacheKey);
     if (restoredKey) {
