@@ -41,6 +41,7 @@ var require_constants = __commonJS({
     var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || /* istanbul ignore next */
     9007199254740991;
     var MAX_SAFE_COMPONENT_LENGTH = 16;
+    var MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6;
     var RELEASE_TYPES = [
       "major",
       "premajor",
@@ -53,6 +54,7 @@ var require_constants = __commonJS({
     module2.exports = {
       MAX_LENGTH,
       MAX_SAFE_COMPONENT_LENGTH,
+      MAX_SAFE_BUILD_LENGTH,
       MAX_SAFE_INTEGER,
       RELEASE_TYPES,
       SEMVER_SPEC_VERSION,
@@ -74,30 +76,45 @@ var require_debug = __commonJS({
 // node_modules/semver/internal/re.js
 var require_re = __commonJS({
   "node_modules/semver/internal/re.js"(exports, module2) {
-    var { MAX_SAFE_COMPONENT_LENGTH } = require_constants();
+    var { MAX_SAFE_COMPONENT_LENGTH, MAX_SAFE_BUILD_LENGTH } = require_constants();
     var debug = require_debug();
     exports = module2.exports = {};
     var re = exports.re = [];
+    var safeRe = exports.safeRe = [];
     var src = exports.src = [];
     var t = exports.t = {};
     var R = 0;
+    var LETTERDASHNUMBER = "[a-zA-Z0-9-]";
+    var safeRegexReplacements = [
+      ["\\s", 1],
+      ["\\d", MAX_SAFE_COMPONENT_LENGTH],
+      [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH]
+    ];
+    var makeSafeRegex = (value) => {
+      for (const [token, max] of safeRegexReplacements) {
+        value = value.split(`${token}*`).join(`${token}{0,${max}}`).split(`${token}+`).join(`${token}{1,${max}}`);
+      }
+      return value;
+    };
     var createToken = (name, value, isGlobal) => {
+      const safe = makeSafeRegex(value);
       const index = R++;
       debug(name, index, value);
       t[name] = index;
       src[index] = value;
       re[index] = new RegExp(value, isGlobal ? "g" : void 0);
+      safeRe[index] = new RegExp(safe, isGlobal ? "g" : void 0);
     };
     createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
-    createToken("NUMERICIDENTIFIERLOOSE", "[0-9]+");
-    createToken("NONNUMERICIDENTIFIER", "\\d*[a-zA-Z-][a-zA-Z0-9-]*");
+    createToken("NUMERICIDENTIFIERLOOSE", "\\d+");
+    createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
     createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})`);
     createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})`);
     createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NUMERICIDENTIFIER]}|${src[t.NONNUMERICIDENTIFIER]})`);
     createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`);
     createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
     createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
-    createToken("BUILDIDENTIFIER", "[0-9A-Za-z-]+");
+    createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
     createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
     createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
     createToken("FULL", `^${src[t.FULLPLAIN]}$`);
@@ -178,35 +195,35 @@ var require_semver = __commonJS({
   "node_modules/semver/classes/semver.js"(exports, module2) {
     var debug = require_debug();
     var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants();
-    var { re, t } = require_re();
+    var { safeRe: re, t } = require_re();
     var parseOptions = require_parse_options();
     var { compareIdentifiers } = require_identifiers();
-    var SemVer = class {
-      constructor(version2, options) {
+    var SemVer = class _SemVer {
+      constructor(version3, options) {
         options = parseOptions(options);
-        if (version2 instanceof SemVer) {
-          if (version2.loose === !!options.loose && version2.includePrerelease === !!options.includePrerelease) {
-            return version2;
+        if (version3 instanceof _SemVer) {
+          if (version3.loose === !!options.loose && version3.includePrerelease === !!options.includePrerelease) {
+            return version3;
           } else {
-            version2 = version2.version;
+            version3 = version3.version;
           }
-        } else if (typeof version2 !== "string") {
-          throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version2}".`);
+        } else if (typeof version3 !== "string") {
+          throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version3}".`);
         }
-        if (version2.length > MAX_LENGTH) {
+        if (version3.length > MAX_LENGTH) {
           throw new TypeError(
             `version is longer than ${MAX_LENGTH} characters`
           );
         }
-        debug("SemVer", version2, options);
+        debug("SemVer", version3, options);
         this.options = options;
         this.loose = !!options.loose;
         this.includePrerelease = !!options.includePrerelease;
-        const m = version2.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
+        const m = version3.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
         if (!m) {
-          throw new TypeError(`Invalid Version: ${version2}`);
+          throw new TypeError(`Invalid Version: ${version3}`);
         }
-        this.raw = version2;
+        this.raw = version3;
         this.major = +m[1];
         this.minor = +m[2];
         this.patch = +m[3];
@@ -247,11 +264,11 @@ var require_semver = __commonJS({
       }
       compare(other) {
         debug("SemVer.compare", this.version, this.options, other);
-        if (!(other instanceof SemVer)) {
+        if (!(other instanceof _SemVer)) {
           if (typeof other === "string" && other === this.version) {
             return 0;
           }
-          other = new SemVer(other, this.options);
+          other = new _SemVer(other, this.options);
         }
         if (other.version === this.version) {
           return 0;
@@ -259,14 +276,14 @@ var require_semver = __commonJS({
         return this.compareMain(other) || this.comparePre(other);
       }
       compareMain(other) {
-        if (!(other instanceof SemVer)) {
-          other = new SemVer(other, this.options);
+        if (!(other instanceof _SemVer)) {
+          other = new _SemVer(other, this.options);
         }
         return compareIdentifiers(this.major, other.major) || compareIdentifiers(this.minor, other.minor) || compareIdentifiers(this.patch, other.patch);
       }
       comparePre(other) {
-        if (!(other instanceof SemVer)) {
-          other = new SemVer(other, this.options);
+        if (!(other instanceof _SemVer)) {
+          other = new _SemVer(other, this.options);
         }
         if (this.prerelease.length && !other.prerelease.length) {
           return -1;
@@ -294,8 +311,8 @@ var require_semver = __commonJS({
         } while (++i);
       }
       compareBuild(other) {
-        if (!(other instanceof SemVer)) {
-          other = new SemVer(other, this.options);
+        if (!(other instanceof _SemVer)) {
+          other = new _SemVer(other, this.options);
         }
         let i = 0;
         do {
@@ -404,8 +421,10 @@ var require_semver = __commonJS({
           default:
             throw new Error(`invalid increment argument: ${release}`);
         }
-        this.format();
-        this.raw = this.version;
+        this.raw = this.format();
+        if (this.build.length) {
+          this.raw += `+${this.build.join(".")}`;
+        }
         return this;
       }
     };
@@ -417,12 +436,12 @@ var require_semver = __commonJS({
 var require_parse = __commonJS({
   "node_modules/semver/functions/parse.js"(exports, module2) {
     var SemVer = require_semver();
-    var parse2 = (version2, options, throwErrors = false) => {
-      if (version2 instanceof SemVer) {
-        return version2;
+    var parse3 = (version3, options, throwErrors = false) => {
+      if (version3 instanceof SemVer) {
+        return version3;
       }
       try {
-        return new SemVer(version2, options);
+        return new SemVer(version3, options);
       } catch (er) {
         if (!throwErrors) {
           return null;
@@ -430,16 +449,16 @@ var require_parse = __commonJS({
         throw er;
       }
     };
-    module2.exports = parse2;
+    module2.exports = parse3;
   }
 });
 
 // node_modules/semver/functions/valid.js
 var require_valid = __commonJS({
   "node_modules/semver/functions/valid.js"(exports, module2) {
-    var parse2 = require_parse();
-    var valid = (version2, options) => {
-      const v = parse2(version2, options);
+    var parse3 = require_parse();
+    var valid = (version3, options) => {
+      const v = parse3(version3, options);
       return v ? v.version : null;
     };
     module2.exports = valid;
@@ -449,9 +468,9 @@ var require_valid = __commonJS({
 // node_modules/semver/functions/clean.js
 var require_clean = __commonJS({
   "node_modules/semver/functions/clean.js"(exports, module2) {
-    var parse2 = require_parse();
-    var clean = (version2, options) => {
-      const s = parse2(version2.trim().replace(/^[=v]+/, ""), options);
+    var parse3 = require_parse();
+    var clean = (version3, options) => {
+      const s = parse3(version3.trim().replace(/^[=v]+/, ""), options);
       return s ? s.version : null;
     };
     module2.exports = clean;
@@ -462,7 +481,7 @@ var require_clean = __commonJS({
 var require_inc = __commonJS({
   "node_modules/semver/functions/inc.js"(exports, module2) {
     var SemVer = require_semver();
-    var inc = (version2, release, options, identifier, identifierBase) => {
+    var inc = (version3, release, options, identifier, identifierBase) => {
       if (typeof options === "string") {
         identifierBase = identifier;
         identifier = options;
@@ -470,7 +489,7 @@ var require_inc = __commonJS({
       }
       try {
         return new SemVer(
-          version2 instanceof SemVer ? version2.version : version2,
+          version3 instanceof SemVer ? version3.version : version3,
           options
         ).inc(release, identifier, identifierBase).version;
       } catch (er) {
@@ -484,38 +503,42 @@ var require_inc = __commonJS({
 // node_modules/semver/functions/diff.js
 var require_diff = __commonJS({
   "node_modules/semver/functions/diff.js"(exports, module2) {
-    var parse2 = require_parse();
-    var diff = (version1, version2) => {
-      const v12 = parse2(version1, null, true);
-      const v2 = parse2(version2, null, true);
-      const comparison = v12.compare(v2);
+    var parse3 = require_parse();
+    var diff = (version1, version22) => {
+      const v13 = parse3(version1, null, true);
+      const v2 = parse3(version22, null, true);
+      const comparison = v13.compare(v2);
       if (comparison === 0) {
         return null;
       }
       const v1Higher = comparison > 0;
-      const highVersion = v1Higher ? v12 : v2;
-      const lowVersion = v1Higher ? v2 : v12;
+      const highVersion = v1Higher ? v13 : v2;
+      const lowVersion = v1Higher ? v2 : v13;
       const highHasPre = !!highVersion.prerelease.length;
+      const lowHasPre = !!lowVersion.prerelease.length;
+      if (lowHasPre && !highHasPre) {
+        if (!lowVersion.patch && !lowVersion.minor) {
+          return "major";
+        }
+        if (highVersion.patch) {
+          return "patch";
+        }
+        if (highVersion.minor) {
+          return "minor";
+        }
+        return "major";
+      }
       const prefix = highHasPre ? "pre" : "";
-      if (v12.major !== v2.major) {
+      if (v13.major !== v2.major) {
         return prefix + "major";
       }
-      if (v12.minor !== v2.minor) {
+      if (v13.minor !== v2.minor) {
         return prefix + "minor";
       }
-      if (v12.patch !== v2.patch) {
+      if (v13.patch !== v2.patch) {
         return prefix + "patch";
       }
-      if (highHasPre) {
-        return "prerelease";
-      }
-      if (lowVersion.patch) {
-        return "patch";
-      }
-      if (lowVersion.minor) {
-        return "minor";
-      }
-      return "major";
+      return "prerelease";
     };
     module2.exports = diff;
   }
@@ -551,9 +574,9 @@ var require_patch = __commonJS({
 // node_modules/semver/functions/prerelease.js
 var require_prerelease = __commonJS({
   "node_modules/semver/functions/prerelease.js"(exports, module2) {
-    var parse2 = require_parse();
-    var prerelease = (version2, options) => {
-      const parsed = parse2(version2, options);
+    var parse3 = require_parse();
+    var prerelease = (version3, options) => {
+      const parsed = parse3(version3, options);
       return parsed && parsed.prerelease.length ? parsed.prerelease : null;
     };
     module2.exports = prerelease;
@@ -725,25 +748,25 @@ var require_cmp = __commonJS({
 var require_coerce = __commonJS({
   "node_modules/semver/functions/coerce.js"(exports, module2) {
     var SemVer = require_semver();
-    var parse2 = require_parse();
-    var { re, t } = require_re();
-    var coerce = (version2, options) => {
-      if (version2 instanceof SemVer) {
-        return version2;
+    var parse3 = require_parse();
+    var { safeRe: re, t } = require_re();
+    var coerce = (version3, options) => {
+      if (version3 instanceof SemVer) {
+        return version3;
       }
-      if (typeof version2 === "number") {
-        version2 = String(version2);
+      if (typeof version3 === "number") {
+        version3 = String(version3);
       }
-      if (typeof version2 !== "string") {
+      if (typeof version3 !== "string") {
         return null;
       }
       options = options || {};
       let match = null;
       if (!options.rtl) {
-        match = version2.match(re[t.COERCE]);
+        match = version3.match(re[t.COERCE]);
       } else {
         let next;
-        while ((next = re[t.COERCERTL].exec(version2)) && (!match || match.index + match[0].length !== version2.length)) {
+        while ((next = re[t.COERCERTL].exec(version3)) && (!match || match.index + match[0].length !== version3.length)) {
           if (!match || next.index + next[0].length !== match.index + match[0].length) {
             match = next;
           }
@@ -754,7 +777,7 @@ var require_coerce = __commonJS({
       if (match === null) {
         return null;
       }
-      return parse2(`${match[2]}.${match[3] || "0"}.${match[4] || "0"}`, options);
+      return parse3(`${match[2]}.${match[3] || "0"}.${match[4] || "0"}`, options);
     };
     module2.exports = coerce;
   }
@@ -1416,14 +1439,14 @@ var require_lru_cache = __commonJS({
 // node_modules/semver/classes/range.js
 var require_range = __commonJS({
   "node_modules/semver/classes/range.js"(exports, module2) {
-    var Range = class {
+    var Range = class _Range {
       constructor(range, options) {
         options = parseOptions(options);
-        if (range instanceof Range) {
+        if (range instanceof _Range) {
           if (range.loose === !!options.loose && range.includePrerelease === !!options.includePrerelease) {
             return range;
           } else {
-            return new Range(range.raw, options);
+            return new _Range(range.raw, options);
           }
         }
         if (range instanceof Comparator) {
@@ -1435,10 +1458,10 @@ var require_range = __commonJS({
         this.options = options;
         this.loose = !!options.loose;
         this.includePrerelease = !!options.includePrerelease;
-        this.raw = range;
-        this.set = range.split("||").map((r) => this.parseRange(r.trim())).filter((c) => c.length);
+        this.raw = range.trim().split(/\s+/).join(" ");
+        this.set = this.raw.split("||").map((r) => this.parseRange(r)).filter((c) => c.length);
         if (!this.set.length) {
-          throw new TypeError(`Invalid SemVer Range: ${range}`);
+          throw new TypeError(`Invalid SemVer Range: ${this.raw}`);
         }
         if (this.set.length > 1) {
           const first = this.set[0];
@@ -1457,16 +1480,13 @@ var require_range = __commonJS({
         this.format();
       }
       format() {
-        this.range = this.set.map((comps) => {
-          return comps.join(" ").trim();
-        }).join("||").trim();
+        this.range = this.set.map((comps) => comps.join(" ").trim()).join("||").trim();
         return this.range;
       }
       toString() {
         return this.range;
       }
       parseRange(range) {
-        range = range.trim();
         const memoOpts = (this.options.includePrerelease && FLAG_INCLUDE_PRERELEASE) | (this.options.loose && FLAG_LOOSE);
         const memoKey = memoOpts + ":" + range;
         const cached = cache2.get(memoKey);
@@ -1480,8 +1500,9 @@ var require_range = __commonJS({
         range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace);
         debug("comparator trim", range);
         range = range.replace(re[t.TILDETRIM], tildeTrimReplace);
+        debug("tilde trim", range);
         range = range.replace(re[t.CARETTRIM], caretTrimReplace);
-        range = range.split(/\s+/).join(" ");
+        debug("caret trim", range);
         let rangeList = range.split(" ").map((comp) => parseComparator(comp, this.options)).join(" ").split(/\s+/).map((comp) => replaceGTE0(comp, this.options));
         if (loose) {
           rangeList = rangeList.filter((comp) => {
@@ -1506,7 +1527,7 @@ var require_range = __commonJS({
         return result;
       }
       intersects(range, options) {
-        if (!(range instanceof Range)) {
+        if (!(range instanceof _Range)) {
           throw new TypeError("a Range is required");
         }
         return this.set.some((thisComparators) => {
@@ -1520,19 +1541,19 @@ var require_range = __commonJS({
         });
       }
       // if ANY of the sets match ALL of its comparators, then pass
-      test(version2) {
-        if (!version2) {
+      test(version3) {
+        if (!version3) {
           return false;
         }
-        if (typeof version2 === "string") {
+        if (typeof version3 === "string") {
           try {
-            version2 = new SemVer(version2, this.options);
+            version3 = new SemVer(version3, this.options);
           } catch (er) {
             return false;
           }
         }
         for (let i = 0; i < this.set.length; i++) {
-          if (testSet(this.set[i], version2, this.options)) {
+          if (testSet(this.set[i], version3, this.options)) {
             return true;
           }
         }
@@ -1547,7 +1568,7 @@ var require_range = __commonJS({
     var debug = require_debug();
     var SemVer = require_semver();
     var {
-      re,
+      safeRe: re,
       t,
       comparatorTrimReplace,
       tildeTrimReplace,
@@ -1581,9 +1602,9 @@ var require_range = __commonJS({
       return comp;
     };
     var isX = (id) => !id || id.toLowerCase() === "x" || id === "*";
-    var replaceTildes = (comp, options) => comp.trim().split(/\s+/).map((c) => {
-      return replaceTilde(c, options);
-    }).join(" ");
+    var replaceTildes = (comp, options) => {
+      return comp.trim().split(/\s+/).map((c) => replaceTilde(c, options)).join(" ");
+    };
     var replaceTilde = (comp, options) => {
       const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE];
       return comp.replace(r, (_, M, m, p, pr) => {
@@ -1605,9 +1626,9 @@ var require_range = __commonJS({
         return ret;
       });
     };
-    var replaceCarets = (comp, options) => comp.trim().split(/\s+/).map((c) => {
-      return replaceCaret(c, options);
-    }).join(" ");
+    var replaceCarets = (comp, options) => {
+      return comp.trim().split(/\s+/).map((c) => replaceCaret(c, options)).join(" ");
+    };
     var replaceCaret = (comp, options) => {
       debug("caret", comp, options);
       const r = options.loose ? re[t.CARETLOOSE] : re[t.CARET];
@@ -1654,9 +1675,7 @@ var require_range = __commonJS({
     };
     var replaceXRanges = (comp, options) => {
       debug("replaceXRanges", comp, options);
-      return comp.split(/\s+/).map((c) => {
-        return replaceXRange(c, options);
-      }).join(" ");
+      return comp.split(/\s+/).map((c) => replaceXRange(c, options)).join(" ");
     };
     var replaceXRange = (comp, options) => {
       comp = comp.trim();
@@ -1748,13 +1767,13 @@ var require_range = __commonJS({
       }
       return `${from} ${to}`.trim();
     };
-    var testSet = (set, version2, options) => {
+    var testSet = (set, version3, options) => {
       for (let i = 0; i < set.length; i++) {
-        if (!set[i].test(version2)) {
+        if (!set[i].test(version3)) {
           return false;
         }
       }
-      if (version2.prerelease.length && !options.includePrerelease) {
+      if (version3.prerelease.length && !options.includePrerelease) {
         for (let i = 0; i < set.length; i++) {
           debug(set[i].semver);
           if (set[i].semver === Comparator.ANY) {
@@ -1762,7 +1781,7 @@ var require_range = __commonJS({
           }
           if (set[i].semver.prerelease.length > 0) {
             const allowed = set[i].semver;
-            if (allowed.major === version2.major && allowed.minor === version2.minor && allowed.patch === version2.patch) {
+            if (allowed.major === version3.major && allowed.minor === version3.minor && allowed.patch === version3.patch) {
               return true;
             }
           }
@@ -1778,19 +1797,20 @@ var require_range = __commonJS({
 var require_comparator = __commonJS({
   "node_modules/semver/classes/comparator.js"(exports, module2) {
     var ANY = Symbol("SemVer ANY");
-    var Comparator = class {
+    var Comparator = class _Comparator {
       static get ANY() {
         return ANY;
       }
       constructor(comp, options) {
         options = parseOptions(options);
-        if (comp instanceof Comparator) {
+        if (comp instanceof _Comparator) {
           if (comp.loose === !!options.loose) {
             return comp;
           } else {
             comp = comp.value;
           }
         }
+        comp = comp.trim().split(/\s+/).join(" ");
         debug("comparator", comp, options);
         this.options = options;
         this.loose = !!options.loose;
@@ -1821,22 +1841,22 @@ var require_comparator = __commonJS({
       toString() {
         return this.value;
       }
-      test(version2) {
-        debug("Comparator.test", version2, this.options.loose);
-        if (this.semver === ANY || version2 === ANY) {
+      test(version3) {
+        debug("Comparator.test", version3, this.options.loose);
+        if (this.semver === ANY || version3 === ANY) {
           return true;
         }
-        if (typeof version2 === "string") {
+        if (typeof version3 === "string") {
           try {
-            version2 = new SemVer(version2, this.options);
+            version3 = new SemVer(version3, this.options);
           } catch (er) {
             return false;
           }
         }
-        return cmp(version2, this.operator, this.semver, this.options);
+        return cmp(version3, this.operator, this.semver, this.options);
       }
       intersects(comp, options) {
-        if (!(comp instanceof Comparator)) {
+        if (!(comp instanceof _Comparator)) {
           throw new TypeError("a Comparator is required");
         }
         if (this.operator === "") {
@@ -1877,7 +1897,7 @@ var require_comparator = __commonJS({
     };
     module2.exports = Comparator;
     var parseOptions = require_parse_options();
-    var { re, t } = require_re();
+    var { safeRe: re, t } = require_re();
     var cmp = require_cmp();
     var debug = require_debug();
     var SemVer = require_semver();
@@ -1889,13 +1909,13 @@ var require_comparator = __commonJS({
 var require_satisfies = __commonJS({
   "node_modules/semver/functions/satisfies.js"(exports, module2) {
     var Range = require_range();
-    var satisfies = (version2, range, options) => {
+    var satisfies = (version3, range, options) => {
       try {
         range = new Range(range, options);
       } catch (er) {
         return false;
       }
-      return range.test(version2);
+      return range.test(version3);
     };
     module2.exports = satisfies;
   }
@@ -2049,8 +2069,8 @@ var require_outside = __commonJS({
     var lt = require_lt();
     var lte = require_lte();
     var gte = require_gte();
-    var outside = (version2, range, hilo, options) => {
-      version2 = new SemVer(version2, options);
+    var outside = (version3, range, hilo, options) => {
+      version3 = new SemVer(version3, options);
       range = new Range(range, options);
       let gtfn, ltefn, ltfn, comp, ecomp;
       switch (hilo) {
@@ -2071,7 +2091,7 @@ var require_outside = __commonJS({
         default:
           throw new TypeError('Must provide a hilo val of "<" or ">"');
       }
-      if (satisfies(version2, range, options)) {
+      if (satisfies(version3, range, options)) {
         return false;
       }
       for (let i = 0; i < range.set.length; ++i) {
@@ -2093,9 +2113,9 @@ var require_outside = __commonJS({
         if (high.operator === comp || high.operator === ecomp) {
           return false;
         }
-        if ((!low.operator || low.operator === comp) && ltefn(version2, low.semver)) {
+        if ((!low.operator || low.operator === comp) && ltefn(version3, low.semver)) {
           return false;
-        } else if (low.operator === ecomp && ltfn(version2, low.semver)) {
+        } else if (low.operator === ecomp && ltfn(version3, low.semver)) {
           return false;
         }
       }
@@ -2109,7 +2129,7 @@ var require_outside = __commonJS({
 var require_gtr = __commonJS({
   "node_modules/semver/ranges/gtr.js"(exports, module2) {
     var outside = require_outside();
-    var gtr = (version2, range, options) => outside(version2, range, ">", options);
+    var gtr = (version3, range, options) => outside(version3, range, ">", options);
     module2.exports = gtr;
   }
 });
@@ -2118,7 +2138,7 @@ var require_gtr = __commonJS({
 var require_ltr = __commonJS({
   "node_modules/semver/ranges/ltr.js"(exports, module2) {
     var outside = require_outside();
-    var ltr = (version2, range, options) => outside(version2, range, "<", options);
+    var ltr = (version3, range, options) => outside(version3, range, "<", options);
     module2.exports = ltr;
   }
 });
@@ -2146,12 +2166,12 @@ var require_simplify = __commonJS({
       let first = null;
       let prev = null;
       const v = versions.sort((a, b) => compare(a, b, options));
-      for (const version2 of v) {
-        const included = satisfies(version2, range, options);
+      for (const version3 of v) {
+        const included = satisfies(version3, range, options);
         if (included) {
-          prev = version2;
+          prev = version3;
           if (!first) {
-            first = version2;
+            first = version3;
           }
         } else {
           if (prev) {
@@ -2354,7 +2374,7 @@ var require_semver2 = __commonJS({
     var constants = require_constants();
     var SemVer = require_semver();
     var identifiers = require_identifiers();
-    var parse2 = require_parse();
+    var parse3 = require_parse();
     var valid = require_valid();
     var clean = require_clean();
     var inc = require_inc();
@@ -2392,7 +2412,7 @@ var require_semver2 = __commonJS({
     var simplifyRange = require_simplify();
     var subset = require_subset();
     module2.exports = {
-      parse: parse2,
+      parse: parse3,
       valid,
       clean,
       inc,
@@ -2560,7 +2580,7 @@ var require_command = __commonJS({
   }
 });
 
-// node_modules/uuid/dist/esm-node/rng.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/rng.js
 function rng() {
   if (poolPtr > rnds8Pool.length - 16) {
     import_crypto.default.randomFillSync(rnds8Pool);
@@ -2570,34 +2590,34 @@ function rng() {
 }
 var import_crypto, rnds8Pool, poolPtr;
 var init_rng = __esm({
-  "node_modules/uuid/dist/esm-node/rng.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/rng.js"() {
     import_crypto = __toESM(require("crypto"));
     rnds8Pool = new Uint8Array(256);
     poolPtr = rnds8Pool.length;
   }
 });
 
-// node_modules/uuid/dist/esm-node/regex.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/regex.js
 var regex_default;
 var init_regex = __esm({
-  "node_modules/uuid/dist/esm-node/regex.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/regex.js"() {
     regex_default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
   }
 });
 
-// node_modules/uuid/dist/esm-node/validate.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/validate.js
 function validate(uuid) {
   return typeof uuid === "string" && regex_default.test(uuid);
 }
 var validate_default;
 var init_validate = __esm({
-  "node_modules/uuid/dist/esm-node/validate.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/validate.js"() {
     init_regex();
     validate_default = validate;
   }
 });
 
-// node_modules/uuid/dist/esm-node/stringify.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/stringify.js
 function stringify(arr, offset = 0) {
   const uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
   if (!validate_default(uuid)) {
@@ -2607,7 +2627,7 @@ function stringify(arr, offset = 0) {
 }
 var byteToHex, stringify_default;
 var init_stringify = __esm({
-  "node_modules/uuid/dist/esm-node/stringify.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/stringify.js"() {
     init_validate();
     byteToHex = [];
     for (let i = 0; i < 256; ++i) {
@@ -2617,7 +2637,7 @@ var init_stringify = __esm({
   }
 });
 
-// node_modules/uuid/dist/esm-node/v1.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/v1.js
 function v1(options, buf, offset) {
   let i = buf && offset || 0;
   const b = buf || new Array(16);
@@ -2668,7 +2688,7 @@ function v1(options, buf, offset) {
 }
 var _nodeId, _clockseq, _lastMSecs, _lastNSecs, v1_default;
 var init_v1 = __esm({
-  "node_modules/uuid/dist/esm-node/v1.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/v1.js"() {
     init_rng();
     init_stringify();
     _lastMSecs = 0;
@@ -2677,7 +2697,7 @@ var init_v1 = __esm({
   }
 });
 
-// node_modules/uuid/dist/esm-node/parse.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/parse.js
 function parse(uuid) {
   if (!validate_default(uuid)) {
     throw TypeError("Invalid UUID");
@@ -2704,13 +2724,13 @@ function parse(uuid) {
 }
 var parse_default;
 var init_parse = __esm({
-  "node_modules/uuid/dist/esm-node/parse.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/parse.js"() {
     init_validate();
     parse_default = parse;
   }
 });
 
-// node_modules/uuid/dist/esm-node/v35.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/v35.js
 function stringToBytes(str) {
   str = unescape(encodeURIComponent(str));
   const bytes = [];
@@ -2719,7 +2739,7 @@ function stringToBytes(str) {
   }
   return bytes;
 }
-function v35_default(name, version2, hashfunc) {
+function v35_default(name, version3, hashfunc) {
   function generateUUID(value, namespace, buf, offset) {
     if (typeof value === "string") {
       value = stringToBytes(value);
@@ -2734,7 +2754,7 @@ function v35_default(name, version2, hashfunc) {
     bytes.set(namespace);
     bytes.set(value, namespace.length);
     bytes = hashfunc(bytes);
-    bytes[6] = bytes[6] & 15 | version2;
+    bytes[6] = bytes[6] & 15 | version3;
     bytes[8] = bytes[8] & 63 | 128;
     if (buf) {
       offset = offset || 0;
@@ -2755,7 +2775,7 @@ function v35_default(name, version2, hashfunc) {
 }
 var DNS, URL2;
 var init_v35 = __esm({
-  "node_modules/uuid/dist/esm-node/v35.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/v35.js"() {
     init_stringify();
     init_parse();
     DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
@@ -2763,7 +2783,7 @@ var init_v35 = __esm({
   }
 });
 
-// node_modules/uuid/dist/esm-node/md5.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/md5.js
 function md5(bytes) {
   if (Array.isArray(bytes)) {
     bytes = Buffer.from(bytes);
@@ -2774,16 +2794,16 @@ function md5(bytes) {
 }
 var import_crypto2, md5_default;
 var init_md5 = __esm({
-  "node_modules/uuid/dist/esm-node/md5.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/md5.js"() {
     import_crypto2 = __toESM(require("crypto"));
     md5_default = md5;
   }
 });
 
-// node_modules/uuid/dist/esm-node/v3.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/v3.js
 var v3, v3_default;
 var init_v3 = __esm({
-  "node_modules/uuid/dist/esm-node/v3.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/v3.js"() {
     init_v35();
     init_md5();
     v3 = v35_default("v3", 48, md5_default);
@@ -2791,7 +2811,7 @@ var init_v3 = __esm({
   }
 });
 
-// node_modules/uuid/dist/esm-node/v4.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/v4.js
 function v4(options, buf, offset) {
   options = options || {};
   const rnds = options.random || (options.rng || rng)();
@@ -2808,14 +2828,14 @@ function v4(options, buf, offset) {
 }
 var v4_default;
 var init_v4 = __esm({
-  "node_modules/uuid/dist/esm-node/v4.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/v4.js"() {
     init_rng();
     init_stringify();
     v4_default = v4;
   }
 });
 
-// node_modules/uuid/dist/esm-node/sha1.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/sha1.js
 function sha1(bytes) {
   if (Array.isArray(bytes)) {
     bytes = Buffer.from(bytes);
@@ -2826,16 +2846,16 @@ function sha1(bytes) {
 }
 var import_crypto3, sha1_default;
 var init_sha1 = __esm({
-  "node_modules/uuid/dist/esm-node/sha1.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/sha1.js"() {
     import_crypto3 = __toESM(require("crypto"));
     sha1_default = sha1;
   }
 });
 
-// node_modules/uuid/dist/esm-node/v5.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/v5.js
 var v5, v5_default;
 var init_v5 = __esm({
-  "node_modules/uuid/dist/esm-node/v5.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/v5.js"() {
     init_v35();
     init_sha1();
     v5 = v35_default("v5", 80, sha1_default);
@@ -2843,15 +2863,15 @@ var init_v5 = __esm({
   }
 });
 
-// node_modules/uuid/dist/esm-node/nil.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/nil.js
 var nil_default;
 var init_nil = __esm({
-  "node_modules/uuid/dist/esm-node/nil.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/nil.js"() {
     nil_default = "00000000-0000-0000-0000-000000000000";
   }
 });
 
-// node_modules/uuid/dist/esm-node/version.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/version.js
 function version(uuid) {
   if (!validate_default(uuid)) {
     throw TypeError("Invalid UUID");
@@ -2860,13 +2880,13 @@ function version(uuid) {
 }
 var version_default;
 var init_version = __esm({
-  "node_modules/uuid/dist/esm-node/version.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/version.js"() {
     init_validate();
     version_default = version;
   }
 });
 
-// node_modules/uuid/dist/esm-node/index.js
+// node_modules/@actions/core/node_modules/uuid/dist/esm-node/index.js
 var esm_node_exports = {};
 __export(esm_node_exports, {
   NIL: () => nil_default,
@@ -2880,7 +2900,7 @@ __export(esm_node_exports, {
   version: () => version_default
 });
 var init_esm_node = __esm({
-  "node_modules/uuid/dist/esm-node/index.js"() {
+  "node_modules/@actions/core/node_modules/uuid/dist/esm-node/index.js"() {
     init_v1();
     init_v3();
     init_v4();
@@ -3384,12 +3404,12 @@ var require_lib = __commonJS({
     var RetryableHttpVerbs = ["OPTIONS", "GET", "DELETE", "HEAD"];
     var ExponentialBackoffCeiling = 10;
     var ExponentialBackoffTimeSlice = 5;
-    var HttpClientError = class extends Error {
+    var HttpClientError = class _HttpClientError extends Error {
       constructor(message, statusCode) {
         super(message);
         this.name = "HttpClientError";
         this.statusCode = statusCode;
-        Object.setPrototypeOf(this, HttpClientError.prototype);
+        Object.setPrototypeOf(this, _HttpClientError.prototype);
       }
     };
     exports.HttpClientError = HttpClientError;
@@ -3980,13 +4000,13 @@ var require_oidc_utils = __commonJS({
     var http_client_1 = require_lib();
     var auth_1 = require_auth();
     var core_1 = require_core();
-    var OidcClient = class {
+    var OidcClient = class _OidcClient {
       static createHttpClient(allowRetry = true, maxRetry = 10) {
         const requestOptions = {
           allowRetries: allowRetry,
           maxRetries: maxRetry
         };
-        return new http_client_1.HttpClient("actions/oidc-client", [new auth_1.BearerCredentialHandler(OidcClient.getRequestToken())], requestOptions);
+        return new http_client_1.HttpClient("actions/oidc-client", [new auth_1.BearerCredentialHandler(_OidcClient.getRequestToken())], requestOptions);
       }
       static getRequestToken() {
         const token = process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"];
@@ -4005,7 +4025,7 @@ var require_oidc_utils = __commonJS({
       static getCall(id_token_url) {
         var _a;
         return __awaiter2(this, void 0, void 0, function* () {
-          const httpclient = OidcClient.createHttpClient();
+          const httpclient = _OidcClient.createHttpClient();
           const res = yield httpclient.getJson(id_token_url).catch((error) => {
             throw new Error(`Failed to get ID Token. 
  
@@ -4023,13 +4043,13 @@ var require_oidc_utils = __commonJS({
       static getIDToken(audience) {
         return __awaiter2(this, void 0, void 0, function* () {
           try {
-            let id_token_url = OidcClient.getIDTokenUrl();
+            let id_token_url = _OidcClient.getIDTokenUrl();
             if (audience) {
               const encodedAudience = encodeURIComponent(audience);
               id_token_url = `${id_token_url}&audience=${encodedAudience}`;
             }
             core_1.debug(`ID token url is ${id_token_url}`);
-            const id_token = yield OidcClient.getCall(id_token_url);
+            const id_token = yield _OidcClient.getCall(id_token_url);
             core_1.setSecret(id_token);
             return id_token;
           } catch (error) {
@@ -5470,7 +5490,7 @@ var require_toolrunner = __commonJS({
       return args;
     }
     exports.argStringToArray = argStringToArray;
-    var ExecState = class extends events.EventEmitter {
+    var ExecState = class _ExecState extends events.EventEmitter {
       constructor(options, toolPath) {
         super();
         this.processClosed = false;
@@ -5497,7 +5517,7 @@ var require_toolrunner = __commonJS({
         if (this.processClosed) {
           this._setResult();
         } else if (this.processExited) {
-          this.timeout = timers_1.setTimeout(ExecState.HandleTimeout, this.delay, this);
+          this.timeout = timers_1.setTimeout(_ExecState.HandleTimeout, this.delay, this);
         }
       }
       _debug(message) {
@@ -6369,9 +6389,9 @@ var require_minimatch = __commonJS({
         throw new TypeError("pattern is too long");
       }
     };
-    Minimatch.prototype.parse = parse2;
+    Minimatch.prototype.parse = parse3;
     var SUBPARSE = {};
-    function parse2(pattern, isSub) {
+    function parse3(pattern, isSub) {
       assertValidPattern(pattern);
       var options = this.options;
       if (pattern === "**") {
@@ -6910,7 +6930,7 @@ var require_internal_pattern = __commonJS({
     var internal_match_kind_1 = require_internal_match_kind();
     var internal_path_1 = require_internal_path();
     var IS_WINDOWS = process.platform === "win32";
-    var Pattern = class {
+    var Pattern = class _Pattern {
       constructor(patternOrNegate, isImplicitPattern = false, segments, homedir) {
         this.negate = false;
         let pattern;
@@ -6919,7 +6939,7 @@ var require_internal_pattern = __commonJS({
         } else {
           segments = segments || [];
           assert_1.default(segments.length, `Parameter 'segments' must not empty`);
-          const root = Pattern.getLiteral(segments[0]);
+          const root = _Pattern.getLiteral(segments[0]);
           assert_1.default(root && pathHelper.hasAbsoluteRoot(root), `Parameter 'segments' first element must be a root path`);
           pattern = new internal_path_1.Path(segments).toString().trim();
           if (patternOrNegate) {
@@ -6930,14 +6950,14 @@ var require_internal_pattern = __commonJS({
           this.negate = !this.negate;
           pattern = pattern.substr(1).trim();
         }
-        pattern = Pattern.fixupPattern(pattern, homedir);
+        pattern = _Pattern.fixupPattern(pattern, homedir);
         this.segments = new internal_path_1.Path(pattern).segments;
         this.trailingSeparator = pathHelper.normalizeSeparators(pattern).endsWith(path2.sep);
         pattern = pathHelper.safeTrimTrailingSeparator(pattern);
         let foundGlob = false;
-        const searchSegments = this.segments.map((x) => Pattern.getLiteral(x)).filter((x) => !foundGlob && !(foundGlob = x === ""));
+        const searchSegments = this.segments.map((x) => _Pattern.getLiteral(x)).filter((x) => !foundGlob && !(foundGlob = x === ""));
         this.searchPath = new internal_path_1.Path(searchSegments).toString();
-        this.rootRegExp = new RegExp(Pattern.regExpEscape(searchSegments[0]), IS_WINDOWS ? "i" : "");
+        this.rootRegExp = new RegExp(_Pattern.regExpEscape(searchSegments[0]), IS_WINDOWS ? "i" : "");
         this.isImplicitPattern = isImplicitPattern;
         const minimatchOptions = {
           dot: true,
@@ -6988,31 +7008,31 @@ var require_internal_pattern = __commonJS({
        */
       static fixupPattern(pattern, homedir) {
         assert_1.default(pattern, "pattern cannot be empty");
-        const literalSegments = new internal_path_1.Path(pattern).segments.map((x) => Pattern.getLiteral(x));
+        const literalSegments = new internal_path_1.Path(pattern).segments.map((x) => _Pattern.getLiteral(x));
         assert_1.default(literalSegments.every((x, i) => (x !== "." || i === 0) && x !== ".."), `Invalid pattern '${pattern}'. Relative pathing '.' and '..' is not allowed.`);
         assert_1.default(!pathHelper.hasRoot(pattern) || literalSegments[0], `Invalid pattern '${pattern}'. Root segment must not contain globs.`);
         pattern = pathHelper.normalizeSeparators(pattern);
         if (pattern === "." || pattern.startsWith(`.${path2.sep}`)) {
-          pattern = Pattern.globEscape(process.cwd()) + pattern.substr(1);
+          pattern = _Pattern.globEscape(process.cwd()) + pattern.substr(1);
         } else if (pattern === "~" || pattern.startsWith(`~${path2.sep}`)) {
           homedir = homedir || os2.homedir();
           assert_1.default(homedir, "Unable to determine HOME directory");
           assert_1.default(pathHelper.hasAbsoluteRoot(homedir), `Expected HOME directory to be a rooted path. Actual '${homedir}'`);
-          pattern = Pattern.globEscape(homedir) + pattern.substr(1);
+          pattern = _Pattern.globEscape(homedir) + pattern.substr(1);
         } else if (IS_WINDOWS && (pattern.match(/^[A-Z]:$/i) || pattern.match(/^[A-Z]:[^\\]/i))) {
           let root = pathHelper.ensureAbsoluteRoot("C:\\dummy-root", pattern.substr(0, 2));
           if (pattern.length > 2 && !root.endsWith("\\")) {
             root += "\\";
           }
-          pattern = Pattern.globEscape(root) + pattern.substr(2);
+          pattern = _Pattern.globEscape(root) + pattern.substr(2);
         } else if (IS_WINDOWS && (pattern === "\\" || pattern.match(/^\\[^\\]/))) {
           let root = pathHelper.ensureAbsoluteRoot("C:\\dummy-root", "\\");
           if (!root.endsWith("\\")) {
             root += "\\";
           }
-          pattern = Pattern.globEscape(root) + pattern.substr(1);
+          pattern = _Pattern.globEscape(root) + pattern.substr(1);
         } else {
-          pattern = pathHelper.ensureAbsoluteRoot(Pattern.globEscape(process.cwd()), pattern);
+          pattern = pathHelper.ensureAbsoluteRoot(_Pattern.globEscape(process.cwd()), pattern);
         }
         return pathHelper.normalizeSeparators(pattern);
       }
@@ -7216,7 +7236,7 @@ var require_internal_globber = __commonJS({
     var internal_pattern_1 = require_internal_pattern();
     var internal_search_state_1 = require_internal_search_state();
     var IS_WINDOWS = process.platform === "win32";
-    var DefaultGlobber = class {
+    var DefaultGlobber = class _DefaultGlobber {
       constructor(options) {
         this.patterns = [];
         this.searchPaths = [];
@@ -7280,7 +7300,7 @@ var require_internal_globber = __commonJS({
               continue;
             }
             const stats = yield __await2(
-              DefaultGlobber.stat(item, options, traversalChain)
+              _DefaultGlobber.stat(item, options, traversalChain)
               // Broken symlink, or symlink cycle detected, or no longer exists
             );
             if (!stats) {
@@ -7306,7 +7326,7 @@ var require_internal_globber = __commonJS({
        */
       static create(patterns, options) {
         return __awaiter2(this, void 0, void 0, function* () {
-          const result = new DefaultGlobber(options);
+          const result = new _DefaultGlobber(options);
           if (IS_WINDOWS) {
             patterns = patterns.replace(/\r\n/g, "\n");
             patterns = patterns.replace(/\r/g, "\n");
@@ -7520,74 +7540,74 @@ var require_semver3 = __commonJS({
       }
     }
     var i;
-    exports.parse = parse2;
-    function parse2(version2, options) {
+    exports.parse = parse3;
+    function parse3(version3, options) {
       if (!options || typeof options !== "object") {
         options = {
           loose: !!options,
           includePrerelease: false
         };
       }
-      if (version2 instanceof SemVer) {
-        return version2;
+      if (version3 instanceof SemVer) {
+        return version3;
       }
-      if (typeof version2 !== "string") {
+      if (typeof version3 !== "string") {
         return null;
       }
-      if (version2.length > MAX_LENGTH) {
+      if (version3.length > MAX_LENGTH) {
         return null;
       }
       var r = options.loose ? re[t.LOOSE] : re[t.FULL];
-      if (!r.test(version2)) {
+      if (!r.test(version3)) {
         return null;
       }
       try {
-        return new SemVer(version2, options);
+        return new SemVer(version3, options);
       } catch (er) {
         return null;
       }
     }
     exports.valid = valid;
-    function valid(version2, options) {
-      var v = parse2(version2, options);
+    function valid(version3, options) {
+      var v = parse3(version3, options);
       return v ? v.version : null;
     }
     exports.clean = clean;
-    function clean(version2, options) {
-      var s = parse2(version2.trim().replace(/^[=v]+/, ""), options);
+    function clean(version3, options) {
+      var s = parse3(version3.trim().replace(/^[=v]+/, ""), options);
       return s ? s.version : null;
     }
     exports.SemVer = SemVer;
-    function SemVer(version2, options) {
+    function SemVer(version3, options) {
       if (!options || typeof options !== "object") {
         options = {
           loose: !!options,
           includePrerelease: false
         };
       }
-      if (version2 instanceof SemVer) {
-        if (version2.loose === options.loose) {
-          return version2;
+      if (version3 instanceof SemVer) {
+        if (version3.loose === options.loose) {
+          return version3;
         } else {
-          version2 = version2.version;
+          version3 = version3.version;
         }
-      } else if (typeof version2 !== "string") {
-        throw new TypeError("Invalid Version: " + version2);
+      } else if (typeof version3 !== "string") {
+        throw new TypeError("Invalid Version: " + version3);
       }
-      if (version2.length > MAX_LENGTH) {
+      if (version3.length > MAX_LENGTH) {
         throw new TypeError("version is longer than " + MAX_LENGTH + " characters");
       }
       if (!(this instanceof SemVer)) {
-        return new SemVer(version2, options);
+        return new SemVer(version3, options);
       }
-      debug("SemVer", version2, options);
+      debug("SemVer", version3, options);
       this.options = options;
       this.loose = !!options.loose;
-      var m = version2.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
+      var m = version3.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
       if (!m) {
-        throw new TypeError("Invalid Version: " + version2);
+        throw new TypeError("Invalid Version: " + version3);
       }
-      this.raw = version2;
+      this.raw = version3;
       this.major = +m[1];
       this.minor = +m[2];
       this.patch = +m[3];
@@ -7770,32 +7790,32 @@ var require_semver3 = __commonJS({
       return this;
     };
     exports.inc = inc;
-    function inc(version2, release, loose, identifier) {
+    function inc(version3, release, loose, identifier) {
       if (typeof loose === "string") {
         identifier = loose;
         loose = void 0;
       }
       try {
-        return new SemVer(version2, loose).inc(release, identifier).version;
+        return new SemVer(version3, loose).inc(release, identifier).version;
       } catch (er) {
         return null;
       }
     }
     exports.diff = diff;
-    function diff(version1, version2) {
-      if (eq(version1, version2)) {
+    function diff(version1, version22) {
+      if (eq(version1, version22)) {
         return null;
       } else {
-        var v12 = parse2(version1);
-        var v2 = parse2(version2);
+        var v13 = parse3(version1);
+        var v2 = parse3(version22);
         var prefix = "";
-        if (v12.prerelease.length || v2.prerelease.length) {
+        if (v13.prerelease.length || v2.prerelease.length) {
           prefix = "pre";
           var defaultResult = "prerelease";
         }
-        for (var key in v12) {
+        for (var key in v13) {
           if (key === "major" || key === "minor" || key === "patch") {
-            if (v12[key] !== v2[key]) {
+            if (v13[key] !== v2[key]) {
               return prefix + key;
             }
           }
@@ -7966,19 +7986,19 @@ var require_semver3 = __commonJS({
     Comparator.prototype.toString = function() {
       return this.value;
     };
-    Comparator.prototype.test = function(version2) {
-      debug("Comparator.test", version2, this.options.loose);
-      if (this.semver === ANY || version2 === ANY) {
+    Comparator.prototype.test = function(version3) {
+      debug("Comparator.test", version3, this.options.loose);
+      if (this.semver === ANY || version3 === ANY) {
         return true;
       }
-      if (typeof version2 === "string") {
+      if (typeof version3 === "string") {
         try {
-          version2 = new SemVer(version2, this.options);
+          version3 = new SemVer(version3, this.options);
         } catch (er) {
           return false;
         }
       }
-      return cmp(version2, this.operator, this.semver, this.options);
+      return cmp(version3, this.operator, this.semver, this.options);
     };
     Comparator.prototype.intersects = function(comp, options) {
       if (!(comp instanceof Comparator)) {
@@ -8289,31 +8309,31 @@ var require_semver3 = __commonJS({
       }
       return (from + " " + to).trim();
     }
-    Range.prototype.test = function(version2) {
-      if (!version2) {
+    Range.prototype.test = function(version3) {
+      if (!version3) {
         return false;
       }
-      if (typeof version2 === "string") {
+      if (typeof version3 === "string") {
         try {
-          version2 = new SemVer(version2, this.options);
+          version3 = new SemVer(version3, this.options);
         } catch (er) {
           return false;
         }
       }
       for (var i2 = 0; i2 < this.set.length; i2++) {
-        if (testSet(this.set[i2], version2, this.options)) {
+        if (testSet(this.set[i2], version3, this.options)) {
           return true;
         }
       }
       return false;
     };
-    function testSet(set, version2, options) {
+    function testSet(set, version3, options) {
       for (var i2 = 0; i2 < set.length; i2++) {
-        if (!set[i2].test(version2)) {
+        if (!set[i2].test(version3)) {
           return false;
         }
       }
-      if (version2.prerelease.length && !options.includePrerelease) {
+      if (version3.prerelease.length && !options.includePrerelease) {
         for (i2 = 0; i2 < set.length; i2++) {
           debug(set[i2].semver);
           if (set[i2].semver === ANY) {
@@ -8321,7 +8341,7 @@ var require_semver3 = __commonJS({
           }
           if (set[i2].semver.prerelease.length > 0) {
             var allowed = set[i2].semver;
-            if (allowed.major === version2.major && allowed.minor === version2.minor && allowed.patch === version2.patch) {
+            if (allowed.major === version3.major && allowed.minor === version3.minor && allowed.patch === version3.patch) {
               return true;
             }
           }
@@ -8331,13 +8351,13 @@ var require_semver3 = __commonJS({
       return true;
     }
     exports.satisfies = satisfies;
-    function satisfies(version2, range, options) {
+    function satisfies(version3, range, options) {
       try {
         range = new Range(range, options);
       } catch (er) {
         return false;
       }
-      return range.test(version2);
+      return range.test(version3);
     }
     exports.maxSatisfying = maxSatisfying;
     function maxSatisfying(versions, range, options) {
@@ -8429,16 +8449,16 @@ var require_semver3 = __commonJS({
       }
     }
     exports.ltr = ltr;
-    function ltr(version2, range, options) {
-      return outside(version2, range, "<", options);
+    function ltr(version3, range, options) {
+      return outside(version3, range, "<", options);
     }
     exports.gtr = gtr;
-    function gtr(version2, range, options) {
-      return outside(version2, range, ">", options);
+    function gtr(version3, range, options) {
+      return outside(version3, range, ">", options);
     }
     exports.outside = outside;
-    function outside(version2, range, hilo, options) {
-      version2 = new SemVer(version2, options);
+    function outside(version3, range, hilo, options) {
+      version3 = new SemVer(version3, options);
       range = new Range(range, options);
       var gtfn, ltefn, ltfn, comp, ecomp;
       switch (hilo) {
@@ -8459,7 +8479,7 @@ var require_semver3 = __commonJS({
         default:
           throw new TypeError('Must provide a hilo val of "<" or ">"');
       }
-      if (satisfies(version2, range, options)) {
+      if (satisfies(version3, range, options)) {
         return false;
       }
       for (var i2 = 0; i2 < range.set.length; ++i2) {
@@ -8481,17 +8501,17 @@ var require_semver3 = __commonJS({
         if (high.operator === comp || high.operator === ecomp) {
           return false;
         }
-        if ((!low.operator || low.operator === comp) && ltefn(version2, low.semver)) {
+        if ((!low.operator || low.operator === comp) && ltefn(version3, low.semver)) {
           return false;
-        } else if (low.operator === ecomp && ltfn(version2, low.semver)) {
+        } else if (low.operator === ecomp && ltfn(version3, low.semver)) {
           return false;
         }
       }
       return true;
     }
     exports.prerelease = prerelease;
-    function prerelease(version2, options) {
-      var parsed = parse2(version2, options);
+    function prerelease(version3, options) {
+      var parsed = parse3(version3, options);
       return parsed && parsed.prerelease.length ? parsed.prerelease : null;
     }
     exports.intersects = intersects;
@@ -8501,23 +8521,23 @@ var require_semver3 = __commonJS({
       return r1.intersects(r2);
     }
     exports.coerce = coerce;
-    function coerce(version2, options) {
-      if (version2 instanceof SemVer) {
-        return version2;
+    function coerce(version3, options) {
+      if (version3 instanceof SemVer) {
+        return version3;
       }
-      if (typeof version2 === "number") {
-        version2 = String(version2);
+      if (typeof version3 === "number") {
+        version3 = String(version3);
       }
-      if (typeof version2 !== "string") {
+      if (typeof version3 !== "string") {
         return null;
       }
       options = options || {};
       var match = null;
       if (!options.rtl) {
-        match = version2.match(re[t.COERCE]);
+        match = version3.match(re[t.COERCE]);
       } else {
         var next;
-        while ((next = re[t.COERCERTL].exec(version2)) && (!match || match.index + match[0].length !== version2.length)) {
+        while ((next = re[t.COERCERTL].exec(version3)) && (!match || match.index + match[0].length !== version3.length)) {
           if (!match || next.index + next[0].length !== match.index + match[0].length) {
             match = next;
           }
@@ -8528,32 +8548,32 @@ var require_semver3 = __commonJS({
       if (match === null) {
         return null;
       }
-      return parse2(match[2] + "." + (match[3] || "0") + "." + (match[4] || "0"), options);
+      return parse3(match[2] + "." + (match[3] || "0") + "." + (match[4] || "0"), options);
     }
   }
 });
 
-// node_modules/@actions/cache/node_modules/uuid/lib/rng.js
+// node_modules/uuid/lib/rng.js
 var require_rng = __commonJS({
-  "node_modules/@actions/cache/node_modules/uuid/lib/rng.js"(exports, module2) {
-    var crypto4 = require("crypto");
+  "node_modules/uuid/lib/rng.js"(exports, module2) {
+    var crypto7 = require("crypto");
     module2.exports = function nodeRNG() {
-      return crypto4.randomBytes(16);
+      return crypto7.randomBytes(16);
     };
   }
 });
 
-// node_modules/@actions/cache/node_modules/uuid/lib/bytesToUuid.js
+// node_modules/uuid/lib/bytesToUuid.js
 var require_bytesToUuid = __commonJS({
-  "node_modules/@actions/cache/node_modules/uuid/lib/bytesToUuid.js"(exports, module2) {
-    var byteToHex2 = [];
+  "node_modules/uuid/lib/bytesToUuid.js"(exports, module2) {
+    var byteToHex3 = [];
     for (i = 0; i < 256; ++i) {
-      byteToHex2[i] = (i + 256).toString(16).substr(1);
+      byteToHex3[i] = (i + 256).toString(16).substr(1);
     }
     var i;
     function bytesToUuid(buf, offset) {
       var i2 = offset || 0;
-      var bth = byteToHex2;
+      var bth = byteToHex3;
       return [
         bth[buf[i2++]],
         bth[buf[i2++]],
@@ -8581,25 +8601,25 @@ var require_bytesToUuid = __commonJS({
   }
 });
 
-// node_modules/@actions/cache/node_modules/uuid/v1.js
+// node_modules/uuid/v1.js
 var require_v1 = __commonJS({
-  "node_modules/@actions/cache/node_modules/uuid/v1.js"(exports, module2) {
-    var rng2 = require_rng();
+  "node_modules/uuid/v1.js"(exports, module2) {
+    var rng3 = require_rng();
     var bytesToUuid = require_bytesToUuid();
-    var _nodeId2;
-    var _clockseq2;
-    var _lastMSecs2 = 0;
-    var _lastNSecs2 = 0;
-    function v12(options, buf, offset) {
+    var _nodeId3;
+    var _clockseq3;
+    var _lastMSecs3 = 0;
+    var _lastNSecs3 = 0;
+    function v13(options, buf, offset) {
       var i = buf && offset || 0;
       var b = buf || [];
       options = options || {};
-      var node = options.node || _nodeId2;
-      var clockseq = options.clockseq !== void 0 ? options.clockseq : _clockseq2;
+      var node = options.node || _nodeId3;
+      var clockseq = options.clockseq !== void 0 ? options.clockseq : _clockseq3;
       if (node == null || clockseq == null) {
-        var seedBytes = rng2();
+        var seedBytes = rng3();
         if (node == null) {
-          node = _nodeId2 = [
+          node = _nodeId3 = [
             seedBytes[0] | 1,
             seedBytes[1],
             seedBytes[2],
@@ -8609,24 +8629,24 @@ var require_v1 = __commonJS({
           ];
         }
         if (clockseq == null) {
-          clockseq = _clockseq2 = (seedBytes[6] << 8 | seedBytes[7]) & 16383;
+          clockseq = _clockseq3 = (seedBytes[6] << 8 | seedBytes[7]) & 16383;
         }
       }
       var msecs = options.msecs !== void 0 ? options.msecs : (/* @__PURE__ */ new Date()).getTime();
-      var nsecs = options.nsecs !== void 0 ? options.nsecs : _lastNSecs2 + 1;
-      var dt = msecs - _lastMSecs2 + (nsecs - _lastNSecs2) / 1e4;
+      var nsecs = options.nsecs !== void 0 ? options.nsecs : _lastNSecs3 + 1;
+      var dt = msecs - _lastMSecs3 + (nsecs - _lastNSecs3) / 1e4;
       if (dt < 0 && options.clockseq === void 0) {
         clockseq = clockseq + 1 & 16383;
       }
-      if ((dt < 0 || msecs > _lastMSecs2) && options.nsecs === void 0) {
+      if ((dt < 0 || msecs > _lastMSecs3) && options.nsecs === void 0) {
         nsecs = 0;
       }
       if (nsecs >= 1e4) {
         throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
       }
-      _lastMSecs2 = msecs;
-      _lastNSecs2 = nsecs;
-      _clockseq2 = clockseq;
+      _lastMSecs3 = msecs;
+      _lastNSecs3 = nsecs;
+      _clockseq3 = clockseq;
       msecs += 122192928e5;
       var tl = ((msecs & 268435455) * 1e4 + nsecs) % 4294967296;
       b[i++] = tl >>> 24 & 255;
@@ -8645,23 +8665,23 @@ var require_v1 = __commonJS({
       }
       return buf ? buf : bytesToUuid(b);
     }
-    module2.exports = v12;
+    module2.exports = v13;
   }
 });
 
-// node_modules/@actions/cache/node_modules/uuid/v4.js
+// node_modules/uuid/v4.js
 var require_v4 = __commonJS({
-  "node_modules/@actions/cache/node_modules/uuid/v4.js"(exports, module2) {
-    var rng2 = require_rng();
+  "node_modules/uuid/v4.js"(exports, module2) {
+    var rng3 = require_rng();
     var bytesToUuid = require_bytesToUuid();
-    function v42(options, buf, offset) {
+    function v43(options, buf, offset) {
       var i = buf && offset || 0;
       if (typeof options == "string") {
         buf = options === "binary" ? new Array(16) : null;
         options = null;
       }
       options = options || {};
-      var rnds = options.random || (options.rng || rng2)();
+      var rnds = options.random || (options.rng || rng3)();
       rnds[6] = rnds[6] & 15 | 64;
       rnds[8] = rnds[8] & 63 | 128;
       if (buf) {
@@ -8671,18 +8691,18 @@ var require_v4 = __commonJS({
       }
       return buf || bytesToUuid(rnds);
     }
-    module2.exports = v42;
+    module2.exports = v43;
   }
 });
 
-// node_modules/@actions/cache/node_modules/uuid/index.js
+// node_modules/uuid/index.js
 var require_uuid = __commonJS({
-  "node_modules/@actions/cache/node_modules/uuid/index.js"(exports, module2) {
-    var v12 = require_v1();
-    var v42 = require_v4();
-    var uuid = v42;
-    uuid.v1 = v12;
-    uuid.v4 = v42;
+  "node_modules/uuid/index.js"(exports, module2) {
+    var v13 = require_v1();
+    var v43 = require_v4();
+    var uuid = v43;
+    uuid.v1 = v13;
+    uuid.v4 = v43;
     module2.exports = uuid;
   }
 });
@@ -8907,8 +8927,8 @@ var require_cacheUtils = __commonJS({
     function getCompressionMethod() {
       return __awaiter2(this, void 0, void 0, function* () {
         const versionOutput = yield getVersion("zstd", ["--quiet"]);
-        const version2 = semver2.clean(versionOutput);
-        core.debug(`zstd version: ${version2}`);
+        const version3 = semver2.clean(versionOutput);
+        core.debug(`zstd version: ${version3}`);
         if (versionOutput === "") {
           return constants_1.CompressionMethod.Gzip;
         } else {
@@ -8943,6 +8963,339 @@ var require_cacheUtils = __commonJS({
       return ghUrl.hostname.toUpperCase() !== "GITHUB.COM";
     }
     exports.isGhes = isGhes;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/rng.js
+function rng2() {
+  if (poolPtr2 > rnds8Pool2.length - 16) {
+    import_crypto4.default.randomFillSync(rnds8Pool2);
+    poolPtr2 = 0;
+  }
+  return rnds8Pool2.slice(poolPtr2, poolPtr2 += 16);
+}
+var import_crypto4, rnds8Pool2, poolPtr2;
+var init_rng2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/rng.js"() {
+    import_crypto4 = __toESM(require("crypto"));
+    rnds8Pool2 = new Uint8Array(256);
+    poolPtr2 = rnds8Pool2.length;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/regex.js
+var regex_default2;
+var init_regex2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/regex.js"() {
+    regex_default2 = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/validate.js
+function validate2(uuid) {
+  return typeof uuid === "string" && regex_default2.test(uuid);
+}
+var validate_default2;
+var init_validate2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/validate.js"() {
+    init_regex2();
+    validate_default2 = validate2;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/stringify.js
+function stringify2(arr, offset = 0) {
+  const uuid = (byteToHex2[arr[offset + 0]] + byteToHex2[arr[offset + 1]] + byteToHex2[arr[offset + 2]] + byteToHex2[arr[offset + 3]] + "-" + byteToHex2[arr[offset + 4]] + byteToHex2[arr[offset + 5]] + "-" + byteToHex2[arr[offset + 6]] + byteToHex2[arr[offset + 7]] + "-" + byteToHex2[arr[offset + 8]] + byteToHex2[arr[offset + 9]] + "-" + byteToHex2[arr[offset + 10]] + byteToHex2[arr[offset + 11]] + byteToHex2[arr[offset + 12]] + byteToHex2[arr[offset + 13]] + byteToHex2[arr[offset + 14]] + byteToHex2[arr[offset + 15]]).toLowerCase();
+  if (!validate_default2(uuid)) {
+    throw TypeError("Stringified UUID is invalid");
+  }
+  return uuid;
+}
+var byteToHex2, stringify_default2;
+var init_stringify2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/stringify.js"() {
+    init_validate2();
+    byteToHex2 = [];
+    for (let i = 0; i < 256; ++i) {
+      byteToHex2.push((i + 256).toString(16).substr(1));
+    }
+    stringify_default2 = stringify2;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v1.js
+function v12(options, buf, offset) {
+  let i = buf && offset || 0;
+  const b = buf || new Array(16);
+  options = options || {};
+  let node = options.node || _nodeId2;
+  let clockseq = options.clockseq !== void 0 ? options.clockseq : _clockseq2;
+  if (node == null || clockseq == null) {
+    const seedBytes = options.random || (options.rng || rng2)();
+    if (node == null) {
+      node = _nodeId2 = [seedBytes[0] | 1, seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]];
+    }
+    if (clockseq == null) {
+      clockseq = _clockseq2 = (seedBytes[6] << 8 | seedBytes[7]) & 16383;
+    }
+  }
+  let msecs = options.msecs !== void 0 ? options.msecs : Date.now();
+  let nsecs = options.nsecs !== void 0 ? options.nsecs : _lastNSecs2 + 1;
+  const dt = msecs - _lastMSecs2 + (nsecs - _lastNSecs2) / 1e4;
+  if (dt < 0 && options.clockseq === void 0) {
+    clockseq = clockseq + 1 & 16383;
+  }
+  if ((dt < 0 || msecs > _lastMSecs2) && options.nsecs === void 0) {
+    nsecs = 0;
+  }
+  if (nsecs >= 1e4) {
+    throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
+  }
+  _lastMSecs2 = msecs;
+  _lastNSecs2 = nsecs;
+  _clockseq2 = clockseq;
+  msecs += 122192928e5;
+  const tl = ((msecs & 268435455) * 1e4 + nsecs) % 4294967296;
+  b[i++] = tl >>> 24 & 255;
+  b[i++] = tl >>> 16 & 255;
+  b[i++] = tl >>> 8 & 255;
+  b[i++] = tl & 255;
+  const tmh = msecs / 4294967296 * 1e4 & 268435455;
+  b[i++] = tmh >>> 8 & 255;
+  b[i++] = tmh & 255;
+  b[i++] = tmh >>> 24 & 15 | 16;
+  b[i++] = tmh >>> 16 & 255;
+  b[i++] = clockseq >>> 8 | 128;
+  b[i++] = clockseq & 255;
+  for (let n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+  return buf || stringify_default2(b);
+}
+var _nodeId2, _clockseq2, _lastMSecs2, _lastNSecs2, v1_default2;
+var init_v12 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v1.js"() {
+    init_rng2();
+    init_stringify2();
+    _lastMSecs2 = 0;
+    _lastNSecs2 = 0;
+    v1_default2 = v12;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/parse.js
+function parse2(uuid) {
+  if (!validate_default2(uuid)) {
+    throw TypeError("Invalid UUID");
+  }
+  let v;
+  const arr = new Uint8Array(16);
+  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
+  arr[1] = v >>> 16 & 255;
+  arr[2] = v >>> 8 & 255;
+  arr[3] = v & 255;
+  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
+  arr[5] = v & 255;
+  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
+  arr[7] = v & 255;
+  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
+  arr[9] = v & 255;
+  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 1099511627776 & 255;
+  arr[11] = v / 4294967296 & 255;
+  arr[12] = v >>> 24 & 255;
+  arr[13] = v >>> 16 & 255;
+  arr[14] = v >>> 8 & 255;
+  arr[15] = v & 255;
+  return arr;
+}
+var parse_default2;
+var init_parse2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/parse.js"() {
+    init_validate2();
+    parse_default2 = parse2;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v35.js
+function stringToBytes2(str) {
+  str = unescape(encodeURIComponent(str));
+  const bytes = [];
+  for (let i = 0; i < str.length; ++i) {
+    bytes.push(str.charCodeAt(i));
+  }
+  return bytes;
+}
+function v35_default2(name, version3, hashfunc) {
+  function generateUUID(value, namespace, buf, offset) {
+    if (typeof value === "string") {
+      value = stringToBytes2(value);
+    }
+    if (typeof namespace === "string") {
+      namespace = parse_default2(namespace);
+    }
+    if (namespace.length !== 16) {
+      throw TypeError("Namespace must be array-like (16 iterable integer values, 0-255)");
+    }
+    let bytes = new Uint8Array(16 + value.length);
+    bytes.set(namespace);
+    bytes.set(value, namespace.length);
+    bytes = hashfunc(bytes);
+    bytes[6] = bytes[6] & 15 | version3;
+    bytes[8] = bytes[8] & 63 | 128;
+    if (buf) {
+      offset = offset || 0;
+      for (let i = 0; i < 16; ++i) {
+        buf[offset + i] = bytes[i];
+      }
+      return buf;
+    }
+    return stringify_default2(bytes);
+  }
+  try {
+    generateUUID.name = name;
+  } catch (err) {
+  }
+  generateUUID.DNS = DNS2;
+  generateUUID.URL = URL3;
+  return generateUUID;
+}
+var DNS2, URL3;
+var init_v352 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v35.js"() {
+    init_stringify2();
+    init_parse2();
+    DNS2 = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
+    URL3 = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/md5.js
+function md52(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === "string") {
+    bytes = Buffer.from(bytes, "utf8");
+  }
+  return import_crypto5.default.createHash("md5").update(bytes).digest();
+}
+var import_crypto5, md5_default2;
+var init_md52 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/md5.js"() {
+    import_crypto5 = __toESM(require("crypto"));
+    md5_default2 = md52;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v3.js
+var v32, v3_default2;
+var init_v32 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v3.js"() {
+    init_v352();
+    init_md52();
+    v32 = v35_default2("v3", 48, md5_default2);
+    v3_default2 = v32;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v4.js
+function v42(options, buf, offset) {
+  options = options || {};
+  const rnds = options.random || (options.rng || rng2)();
+  rnds[6] = rnds[6] & 15 | 64;
+  rnds[8] = rnds[8] & 63 | 128;
+  if (buf) {
+    offset = offset || 0;
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+    return buf;
+  }
+  return stringify_default2(rnds);
+}
+var v4_default2;
+var init_v42 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v4.js"() {
+    init_rng2();
+    init_stringify2();
+    v4_default2 = v42;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/sha1.js
+function sha12(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === "string") {
+    bytes = Buffer.from(bytes, "utf8");
+  }
+  return import_crypto6.default.createHash("sha1").update(bytes).digest();
+}
+var import_crypto6, sha1_default2;
+var init_sha12 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/sha1.js"() {
+    import_crypto6 = __toESM(require("crypto"));
+    sha1_default2 = sha12;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v5.js
+var v52, v5_default2;
+var init_v52 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/v5.js"() {
+    init_v352();
+    init_sha12();
+    v52 = v35_default2("v5", 80, sha1_default2);
+    v5_default2 = v52;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/nil.js
+var nil_default2;
+var init_nil2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/nil.js"() {
+    nil_default2 = "00000000-0000-0000-0000-000000000000";
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/version.js
+function version2(uuid) {
+  if (!validate_default2(uuid)) {
+    throw TypeError("Invalid UUID");
+  }
+  return parseInt(uuid.substr(14, 1), 16);
+}
+var version_default2;
+var init_version2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/version.js"() {
+    init_validate2();
+    version_default2 = version2;
+  }
+});
+
+// node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/index.js
+var esm_node_exports2 = {};
+__export(esm_node_exports2, {
+  NIL: () => nil_default2,
+  parse: () => parse_default2,
+  stringify: () => stringify_default2,
+  v1: () => v1_default2,
+  v3: () => v3_default2,
+  v4: () => v4_default2,
+  v5: () => v5_default2,
+  validate: () => validate_default2,
+  version: () => version_default2
+});
+var init_esm_node2 = __esm({
+  "node_modules/@azure/core-http/node_modules/uuid/dist/esm-node/index.js"() {
+    init_v12();
+    init_v32();
+    init_v42();
+    init_v52();
+    init_nil2();
+    init_version2();
+    init_validate2();
+    init_stringify2();
+    init_parse2();
   }
 });
 
@@ -9594,7 +9947,7 @@ var require_XMLDOMImplementation = __commonJS({
       module2.exports = XMLDOMImplementation = function() {
         function XMLDOMImplementation2() {
         }
-        XMLDOMImplementation2.prototype.hasFeature = function(feature, version2) {
+        XMLDOMImplementation2.prototype.hasFeature = function(feature, version3) {
           return true;
         };
         XMLDOMImplementation2.prototype.createDocumentType = function(qualifiedName, publicId, systemId) {
@@ -9606,7 +9959,7 @@ var require_XMLDOMImplementation = __commonJS({
         XMLDOMImplementation2.prototype.createHTMLDocument = function(title) {
           throw new Error("This DOM method is not implemented.");
         };
-        XMLDOMImplementation2.prototype.getFeature = function(feature, version2) {
+        XMLDOMImplementation2.prototype.getFeature = function(feature, version3) {
           throw new Error("This DOM method is not implemented.");
         };
         return XMLDOMImplementation2;
@@ -10344,17 +10697,17 @@ var require_XMLDeclaration = __commonJS({
       NodeType = require_NodeType();
       module2.exports = XMLDeclaration = function(superClass) {
         extend(XMLDeclaration2, superClass);
-        function XMLDeclaration2(parent, version2, encoding, standalone) {
+        function XMLDeclaration2(parent, version3, encoding, standalone) {
           var ref;
           XMLDeclaration2.__super__.constructor.call(this, parent);
-          if (isObject(version2)) {
-            ref = version2, version2 = ref.version, encoding = ref.encoding, standalone = ref.standalone;
+          if (isObject(version3)) {
+            ref = version3, version3 = ref.version, encoding = ref.encoding, standalone = ref.standalone;
           }
-          if (!version2) {
-            version2 = "1.0";
+          if (!version3) {
+            version3 = "1.0";
           }
           this.type = NodeType.Declaration;
-          this.version = this.stringify.xmlVersion(version2);
+          this.version = this.stringify.xmlVersion(version3);
           if (encoding != null) {
             this.encoding = this.stringify.xmlEncoding(encoding);
           }
@@ -11420,10 +11773,10 @@ var require_XMLNode = __commonJS({
           Array.prototype.push.apply(this.parent.children, removed);
           return this;
         };
-        XMLNode2.prototype.declaration = function(version2, encoding, standalone) {
+        XMLNode2.prototype.declaration = function(version3, encoding, standalone) {
           var doc, xmldec;
           doc = this.document();
-          xmldec = new XMLDeclaration(doc, version2, encoding, standalone);
+          xmldec = new XMLDeclaration(doc, version3, encoding, standalone);
           if (doc.children.length === 0) {
             doc.children.unshift(xmldec);
           } else if (doc.children[0].type === NodeType.Declaration) {
@@ -11547,8 +11900,8 @@ var require_XMLNode = __commonJS({
         XMLNode2.prototype.doc = function() {
           return this.document();
         };
-        XMLNode2.prototype.dec = function(version2, encoding, standalone) {
-          return this.declaration(version2, encoding, standalone);
+        XMLNode2.prototype.dec = function(version3, encoding, standalone) {
+          return this.declaration(version3, encoding, standalone);
         };
         XMLNode2.prototype.e = function(name, attributes, text) {
           return this.element(name, attributes, text);
@@ -11595,7 +11948,7 @@ var require_XMLNode = __commonJS({
         XMLNode2.prototype.normalize = function() {
           throw new Error("This DOM method is not implemented." + this.debugInfo());
         };
-        XMLNode2.prototype.isSupported = function(feature, version2) {
+        XMLNode2.prototype.isSupported = function(feature, version3) {
           return true;
         };
         XMLNode2.prototype.hasAttributes = function() {
@@ -11651,7 +12004,7 @@ var require_XMLNode = __commonJS({
           }
           return true;
         };
-        XMLNode2.prototype.getFeature = function(feature, version2) {
+        XMLNode2.prototype.getFeature = function(feature, version3) {
           throw new Error("This DOM method is not implemented." + this.debugInfo());
         };
         XMLNode2.prototype.setUserData = function(key, data, handler) {
@@ -12856,13 +13209,13 @@ var require_XMLDocumentCB = __commonJS({
           }
           return this;
         };
-        XMLDocumentCB2.prototype.declaration = function(version2, encoding, standalone) {
+        XMLDocumentCB2.prototype.declaration = function(version3, encoding, standalone) {
           var node;
           this.openCurrent();
           if (this.documentStarted) {
             throw new Error("declaration() must be the first node.");
           }
-          node = new XMLDeclaration(this, version2, encoding, standalone);
+          node = new XMLDeclaration(this, version3, encoding, standalone);
           this.onData(this.writer.declaration(node, this.writerOptions, this.currentLevel + 1), this.currentLevel + 1);
           return this;
         };
@@ -13034,8 +13387,8 @@ var require_XMLDocumentCB = __commonJS({
         XMLDocumentCB2.prototype.ins = function(target, value) {
           return this.instruction(target, value);
         };
-        XMLDocumentCB2.prototype.dec = function(version2, encoding, standalone) {
-          return this.declaration(version2, encoding, standalone);
+        XMLDocumentCB2.prototype.dec = function(version3, encoding, standalone) {
+          return this.declaration(version3, encoding, standalone);
         };
         XMLDocumentCB2.prototype.dtd = function(root, pubID, sysID) {
           return this.doctype(root, pubID, sysID);
@@ -15361,7 +15714,7 @@ var require_dist = __commonJS({
     Object.defineProperty(exports, "__esModule", { value: true });
     var listenersMap = /* @__PURE__ */ new WeakMap();
     var abortedMap = /* @__PURE__ */ new WeakMap();
-    var AbortSignal = class {
+    var AbortSignal = class _AbortSignal {
       constructor() {
         this.onabort = null;
         listenersMap.set(this, []);
@@ -15384,7 +15737,7 @@ var require_dist = __commonJS({
        * @readonly
        */
       static get none() {
-        return new AbortSignal();
+        return new _AbortSignal();
       }
       /**
        * Added new "abort" event listener, only support "abort" event.
@@ -15504,7 +15857,7 @@ var require_dist2 = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var abortController = require_dist();
-    var crypto4 = require("crypto");
+    var crypto7 = require("crypto");
     var _a$1;
     var isNode = typeof process !== "undefined" && Boolean(process.version) && Boolean((_a$1 = process.versions) === null || _a$1 === void 0 ? void 0 : _a$1.node);
     function createAbortablePromise(buildPromise, options) {
@@ -15586,10 +15939,10 @@ var require_dist2 = __commonJS({
     }
     async function computeSha256Hmac(key, stringToSign, encoding) {
       const decodedKey = Buffer.from(key, "base64");
-      return crypto4.createHmac("sha256", decodedKey).update(stringToSign).digest(encoding);
+      return crypto7.createHmac("sha256", decodedKey).update(stringToSign).digest(encoding);
     }
     async function computeSha256Hash(content, encoding) {
-      return crypto4.createHash("sha256").update(content).digest(encoding);
+      return crypto7.createHash("sha256").update(content).digest(encoding);
     }
     function isDefined(thing) {
       return typeof thing !== "undefined" && thing !== null;
@@ -15626,7 +15979,7 @@ var require_dist2 = __commonJS({
       return uuid;
     }
     var _a;
-    var uuidFunction = typeof ((_a = globalThis === null || globalThis === void 0 ? void 0 : globalThis.crypto) === null || _a === void 0 ? void 0 : _a.randomUUID) === "function" ? globalThis.crypto.randomUUID.bind(globalThis.crypto) : crypto4.randomUUID;
+    var uuidFunction = typeof ((_a = globalThis === null || globalThis === void 0 ? void 0 : globalThis.crypto) === null || _a === void 0 ? void 0 : _a.randomUUID) === "function" ? globalThis.crypto.randomUUID.bind(globalThis.crypto) : crypto7.randomUUID;
     if (!uuidFunction) {
       uuidFunction = generateUUID;
     }
@@ -26983,8 +27336,8 @@ var require_URL = __commonJS({
     var utils = require_utils2();
     var Impl = require_URL_impl();
     var impl = utils.implSymbol;
-    function URL3(url) {
-      if (!this || this[impl] || !(this instanceof URL3)) {
+    function URL4(url) {
+      if (!this || this[impl] || !(this instanceof URL4)) {
         throw new TypeError("Failed to construct 'URL': Please use the 'new' operator, this DOM object constructor cannot be called as a function.");
       }
       if (arguments.length < 1) {
@@ -27000,7 +27353,7 @@ var require_URL = __commonJS({
       }
       module2.exports.setup(this, args);
     }
-    URL3.prototype.toJSON = function toJSON() {
+    URL4.prototype.toJSON = function toJSON() {
       if (!this || !module2.exports.is(this)) {
         throw new TypeError("Illegal invocation");
       }
@@ -27010,7 +27363,7 @@ var require_URL = __commonJS({
       }
       return this[impl].toJSON.apply(this[impl], args);
     };
-    Object.defineProperty(URL3.prototype, "href", {
+    Object.defineProperty(URL4.prototype, "href", {
       get() {
         return this[impl].href;
       },
@@ -27021,20 +27374,20 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    URL3.prototype.toString = function() {
+    URL4.prototype.toString = function() {
       if (!this || !module2.exports.is(this)) {
         throw new TypeError("Illegal invocation");
       }
       return this.href;
     };
-    Object.defineProperty(URL3.prototype, "origin", {
+    Object.defineProperty(URL4.prototype, "origin", {
       get() {
         return this[impl].origin;
       },
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "protocol", {
+    Object.defineProperty(URL4.prototype, "protocol", {
       get() {
         return this[impl].protocol;
       },
@@ -27045,7 +27398,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "username", {
+    Object.defineProperty(URL4.prototype, "username", {
       get() {
         return this[impl].username;
       },
@@ -27056,7 +27409,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "password", {
+    Object.defineProperty(URL4.prototype, "password", {
       get() {
         return this[impl].password;
       },
@@ -27067,7 +27420,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "host", {
+    Object.defineProperty(URL4.prototype, "host", {
       get() {
         return this[impl].host;
       },
@@ -27078,7 +27431,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "hostname", {
+    Object.defineProperty(URL4.prototype, "hostname", {
       get() {
         return this[impl].hostname;
       },
@@ -27089,7 +27442,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "port", {
+    Object.defineProperty(URL4.prototype, "port", {
       get() {
         return this[impl].port;
       },
@@ -27100,7 +27453,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "pathname", {
+    Object.defineProperty(URL4.prototype, "pathname", {
       get() {
         return this[impl].pathname;
       },
@@ -27111,7 +27464,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "search", {
+    Object.defineProperty(URL4.prototype, "search", {
       get() {
         return this[impl].search;
       },
@@ -27122,7 +27475,7 @@ var require_URL = __commonJS({
       enumerable: true,
       configurable: true
     });
-    Object.defineProperty(URL3.prototype, "hash", {
+    Object.defineProperty(URL4.prototype, "hash", {
       get() {
         return this[impl].hash;
       },
@@ -27138,7 +27491,7 @@ var require_URL = __commonJS({
         return !!obj && obj[impl] instanceof Impl.implementation;
       },
       create(constructorArgs, privateData) {
-        let obj = Object.create(URL3.prototype);
+        let obj = Object.create(URL4.prototype);
         this.setup(obj, constructorArgs, privateData);
         return obj;
       },
@@ -27149,10 +27502,10 @@ var require_URL = __commonJS({
         obj[impl] = new Impl.implementation(constructorArgs, privateData);
         obj[impl][utils.wrapperSymbol] = obj;
       },
-      interface: URL3,
+      interface: URL4,
       expose: {
-        Window: { URL: URL3 },
-        Worker: { URL: URL3 }
+        Window: { URL: URL4 },
+        Worker: { URL: URL4 }
       }
     };
   }
@@ -27191,7 +27544,7 @@ var require_lib4 = __commonJS({
     var Readable = Stream.Readable;
     var BUFFER = Symbol("buffer");
     var TYPE = Symbol("type");
-    var Blob2 = class {
+    var Blob2 = class _Blob {
       constructor() {
         this[TYPE] = "";
         const blobParts = arguments[0];
@@ -27210,7 +27563,7 @@ var require_lib4 = __commonJS({
               buffer = Buffer.from(element.buffer, element.byteOffset, element.byteLength);
             } else if (element instanceof ArrayBuffer) {
               buffer = Buffer.from(element);
-            } else if (element instanceof Blob2) {
+            } else if (element instanceof _Blob) {
               buffer = element[BUFFER];
             } else {
               buffer = Buffer.from(typeof element === "string" ? element : String(element));
@@ -27272,7 +27625,7 @@ var require_lib4 = __commonJS({
         const span = Math.max(relativeEnd - relativeStart, 0);
         const buffer = this[BUFFER];
         const slicedBuffer = buffer.slice(relativeStart, relativeStart + span);
-        const blob = new Blob2([], { type: arguments[2] });
+        const blob = new _Blob([], { type: arguments[2] });
         blob[BUFFER] = slicedBuffer;
         return blob;
       }
@@ -27649,7 +28002,7 @@ var require_lib4 = __commonJS({
       return void 0;
     }
     var MAP = Symbol("map");
-    var Headers = class {
+    var Headers = class _Headers {
       /**
        * Headers class
        *
@@ -27659,7 +28012,7 @@ var require_lib4 = __commonJS({
       constructor() {
         let init = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : void 0;
         this[MAP] = /* @__PURE__ */ Object.create(null);
-        if (init instanceof Headers) {
+        if (init instanceof _Headers) {
           const rawHeaders = init.raw();
           const headerNames = Object.keys(rawHeaders);
           for (const headerName of headerNames) {
@@ -27928,7 +28281,7 @@ var require_lib4 = __commonJS({
     }
     var INTERNALS$1 = Symbol("Response internals");
     var STATUS_CODES = http.STATUS_CODES;
-    var Response = class {
+    var Response = class _Response {
       constructor() {
         let body = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : null;
         let opts = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
@@ -27976,7 +28329,7 @@ var require_lib4 = __commonJS({
        * @return  Response
        */
       clone() {
-        return new Response(clone(this), {
+        return new _Response(clone(this), {
           url: this.url,
           status: this.status,
           statusText: this.statusText,
@@ -28003,12 +28356,12 @@ var require_lib4 = __commonJS({
       configurable: true
     });
     var INTERNALS$2 = Symbol("Request internals");
-    var URL3 = Url.URL || whatwgUrl.URL;
+    var URL4 = Url.URL || whatwgUrl.URL;
     var parse_url = Url.parse;
     var format_url = Url.format;
     function parseURL(urlStr) {
       if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.exec(urlStr)) {
-        urlStr = new URL3(urlStr).toString();
+        urlStr = new URL4(urlStr).toString();
       }
       return parse_url(urlStr);
     }
@@ -28020,7 +28373,7 @@ var require_lib4 = __commonJS({
       const proto = signal && typeof signal === "object" && Object.getPrototypeOf(signal);
       return !!(proto && proto.constructor.name === "AbortSignal");
     }
-    var Request = class {
+    var Request = class _Request {
       constructor(input) {
         let init = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
         let parsedURL;
@@ -28090,7 +28443,7 @@ var require_lib4 = __commonJS({
        * @return  Request
        */
       clone() {
-        return new Request(this);
+        return new _Request(this);
       }
     };
     Body.mixIn(Request.prototype);
@@ -28722,7 +29075,7 @@ var require_diag = __commonJS({
     var types_1 = require_types();
     var global_utils_1 = require_global_utils();
     var API_NAME = "diag";
-    var DiagAPI = class {
+    var DiagAPI = class _DiagAPI {
       /**
        * Private internal constructor
        * @private
@@ -28774,7 +29127,7 @@ var require_diag = __commonJS({
       /** Get the singleton instance of the DiagAPI API */
       static instance() {
         if (!this._instance) {
-          this._instance = new DiagAPI();
+          this._instance = new _DiagAPI();
         }
         return this._instance;
       }
@@ -28789,7 +29142,7 @@ var require_baggage_impl = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.BaggageImpl = void 0;
-    var BaggageImpl = class {
+    var BaggageImpl = class _BaggageImpl {
       constructor(entries) {
         this._entries = entries ? new Map(entries) : /* @__PURE__ */ new Map();
       }
@@ -28804,24 +29157,24 @@ var require_baggage_impl = __commonJS({
         return Array.from(this._entries.entries()).map(([k, v]) => [k, v]);
       }
       setEntry(key, entry) {
-        const newBaggage = new BaggageImpl(this._entries);
+        const newBaggage = new _BaggageImpl(this._entries);
         newBaggage._entries.set(key, entry);
         return newBaggage;
       }
       removeEntry(key) {
-        const newBaggage = new BaggageImpl(this._entries);
+        const newBaggage = new _BaggageImpl(this._entries);
         newBaggage._entries.delete(key);
         return newBaggage;
       }
       removeEntries(...keys) {
-        const newBaggage = new BaggageImpl(this._entries);
+        const newBaggage = new _BaggageImpl(this._entries);
         for (const key of keys) {
           newBaggage._entries.delete(key);
         }
         return newBaggage;
       }
       clear() {
-        return new BaggageImpl();
+        return new _BaggageImpl();
       }
     };
     exports.BaggageImpl = BaggageImpl;
@@ -28878,7 +29231,7 @@ var require_context = __commonJS({
       return Symbol.for(description);
     }
     exports.createContextKey = createContextKey;
-    var BaseContext = class {
+    var BaseContext = class _BaseContext {
       /**
        * Construct a new context which inherits values from an optional parent context.
        *
@@ -28889,12 +29242,12 @@ var require_context = __commonJS({
         self._currentContext = parentContext ? new Map(parentContext) : /* @__PURE__ */ new Map();
         self.getValue = (key) => self._currentContext.get(key);
         self.setValue = (key, value) => {
-          const context = new BaseContext(self._currentContext);
+          const context = new _BaseContext(self._currentContext);
           context._currentContext.set(key, value);
           return context;
         };
         self.deleteValue = (key) => {
-          const context = new BaseContext(self._currentContext);
+          const context = new _BaseContext(self._currentContext);
           context._currentContext.delete(key);
           return context;
         };
@@ -29130,14 +29483,14 @@ var require_context2 = __commonJS({
     var diag_1 = require_diag();
     var API_NAME = "context";
     var NOOP_CONTEXT_MANAGER = new NoopContextManager_1.NoopContextManager();
-    var ContextAPI = class {
+    var ContextAPI = class _ContextAPI {
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
       }
       /** Get the singleton instance of the Context API */
       static getInstance() {
         if (!this._instance) {
-          this._instance = new ContextAPI();
+          this._instance = new _ContextAPI();
         }
         return this._instance;
       }
@@ -29399,10 +29752,10 @@ var require_ProxyTracer = __commonJS({
     var NoopTracer_1 = require_NoopTracer();
     var NOOP_TRACER = new NoopTracer_1.NoopTracer();
     var ProxyTracer = class {
-      constructor(_provider, name, version2, options) {
+      constructor(_provider, name, version3, options) {
         this._provider = _provider;
         this.name = name;
-        this.version = version2;
+        this.version = version3;
         this.options = options;
       }
       startSpan(name, options, context) {
@@ -29461,9 +29814,9 @@ var require_ProxyTracerProvider = __commonJS({
       /**
        * Get a {@link ProxyTracer}
        */
-      getTracer(name, version2, options) {
+      getTracer(name, version3, options) {
         var _a;
-        return (_a = this.getDelegateTracer(name, version2, options)) !== null && _a !== void 0 ? _a : new ProxyTracer_1.ProxyTracer(this, name, version2, options);
+        return (_a = this.getDelegateTracer(name, version3, options)) !== null && _a !== void 0 ? _a : new ProxyTracer_1.ProxyTracer(this, name, version3, options);
       }
       getDelegate() {
         var _a;
@@ -29475,9 +29828,9 @@ var require_ProxyTracerProvider = __commonJS({
       setDelegate(delegate) {
         this._delegate = delegate;
       }
-      getDelegateTracer(name, version2, options) {
+      getDelegateTracer(name, version3, options) {
         var _a;
-        return (_a = this._delegate) === null || _a === void 0 ? void 0 : _a.getTracer(name, version2, options);
+        return (_a = this._delegate) === null || _a === void 0 ? void 0 : _a.getTracer(name, version3, options);
       }
     };
     exports.ProxyTracerProvider = ProxyTracerProvider;
@@ -29565,7 +29918,7 @@ var require_tracestate_impl = __commonJS({
     var MAX_TRACE_STATE_LEN = 512;
     var LIST_MEMBERS_SEPARATOR = ",";
     var LIST_MEMBER_KEY_VALUE_SPLITTER = "=";
-    var TraceStateImpl = class {
+    var TraceStateImpl = class _TraceStateImpl {
       constructor(rawTraceState) {
         this._internalState = /* @__PURE__ */ new Map();
         if (rawTraceState)
@@ -29617,7 +29970,7 @@ var require_tracestate_impl = __commonJS({
         return Array.from(this._internalState.keys()).reverse();
       }
       _clone() {
-        const traceState = new TraceStateImpl();
+        const traceState = new _TraceStateImpl();
         traceState._internalState = new Map(this._internalState);
         return traceState;
       }
@@ -29689,14 +30042,14 @@ var require_metrics = __commonJS({
     var global_utils_1 = require_global_utils();
     var diag_1 = require_diag();
     var API_NAME = "metrics";
-    var MetricsAPI = class {
+    var MetricsAPI = class _MetricsAPI {
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
       }
       /** Get the singleton instance of the Metrics API */
       static getInstance() {
         if (!this._instance) {
-          this._instance = new MetricsAPI();
+          this._instance = new _MetricsAPI();
         }
         return this._instance;
       }
@@ -29716,8 +30069,8 @@ var require_metrics = __commonJS({
       /**
        * Returns a meter from the global meter provider.
        */
-      getMeter(name, version2, options) {
-        return this.getMeterProvider().getMeter(name, version2, options);
+      getMeter(name, version3, options) {
+        return this.getMeterProvider().getMeter(name, version3, options);
       }
       /** Remove the global meter provider */
       disable() {
@@ -29803,7 +30156,7 @@ var require_propagation = __commonJS({
     var diag_1 = require_diag();
     var API_NAME = "propagation";
     var NOOP_TEXT_MAP_PROPAGATOR = new NoopTextMapPropagator_1.NoopTextMapPropagator();
-    var PropagationAPI = class {
+    var PropagationAPI = class _PropagationAPI {
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
         this.createBaggage = utils_1.createBaggage;
@@ -29815,7 +30168,7 @@ var require_propagation = __commonJS({
       /** Get the singleton instance of the Propagator API */
       static getInstance() {
         if (!this._instance) {
-          this._instance = new PropagationAPI();
+          this._instance = new _PropagationAPI();
         }
         return this._instance;
       }
@@ -29888,7 +30241,7 @@ var require_trace = __commonJS({
     var context_utils_1 = require_context_utils();
     var diag_1 = require_diag();
     var API_NAME = "trace";
-    var TraceAPI = class {
+    var TraceAPI = class _TraceAPI {
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
         this._proxyTracerProvider = new ProxyTracerProvider_1.ProxyTracerProvider();
@@ -29904,7 +30257,7 @@ var require_trace = __commonJS({
       /** Get the singleton instance of the Trace API */
       static getInstance() {
         if (!this._instance) {
-          this._instance = new TraceAPI();
+          this._instance = new _TraceAPI();
         }
         return this._instance;
       }
@@ -29929,8 +30282,8 @@ var require_trace = __commonJS({
       /**
        * Returns a tracer from the global tracer provider.
        */
-      getTracer(name, version2) {
-        return this.getTracerProvider().getTracer(name, version2);
+      getTracer(name, version3) {
+        return this.getTracerProvider().getTracer(name, version3);
       }
       /** Remove the global tracer provider */
       disable() {
@@ -30099,8 +30452,8 @@ var require_dist5 = __commonJS({
     function isSpanContextValid(context2) {
       return api.trace.isSpanContextValid(context2);
     }
-    function getTracer(name, version2) {
-      return api.trace.getTracer(name || "azure/core-tracing", version2);
+    function getTracer(name, version3) {
+      return api.trace.getTracer(name || "azure/core-tracing", version3);
     }
     var context = api.context;
     (function(SpanStatusCode) {
@@ -30152,8 +30505,8 @@ var require_dist5 = __commonJS({
       if (parts.length !== 4) {
         return;
       }
-      const [version2, traceId, spanId, traceOptions] = parts;
-      if (version2 !== VERSION) {
+      const [version3, traceId, spanId, traceOptions] = parts;
+      if (version3 !== VERSION) {
         return;
       }
       const traceFlags = parseInt(traceOptions, 16);
@@ -30198,7 +30551,7 @@ var require_dist6 = __commonJS({
   "node_modules/@azure/core-http/dist/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var uuid = (init_esm_node(), __toCommonJS(esm_node_exports));
+    var uuid = (init_esm_node2(), __toCommonJS(esm_node_exports2));
     var util = require("util");
     var tslib = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
     var xml2js = require_xml2js();
@@ -30256,7 +30609,7 @@ var require_dist6 = __commonJS({
       }
       return false;
     }
-    var HttpHeaders = class {
+    var HttpHeaders = class _HttpHeaders {
       constructor(rawHeaders) {
         this._headersMap = {};
         if (rawHeaders) {
@@ -30373,7 +30726,7 @@ var require_dist6 = __commonJS({
           const header = this._headersMap[headerKey];
           resultPreservingCasing[header.name] = header.value;
         }
-        return new HttpHeaders(resultPreservingCasing);
+        return new _HttpHeaders(resultPreservingCasing);
       }
     };
     function encodeString(value) {
@@ -31285,7 +31638,7 @@ var require_dist6 = __commonJS({
       }
       return false;
     }
-    var WebResource = class {
+    var WebResource = class _WebResource {
       constructor(url, method, body, query, headers, streamResponseBody, withCredentials, abortSignal, timeout, onUploadProgress, onDownloadProgress, proxySettings, keepAlive, decompressResponse, streamResponseStatusCodes) {
         this.streamResponseBody = streamResponseBody;
         this.streamResponseStatusCodes = streamResponseStatusCodes;
@@ -31469,7 +31822,7 @@ var require_dist6 = __commonJS({
        * @returns The clone of this WebResource HTTP request object.
        */
       clone() {
-        const result = new WebResource(this.url, this.method, this.body, this.query, this.headers && this.headers.clone(), this.streamResponseBody, this.withCredentials, this.abortSignal, this.timeout, this.onUploadProgress, this.onDownloadProgress, this.proxySettings, this.keepAlive, this.decompressResponse, this.streamResponseStatusCodes);
+        const result = new _WebResource(this.url, this.method, this.body, this.query, this.headers && this.headers.clone(), this.streamResponseBody, this.withCredentials, this.abortSignal, this.timeout, this.onUploadProgress, this.onDownloadProgress, this.proxySettings, this.keepAlive, this.decompressResponse, this.streamResponseStatusCodes);
         if (this.formData) {
           result.formData = this.formData;
         }
@@ -31485,7 +31838,7 @@ var require_dist6 = __commonJS({
         return result;
       }
     };
-    var URLQuery = class {
+    var URLQuery = class _URLQuery {
       constructor() {
         this._rawQuery = {};
       }
@@ -31550,7 +31903,7 @@ var require_dist6 = __commonJS({
        * Parse a URLQuery from the provided text.
        */
       static parse(text) {
-        const result = new URLQuery();
+        const result = new _URLQuery();
         if (text) {
           if (text.startsWith("?")) {
             text = text.substring(1);
@@ -31599,7 +31952,7 @@ var require_dist6 = __commonJS({
         return result;
       }
     };
-    var URLBuilder = class {
+    var URLBuilder = class _URLBuilder {
       /**
        * Set the scheme/protocol for this URL. If the provided scheme contains other parts of a URL
        * (such as a host, port, path, or query), those parts will be added to this URL as well.
@@ -31806,30 +32159,30 @@ var require_dist6 = __commonJS({
        * Parses a given string URL into a new {@link URLBuilder}.
        */
       static parse(text) {
-        const result = new URLBuilder();
+        const result = new _URLBuilder();
         result.set(text, "SCHEME_OR_HOST");
         return result;
       }
     };
-    var URLToken = class {
+    var URLToken = class _URLToken {
       constructor(text, type) {
         this.text = text;
         this.type = type;
       }
       static scheme(text) {
-        return new URLToken(text, "SCHEME");
+        return new _URLToken(text, "SCHEME");
       }
       static host(text) {
-        return new URLToken(text, "HOST");
+        return new _URLToken(text, "HOST");
       }
       static port(text) {
-        return new URLToken(text, "PORT");
+        return new _URLToken(text, "PORT");
       }
       static path(text) {
-        return new URLToken(text, "PATH");
+        return new _URLToken(text, "PATH");
       }
       static query(text) {
-        return new URLToken(text, "QUERY");
+        return new _URLToken(text, "QUERY");
       }
     };
     function isAlphaNumericCharacter(character) {
@@ -32173,7 +32526,7 @@ var require_dist6 = __commonJS({
     };
     var custom = util.inspect.custom;
     var errorSanitizer = new Sanitizer();
-    var RestError = class extends Error {
+    var RestError = class _RestError extends Error {
       constructor(message, code, statusCode, request, response) {
         super(message);
         this.name = "RestError";
@@ -32181,7 +32534,7 @@ var require_dist6 = __commonJS({
         this.statusCode = statusCode;
         this.request = request;
         this.response = response;
-        Object.setPrototypeOf(this, RestError.prototype);
+        Object.setPrototypeOf(this, _RestError.prototype);
       }
       /**
        * Logging method for util.inspect in Node
@@ -32639,7 +32992,7 @@ var require_dist6 = __commonJS({
         includeRoot: (_b = options.includeRoot) !== null && _b !== void 0 ? _b : false,
         xmlCharKey: (_c = options.xmlCharKey) !== null && _c !== void 0 ? _c : XML_CHARKEY
       };
-      return parse2(jsonContentTypes, xmlContentTypes, response, updatedOptions).then((parsedResponse) => {
+      return parse3(jsonContentTypes, xmlContentTypes, response, updatedOptions).then((parsedResponse) => {
         if (!shouldDeserializeResponse(parsedResponse)) {
           return parsedResponse;
         }
@@ -32730,7 +33083,7 @@ var require_dist6 = __commonJS({
       }
       return { error, shouldReturnResponse: false };
     }
-    function parse2(jsonContentTypes, xmlContentTypes, operationResponse, opts) {
+    function parse3(jsonContentTypes, xmlContentTypes, operationResponse, opts) {
       var _a;
       const errorHandler = (err) => {
         const msg = `Error "${err}" occurred while parsing the response body - ${operationResponse.bodyAsText}.`;
@@ -33555,7 +33908,7 @@ var require_dist6 = __commonJS({
       };
     }
     var StandardAbortMessage = "The operation was aborted.";
-    var ThrottlingRetryPolicy = class extends BaseRequestPolicy {
+    var ThrottlingRetryPolicy = class _ThrottlingRetryPolicy extends BaseRequestPolicy {
       constructor(nextPolicy, options, _handleResponse) {
         super(nextPolicy, options);
         this.numberOfRetries = 0;
@@ -33573,7 +33926,7 @@ var require_dist6 = __commonJS({
         var _a;
         const retryAfterHeader = httpResponse.headers.get(Constants.HeaderConstants.RETRY_AFTER);
         if (retryAfterHeader) {
-          const delayInMs = ThrottlingRetryPolicy.parseRetryAfterHeader(retryAfterHeader);
+          const delayInMs = _ThrottlingRetryPolicy.parseRetryAfterHeader(retryAfterHeader);
           if (delayInMs) {
             this.numberOfRetries += 1;
             await coreUtil.delay(delayInMs, {
@@ -33595,7 +33948,7 @@ var require_dist6 = __commonJS({
       static parseRetryAfterHeader(headerValue) {
         const retryAfterInSeconds = Number(headerValue);
         if (Number.isNaN(retryAfterInSeconds)) {
-          return ThrottlingRetryPolicy.parseDateRetryAfterHeader(headerValue);
+          return _ThrottlingRetryPolicy.parseDateRetryAfterHeader(headerValue);
         } else {
           return retryAfterInSeconds * 1e3;
         }
@@ -35202,18 +35555,18 @@ var require_dist8 = __commonJS({
         });
       }
     };
-    var PollerStoppedError = class extends Error {
+    var PollerStoppedError = class _PollerStoppedError extends Error {
       constructor(message) {
         super(message);
         this.name = "PollerStoppedError";
-        Object.setPrototypeOf(this, PollerStoppedError.prototype);
+        Object.setPrototypeOf(this, _PollerStoppedError.prototype);
       }
     };
-    var PollerCancelledError = class extends Error {
+    var PollerCancelledError = class _PollerCancelledError extends Error {
       constructor(message) {
         super(message);
         this.name = "PollerCancelledError";
-        Object.setPrototypeOf(this, PollerCancelledError.prototype);
+        Object.setPrototypeOf(this, _PollerCancelledError.prototype);
       }
     };
     var Poller = class {
@@ -35549,7 +35902,7 @@ var require_dist9 = __commonJS({
     var logger$1 = require_dist3();
     var abortController = require_dist();
     var os2 = require("os");
-    var crypto4 = require("crypto");
+    var crypto7 = require("crypto");
     var stream = require("stream");
     require_dist7();
     var coreLro = require_dist8();
@@ -44028,7 +44381,7 @@ var require_dist9 = __commonJS({
         }
       }
     };
-    var version2 = {
+    var version3 = {
       parameterPath: "version",
       mapper: {
         defaultValue: "2022-11-02",
@@ -45689,7 +46042,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId
       ],
       isXML: true,
@@ -45717,7 +46070,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -45744,7 +46097,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -45774,7 +46127,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -45804,7 +46157,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId
       ],
       isXML: true,
@@ -45826,7 +46179,7 @@ var require_dist9 = __commonJS({
       },
       queryParameters: [comp, restype1],
       urlParameters: [url],
-      headerParameters: [version2, accept1],
+      headerParameters: [version3, accept1],
       isXML: true,
       serializer: xmlSerializer$5
     };
@@ -45852,7 +46205,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId,
         contentLength,
         multipartContentType
@@ -45884,7 +46237,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -46135,7 +46488,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, restype2],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         metadata,
@@ -46161,7 +46514,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, restype2],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId
@@ -46184,7 +46537,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, restype2],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -46213,7 +46566,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         metadata,
@@ -46254,7 +46607,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId
@@ -46284,7 +46637,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId,
         access,
         leaseId,
@@ -46315,7 +46668,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         deletedContainerName,
@@ -46343,7 +46696,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         sourceContainerName,
@@ -46378,7 +46731,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId,
         contentLength,
         multipartContentType
@@ -46411,7 +46764,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -46437,7 +46790,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -46468,7 +46821,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -46498,7 +46851,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -46528,7 +46881,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -46558,7 +46911,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -46594,7 +46947,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -46626,7 +46979,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -46647,7 +47000,7 @@ var require_dist9 = __commonJS({
       },
       queryParameters: [comp, restype1],
       urlParameters: [url],
-      headerParameters: [version2, accept1],
+      headerParameters: [version3, accept1],
       isXML: true,
       serializer: xmlSerializer$4
     };
@@ -46990,7 +47343,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -47028,7 +47381,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -47064,7 +47417,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -47093,7 +47446,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp8],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -47115,7 +47468,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp11],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         expiryOptions,
@@ -47139,7 +47492,7 @@ var require_dist9 = __commonJS({
       queryParameters: [comp, timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -47173,7 +47526,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp12],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifUnmodifiedSince,
@@ -47198,7 +47551,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp12],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1
       ],
@@ -47220,7 +47573,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp13],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         legalHold
@@ -47243,7 +47596,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp6],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         metadata,
@@ -47276,7 +47629,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp10],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -47306,7 +47659,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp10],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -47335,7 +47688,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp10],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -47364,7 +47717,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp10],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -47394,7 +47747,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp10],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -47423,7 +47776,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp14],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         metadata,
@@ -47456,7 +47809,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         metadata,
@@ -47498,7 +47851,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         metadata,
@@ -47546,7 +47899,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -47578,7 +47931,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -47603,7 +47956,7 @@ var require_dist9 = __commonJS({
       },
       queryParameters: [comp, restype1],
       urlParameters: [url],
-      headerParameters: [version2, accept1],
+      headerParameters: [version3, accept1],
       isXML: true,
       serializer: xmlSerializer$3
     };
@@ -47640,7 +47993,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId,
         leaseId,
         ifModifiedSince,
@@ -47678,7 +48031,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -47709,7 +48062,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId,
         leaseId,
         ifTags,
@@ -47885,7 +48238,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         contentLength,
@@ -47934,7 +48287,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp19],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         contentLength,
         leaseId,
@@ -47975,7 +48328,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp19],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         contentLength,
@@ -48013,7 +48366,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp19],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         contentLength,
@@ -48067,7 +48420,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -48104,7 +48457,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -48134,7 +48487,7 @@ var require_dist9 = __commonJS({
       queryParameters: [comp, timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -48167,7 +48520,7 @@ var require_dist9 = __commonJS({
       queryParameters: [comp, timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -48197,7 +48550,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp21],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         ifModifiedSince,
@@ -48300,7 +48653,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         contentLength,
@@ -48346,7 +48699,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp22],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         contentLength,
         leaseId,
@@ -48384,7 +48737,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp22],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         contentLength,
@@ -48429,7 +48782,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds, comp23],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -48584,7 +48937,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         contentLength,
         metadata,
@@ -48633,7 +48986,7 @@ var require_dist9 = __commonJS({
       queryParameters: [timeoutInSeconds],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         contentLength,
@@ -48692,7 +49045,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         contentLength,
         leaseId,
@@ -48727,7 +49080,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         contentLength,
@@ -48767,7 +49120,7 @@ var require_dist9 = __commonJS({
       headerParameters: [
         contentType,
         accept,
-        version2,
+        version3,
         requestId,
         metadata,
         leaseId,
@@ -48820,7 +49173,7 @@ var require_dist9 = __commonJS({
       ],
       urlParameters: [url],
       headerParameters: [
-        version2,
+        version3,
         requestId,
         accept1,
         leaseId,
@@ -50182,7 +50535,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param stringToSign -
        */
       computeHMACSHA256(stringToSign) {
-        return crypto4.createHmac("sha256", this.accountKey).update(stringToSign, "utf8").digest("base64");
+        return crypto7.createHmac("sha256", this.accountKey).update(stringToSign, "utf8").digest("base64");
       }
     };
     var packageName = "azure-storage-blob";
@@ -50248,7 +50601,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         tracingContext: (_b = options === null || options === void 0 ? void 0 : options.tracingOptions) === null || _b === void 0 ? void 0 : _b.tracingContext
       };
     }
-    var BlobSASPermissions = class {
+    var BlobSASPermissions = class _BlobSASPermissions {
       constructor() {
         this.read = false;
         this.add = false;
@@ -50269,7 +50622,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param permissions -
        */
       static parse(permissions) {
-        const blobSASPermissions = new BlobSASPermissions();
+        const blobSASPermissions = new _BlobSASPermissions();
         for (const char of permissions) {
           switch (char) {
             case "r":
@@ -50318,7 +50671,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param permissionLike -
        */
       static from(permissionLike) {
-        const blobSASPermissions = new BlobSASPermissions();
+        const blobSASPermissions = new _BlobSASPermissions();
         if (permissionLike.read) {
           blobSASPermissions.read = true;
         }
@@ -50398,7 +50751,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return permissions.join("");
       }
     };
-    var ContainerSASPermissions = class {
+    var ContainerSASPermissions = class _ContainerSASPermissions {
       constructor() {
         this.read = false;
         this.add = false;
@@ -50421,7 +50774,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param permissions -
        */
       static parse(permissions) {
-        const containerSASPermissions = new ContainerSASPermissions();
+        const containerSASPermissions = new _ContainerSASPermissions();
         for (const char of permissions) {
           switch (char) {
             case "r":
@@ -50476,7 +50829,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param permissionLike -
        */
       static from(permissionLike) {
-        const containerSASPermissions = new ContainerSASPermissions();
+        const containerSASPermissions = new _ContainerSASPermissions();
         if (permissionLike.read) {
           containerSASPermissions.read = true;
         }
@@ -50587,7 +50940,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param stringToSign -
        */
       computeHMACSHA256(stringToSign) {
-        return crypto4.createHmac("sha256", this.key).update(stringToSign, "utf8").digest("base64");
+        return crypto7.createHmac("sha256", this.key).update(stringToSign, "utf8").digest("base64");
       }
     };
     function ipRangeToString(ipRange) {
@@ -50599,8 +50952,8 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       SASProtocol["HttpsAndHttp"] = "https,http";
     })(exports.SASProtocol || (exports.SASProtocol = {}));
     var SASQueryParameters = class {
-      constructor(version3, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn2, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType2, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope2) {
-        this.version = version3;
+      constructor(version4, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn2, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType2, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope2) {
+        this.version = version4;
         this.signature = signature;
         if (permissionsOrOptions !== void 0 && typeof permissionsOrOptions !== "string") {
           this.permissions = permissionsOrOptions.permissions;
@@ -50803,7 +51156,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       }
     };
     function generateBlobSASQueryParameters(blobSASSignatureValues, sharedKeyCredentialOrUserDelegationKey, accountName) {
-      const version3 = blobSASSignatureValues.version ? blobSASSignatureValues.version : SERVICE_VERSION;
+      const version4 = blobSASSignatureValues.version ? blobSASSignatureValues.version : SERVICE_VERSION;
       const sharedKeyCredential = sharedKeyCredentialOrUserDelegationKey instanceof StorageSharedKeyCredential ? sharedKeyCredentialOrUserDelegationKey : void 0;
       let userDelegationKeyCredential;
       if (sharedKeyCredential === void 0 && accountName !== void 0) {
@@ -50812,25 +51165,25 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       if (sharedKeyCredential === void 0 && userDelegationKeyCredential === void 0) {
         throw TypeError("Invalid sharedKeyCredential, userDelegationKey or accountName.");
       }
-      if (version3 >= "2020-12-06") {
+      if (version4 >= "2020-12-06") {
         if (sharedKeyCredential !== void 0) {
           return generateBlobSASQueryParameters20201206(blobSASSignatureValues, sharedKeyCredential);
         } else {
           return generateBlobSASQueryParametersUDK20201206(blobSASSignatureValues, userDelegationKeyCredential);
         }
       }
-      if (version3 >= "2018-11-09") {
+      if (version4 >= "2018-11-09") {
         if (sharedKeyCredential !== void 0) {
           return generateBlobSASQueryParameters20181109(blobSASSignatureValues, sharedKeyCredential);
         } else {
-          if (version3 >= "2020-02-10") {
+          if (version4 >= "2020-02-10") {
             return generateBlobSASQueryParametersUDK20200210(blobSASSignatureValues, userDelegationKeyCredential);
           } else {
             return generateBlobSASQueryParametersUDK20181109(blobSASSignatureValues, userDelegationKeyCredential);
           }
         }
       }
-      if (version3 >= "2015-04-05") {
+      if (version4 >= "2015-04-05") {
         if (sharedKeyCredential !== void 0) {
           return generateBlobSASQueryParameters20150405(blobSASSignatureValues, sharedKeyCredential);
         } else {
@@ -51125,44 +51478,44 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       return elements.join("");
     }
     function SASSignatureValuesSanityCheckAndAutofill(blobSASSignatureValues) {
-      const version3 = blobSASSignatureValues.version ? blobSASSignatureValues.version : SERVICE_VERSION;
-      if (blobSASSignatureValues.snapshotTime && version3 < "2018-11-09") {
+      const version4 = blobSASSignatureValues.version ? blobSASSignatureValues.version : SERVICE_VERSION;
+      if (blobSASSignatureValues.snapshotTime && version4 < "2018-11-09") {
         throw RangeError("'version' must be >= '2018-11-09' when providing 'snapshotTime'.");
       }
       if (blobSASSignatureValues.blobName === void 0 && blobSASSignatureValues.snapshotTime) {
         throw RangeError("Must provide 'blobName' when providing 'snapshotTime'.");
       }
-      if (blobSASSignatureValues.versionId && version3 < "2019-10-10") {
+      if (blobSASSignatureValues.versionId && version4 < "2019-10-10") {
         throw RangeError("'version' must be >= '2019-10-10' when providing 'versionId'.");
       }
       if (blobSASSignatureValues.blobName === void 0 && blobSASSignatureValues.versionId) {
         throw RangeError("Must provide 'blobName' when providing 'versionId'.");
       }
-      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.setImmutabilityPolicy && version3 < "2020-08-04") {
+      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.setImmutabilityPolicy && version4 < "2020-08-04") {
         throw RangeError("'version' must be >= '2020-08-04' when provided 'i' permission.");
       }
-      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.deleteVersion && version3 < "2019-10-10") {
+      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.deleteVersion && version4 < "2019-10-10") {
         throw RangeError("'version' must be >= '2019-10-10' when providing 'x' permission.");
       }
-      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.permanentDelete && version3 < "2019-10-10") {
+      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.permanentDelete && version4 < "2019-10-10") {
         throw RangeError("'version' must be >= '2019-10-10' when providing 'y' permission.");
       }
-      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.tag && version3 < "2019-12-12") {
+      if (blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.tag && version4 < "2019-12-12") {
         throw RangeError("'version' must be >= '2019-12-12' when providing 't' permission.");
       }
-      if (version3 < "2020-02-10" && blobSASSignatureValues.permissions && (blobSASSignatureValues.permissions.move || blobSASSignatureValues.permissions.execute)) {
+      if (version4 < "2020-02-10" && blobSASSignatureValues.permissions && (blobSASSignatureValues.permissions.move || blobSASSignatureValues.permissions.execute)) {
         throw RangeError("'version' must be >= '2020-02-10' when providing the 'm' or 'e' permission.");
       }
-      if (version3 < "2021-04-10" && blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.filterByTags) {
+      if (version4 < "2021-04-10" && blobSASSignatureValues.permissions && blobSASSignatureValues.permissions.filterByTags) {
         throw RangeError("'version' must be >= '2021-04-10' when providing the 'f' permission.");
       }
-      if (version3 < "2020-02-10" && (blobSASSignatureValues.preauthorizedAgentObjectId || blobSASSignatureValues.correlationId)) {
+      if (version4 < "2020-02-10" && (blobSASSignatureValues.preauthorizedAgentObjectId || blobSASSignatureValues.correlationId)) {
         throw RangeError("'version' must be >= '2020-02-10' when providing 'preauthorizedAgentObjectId' or 'correlationId'.");
       }
-      if (blobSASSignatureValues.encryptionScope && version3 < "2020-12-06") {
+      if (blobSASSignatureValues.encryptionScope && version4 < "2020-12-06") {
         throw RangeError("'version' must be >= '2020-12-06' when provided 'encryptionScope' in SAS.");
       }
-      blobSASSignatureValues.version = version3;
+      blobSASSignatureValues.version = version4;
       return blobSASSignatureValues;
     }
     var BlobLeaseClient = class {
@@ -51884,7 +52237,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
     var AVRO_INIT_BYTES = new Uint8Array([79, 98, 106, 1]);
     var AVRO_CODEC_KEY = "avro.codec";
     var AVRO_SCHEMA_KEY = "avro.schema";
-    var AvroParser = class {
+    var AvroParser = class _AvroParser {
       /**
        * Reads a fixed number of bytes from the stream.
        *
@@ -51906,7 +52259,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param options -
        */
       static async readByte(stream2, options = {}) {
-        const buf = await AvroParser.readFixedBytes(stream2, 1, options);
+        const buf = await _AvroParser.readFixedBytes(stream2, 1, options);
         return buf[0];
       }
       // int and long are stored in variable-length zig-zag coding.
@@ -51917,7 +52270,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         let significanceInBit = 0;
         let byte, haveMoreByte, significanceInFloat;
         do {
-          byte = await AvroParser.readByte(stream2, options);
+          byte = await _AvroParser.readByte(stream2, options);
           haveMoreByte = byte & 128;
           zigZagEncoded |= (byte & 127) << significanceInBit;
           significanceInBit += 7;
@@ -51926,7 +52279,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
           zigZagEncoded = zigZagEncoded;
           significanceInFloat = 268435456;
           do {
-            byte = await AvroParser.readByte(stream2, options);
+            byte = await _AvroParser.readByte(stream2, options);
             zigZagEncoded += (byte & 127) * significanceInFloat;
             significanceInFloat *= 128;
           } while (byte & 128);
@@ -51939,16 +52292,16 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return zigZagEncoded >> 1 ^ -(zigZagEncoded & 1);
       }
       static async readLong(stream2, options = {}) {
-        return AvroParser.readZigZagLong(stream2, options);
+        return _AvroParser.readZigZagLong(stream2, options);
       }
       static async readInt(stream2, options = {}) {
-        return AvroParser.readZigZagLong(stream2, options);
+        return _AvroParser.readZigZagLong(stream2, options);
       }
       static async readNull() {
         return null;
       }
       static async readBoolean(stream2, options = {}) {
-        const b = await AvroParser.readByte(stream2, options);
+        const b = await _AvroParser.readByte(stream2, options);
         if (b === 1) {
           return true;
         } else if (b === 0) {
@@ -51958,37 +52311,37 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
       static async readFloat(stream2, options = {}) {
-        const u8arr = await AvroParser.readFixedBytes(stream2, 4, options);
+        const u8arr = await _AvroParser.readFixedBytes(stream2, 4, options);
         const view = new DataView(u8arr.buffer, u8arr.byteOffset, u8arr.byteLength);
         return view.getFloat32(0, true);
       }
       static async readDouble(stream2, options = {}) {
-        const u8arr = await AvroParser.readFixedBytes(stream2, 8, options);
+        const u8arr = await _AvroParser.readFixedBytes(stream2, 8, options);
         const view = new DataView(u8arr.buffer, u8arr.byteOffset, u8arr.byteLength);
         return view.getFloat64(0, true);
       }
       static async readBytes(stream2, options = {}) {
-        const size = await AvroParser.readLong(stream2, options);
+        const size = await _AvroParser.readLong(stream2, options);
         if (size < 0) {
           throw new Error("Bytes size was negative.");
         }
         return stream2.read(size, { abortSignal: options.abortSignal });
       }
       static async readString(stream2, options = {}) {
-        const u8arr = await AvroParser.readBytes(stream2, options);
+        const u8arr = await _AvroParser.readBytes(stream2, options);
         const utf8decoder = new TextDecoder();
         return utf8decoder.decode(u8arr);
       }
       static async readMapPair(stream2, readItemMethod, options = {}) {
-        const key = await AvroParser.readString(stream2, options);
+        const key = await _AvroParser.readString(stream2, options);
         const value = await readItemMethod(stream2, options);
         return { key, value };
       }
       static async readMap(stream2, readItemMethod, options = {}) {
         const readPairMethod = (s, opts = {}) => {
-          return AvroParser.readMapPair(s, readItemMethod, opts);
+          return _AvroParser.readMapPair(s, readItemMethod, opts);
         };
-        const pairs = await AvroParser.readArray(stream2, readPairMethod, options);
+        const pairs = await _AvroParser.readArray(stream2, readPairMethod, options);
         const dict = {};
         for (const pair of pairs) {
           dict[pair.key] = pair.value;
@@ -51997,9 +52350,9 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       }
       static async readArray(stream2, readItemMethod, options = {}) {
         const items = [];
-        for (let count = await AvroParser.readLong(stream2, options); count !== 0; count = await AvroParser.readLong(stream2, options)) {
+        for (let count = await _AvroParser.readLong(stream2, options); count !== 0; count = await _AvroParser.readLong(stream2, options)) {
           if (count < 0) {
-            await AvroParser.readLong(stream2, options);
+            await _AvroParser.readLong(stream2, options);
             count = -count;
           }
           while (count--) {
@@ -52030,17 +52383,17 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       AvroPrimitive2["BYTES"] = "bytes";
       AvroPrimitive2["STRING"] = "string";
     })(AvroPrimitive || (AvroPrimitive = {}));
-    var AvroType = class {
+    var AvroType = class _AvroType {
       /**
        * Determines the AvroType from the Avro Schema.
        */
       static fromSchema(schema) {
         if (typeof schema === "string") {
-          return AvroType.fromStringSchema(schema);
+          return _AvroType.fromStringSchema(schema);
         } else if (Array.isArray(schema)) {
-          return AvroType.fromArraySchema(schema);
+          return _AvroType.fromArraySchema(schema);
         } else {
-          return AvroType.fromObjectSchema(schema);
+          return _AvroType.fromObjectSchema(schema);
         }
       }
       static fromStringSchema(schema) {
@@ -52059,12 +52412,12 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
       static fromArraySchema(schema) {
-        return new AvroUnionType(schema.map(AvroType.fromSchema));
+        return new AvroUnionType(schema.map(_AvroType.fromSchema));
       }
       static fromObjectSchema(schema) {
         const type = schema.type;
         try {
-          return AvroType.fromStringSchema(type);
+          return _AvroType.fromStringSchema(type);
         } catch (err) {
         }
         switch (type) {
@@ -52080,7 +52433,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
               throw new Error(`Required attribute 'fields' doesn't exist on schema: ${schema}`);
             }
             for (const field of schema.fields) {
-              fields[field.name] = AvroType.fromSchema(field.type);
+              fields[field.name] = _AvroType.fromSchema(field.type);
             }
             return new AvroRecordType(fields, schema.name);
           case AvroComplex.ENUM:
@@ -52095,7 +52448,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
             if (!schema.values) {
               throw new Error(`Required attribute 'values' doesn't exist on schema: ${schema}`);
             }
-            return new AvroMapType(AvroType.fromSchema(schema.values));
+            return new AvroMapType(_AvroType.fromSchema(schema.values));
           case AvroComplex.ARRAY:
           case AvroComplex.FIXED:
           default:
@@ -53448,7 +53801,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
     }
     var fsStat = util__namespace.promisify(fs__namespace.stat);
     var fsCreateReadStream = fs__namespace.createReadStream;
-    var BlobClient = class extends StorageClient {
+    var BlobClient = class _BlobClient extends StorageClient {
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         options = options || {};
         let pipeline;
@@ -53516,7 +53869,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @returns A new BlobClient object identical to the source but with the specified snapshot timestamp
        */
       withSnapshot(snapshot2) {
-        return new BlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
+        return new _BlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
       }
       /**
        * Creates a new BlobClient object pointing to a version of this blob.
@@ -53526,7 +53879,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @returns A new BlobClient object pointing to the version of this blob.
        */
       withVersion(versionId2) {
-        return new BlobClient(setURLParameter(this.url, URLConstants.Parameters.VERSIONID, versionId2.length === 0 ? void 0 : versionId2), this.pipeline);
+        return new _BlobClient(setURLParameter(this.url, URLConstants.Parameters.VERSIONID, versionId2.length === 0 ? void 0 : versionId2), this.pipeline);
       }
       /**
        * Creates a AppendBlobClient object.
@@ -54380,7 +54733,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    var AppendBlobClient = class extends BlobClient {
+    var AppendBlobClient = class _AppendBlobClient extends BlobClient {
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         let pipeline;
         let url2;
@@ -54431,7 +54784,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @returns A new AppendBlobClient object identical to the source but with the specified snapshot timestamp.
        */
       withSnapshot(snapshot2) {
-        return new AppendBlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
+        return new _AppendBlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
       }
       /**
        * Creates a 0-length append blob. Call AppendBlock to append data to an append blob.
@@ -54597,7 +54950,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    var BlockBlobClient = class extends BlobClient {
+    var BlockBlobClient = class _BlockBlobClient extends BlobClient {
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         let pipeline;
         let url2;
@@ -54652,7 +55005,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @returns A new BlockBlobClient object identical to the source but with the specified snapshot timestamp.
        */
       withSnapshot(snapshot2) {
-        return new BlockBlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
+        return new _BlockBlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
       }
       /**
        * ONLY AVAILABLE IN NODE.JS RUNTIME.
@@ -55195,7 +55548,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    var PageBlobClient = class extends BlobClient {
+    var PageBlobClient = class _PageBlobClient extends BlobClient {
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         let pipeline;
         let url2;
@@ -55246,7 +55599,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @returns A new PageBlobClient object identical to the source but with the specified snapshot timestamp.
        */
       withSnapshot(snapshot2) {
-        return new PageBlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
+        return new _PageBlobClient(setURLParameter(this.url, URLConstants.Parameters.SNAPSHOT, snapshot2.length === 0 ? void 0 : snapshot2), this.pipeline);
       }
       /**
        * Creates a page blob of the specified length. Call uploadPages to upload data
@@ -57598,7 +57951,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return new BlobBatchClient(this.url, this.pipeline);
       }
     };
-    var AccountSASPermissions = class {
+    var AccountSASPermissions = class _AccountSASPermissions {
       constructor() {
         this.read = false;
         this.write = false;
@@ -57620,7 +57973,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param permissions -
        */
       static parse(permissions) {
-        const accountSASPermissions = new AccountSASPermissions();
+        const accountSASPermissions = new _AccountSASPermissions();
         for (const c of permissions) {
           switch (c) {
             case "r":
@@ -57675,7 +58028,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param permissionLike -
        */
       static from(permissionLike) {
-        const accountSASPermissions = new AccountSASPermissions();
+        const accountSASPermissions = new _AccountSASPermissions();
         if (permissionLike.read) {
           accountSASPermissions.read = true;
         }
@@ -57771,7 +58124,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return permissions.join("");
       }
     };
-    var AccountSASResourceTypes = class {
+    var AccountSASResourceTypes = class _AccountSASResourceTypes {
       constructor() {
         this.service = false;
         this.container = false;
@@ -57784,7 +58137,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param resourceTypes -
        */
       static parse(resourceTypes) {
-        const accountSASResourceTypes = new AccountSASResourceTypes();
+        const accountSASResourceTypes = new _AccountSASResourceTypes();
         for (const c of resourceTypes) {
           switch (c) {
             case "s":
@@ -57822,7 +58175,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return resourceTypes.join("");
       }
     };
-    var AccountSASServices = class {
+    var AccountSASServices = class _AccountSASServices {
       constructor() {
         this.blob = false;
         this.file = false;
@@ -57836,7 +58189,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
        * @param services -
        */
       static parse(services) {
-        const accountSASServices = new AccountSASServices();
+        const accountSASServices = new _AccountSASServices();
         for (const c of services) {
           switch (c) {
             case "b":
@@ -57879,30 +58232,30 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       }
     };
     function generateAccountSASQueryParameters(accountSASSignatureValues, sharedKeyCredential) {
-      const version3 = accountSASSignatureValues.version ? accountSASSignatureValues.version : SERVICE_VERSION;
-      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.setImmutabilityPolicy && version3 < "2020-08-04") {
+      const version4 = accountSASSignatureValues.version ? accountSASSignatureValues.version : SERVICE_VERSION;
+      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.setImmutabilityPolicy && version4 < "2020-08-04") {
         throw RangeError("'version' must be >= '2020-08-04' when provided 'i' permission.");
       }
-      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.deleteVersion && version3 < "2019-10-10") {
+      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.deleteVersion && version4 < "2019-10-10") {
         throw RangeError("'version' must be >= '2019-10-10' when provided 'x' permission.");
       }
-      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.permanentDelete && version3 < "2019-10-10") {
+      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.permanentDelete && version4 < "2019-10-10") {
         throw RangeError("'version' must be >= '2019-10-10' when provided 'y' permission.");
       }
-      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.tag && version3 < "2019-12-12") {
+      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.tag && version4 < "2019-12-12") {
         throw RangeError("'version' must be >= '2019-12-12' when provided 't' permission.");
       }
-      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.filter && version3 < "2019-12-12") {
+      if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.filter && version4 < "2019-12-12") {
         throw RangeError("'version' must be >= '2019-12-12' when provided 'f' permission.");
       }
-      if (accountSASSignatureValues.encryptionScope && version3 < "2020-12-06") {
+      if (accountSASSignatureValues.encryptionScope && version4 < "2020-12-06") {
         throw RangeError("'version' must be >= '2020-12-06' when provided 'encryptionScope' in SAS.");
       }
       const parsedPermissions = AccountSASPermissions.parse(accountSASSignatureValues.permissions.toString());
       const parsedServices = AccountSASServices.parse(accountSASSignatureValues.services).toString();
       const parsedResourceTypes = AccountSASResourceTypes.parse(accountSASSignatureValues.resourceTypes).toString();
       let stringToSign;
-      if (version3 >= "2020-12-06") {
+      if (version4 >= "2020-12-06") {
         stringToSign = [
           sharedKeyCredential.accountName,
           parsedPermissions,
@@ -57912,7 +58265,7 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
           truncatedISO8061Date(accountSASSignatureValues.expiresOn, false),
           accountSASSignatureValues.ipRange ? ipRangeToString(accountSASSignatureValues.ipRange) : "",
           accountSASSignatureValues.protocol ? accountSASSignatureValues.protocol : "",
-          version3,
+          version4,
           accountSASSignatureValues.encryptionScope ? accountSASSignatureValues.encryptionScope : "",
           ""
           // Account SAS requires an additional newline character
@@ -57927,15 +58280,15 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
           truncatedISO8061Date(accountSASSignatureValues.expiresOn, false),
           accountSASSignatureValues.ipRange ? ipRangeToString(accountSASSignatureValues.ipRange) : "",
           accountSASSignatureValues.protocol ? accountSASSignatureValues.protocol : "",
-          version3,
+          version4,
           ""
           // Account SAS requires an additional newline character
         ].join("\n");
       }
       const signature = sharedKeyCredential.computeHMACSHA256(stringToSign);
-      return new SASQueryParameters(version3, signature, parsedPermissions.toString(), parsedServices, parsedResourceTypes, accountSASSignatureValues.protocol, accountSASSignatureValues.startsOn, accountSASSignatureValues.expiresOn, accountSASSignatureValues.ipRange, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, accountSASSignatureValues.encryptionScope);
+      return new SASQueryParameters(version4, signature, parsedPermissions.toString(), parsedServices, parsedResourceTypes, accountSASSignatureValues.protocol, accountSASSignatureValues.startsOn, accountSASSignatureValues.expiresOn, accountSASSignatureValues.ipRange, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, accountSASSignatureValues.encryptionScope);
     }
-    var BlobServiceClient = class extends StorageClient {
+    var BlobServiceClient = class _BlobServiceClient extends StorageClient {
       constructor(url2, credentialOrPipeline, options) {
         let pipeline;
         if (isPipelineLike(credentialOrPipeline)) {
@@ -57970,13 +58323,13 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
               options.proxyOptions = coreHttp.getDefaultProxySettings(extractedCreds.proxyUri);
             }
             const pipeline = newPipeline(sharedKeyCredential, options);
-            return new BlobServiceClient(extractedCreds.url, pipeline);
+            return new _BlobServiceClient(extractedCreds.url, pipeline);
           } else {
             throw new Error("Account connection string is only supported in Node.js environment");
           }
         } else if (extractedCreds.kind === "SASConnString") {
           const pipeline = newPipeline(new AnonymousCredential(), options);
-          return new BlobServiceClient(extractedCreds.url + "?" + extractedCreds.accountSas, pipeline);
+          return new _BlobServiceClient(extractedCreds.url + "?" + extractedCreds.accountSas, pipeline);
         } else {
           throw new Error("Connection string must be either an Account connection string or a SAS connection string");
         }
@@ -59344,7 +59697,7 @@ var require_cacheHttpClient = __commonJS({
     var core = __importStar2(require_core());
     var http_client_1 = require_lib();
     var auth_1 = require_auth();
-    var crypto4 = __importStar2(require("crypto"));
+    var crypto7 = __importStar2(require("crypto"));
     var fs = __importStar2(require("fs"));
     var url_1 = require("url");
     var utils = __importStar2(require_cacheUtils());
@@ -59386,20 +59739,20 @@ var require_cacheHttpClient = __commonJS({
         components.push("windows-only");
       }
       components.push(versionSalt);
-      return crypto4.createHash("sha256").update(components.join("|")).digest("hex");
+      return crypto7.createHash("sha256").update(components.join("|")).digest("hex");
     }
     exports.getCacheVersion = getCacheVersion;
     function getCacheEntry(keys, paths, options) {
       return __awaiter2(this, void 0, void 0, function* () {
         const httpClient = createHttpClient();
-        const version2 = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
-        const resource = `cache?keys=${encodeURIComponent(keys.join(","))}&version=${version2}`;
+        const version3 = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
+        const resource = `cache?keys=${encodeURIComponent(keys.join(","))}&version=${version3}`;
         const response = yield (0, requestUtils_1.retryTypedResponse)("getCacheEntry", () => __awaiter2(this, void 0, void 0, function* () {
           return httpClient.getJson(getCacheApiUrl(resource));
         }));
         if (response.statusCode === 204) {
           if (core.isDebug()) {
-            yield printCachesListForDiagnostics(keys[0], httpClient, version2);
+            yield printCachesListForDiagnostics(keys[0], httpClient, version3);
           }
           return null;
         }
@@ -59418,7 +59771,7 @@ var require_cacheHttpClient = __commonJS({
       });
     }
     exports.getCacheEntry = getCacheEntry;
-    function printCachesListForDiagnostics(key, httpClient, version2) {
+    function printCachesListForDiagnostics(key, httpClient, version3) {
       return __awaiter2(this, void 0, void 0, function* () {
         const resource = `caches?key=${encodeURIComponent(key)}`;
         const response = yield (0, requestUtils_1.retryTypedResponse)("listCache", () => __awaiter2(this, void 0, void 0, function* () {
@@ -59428,7 +59781,7 @@ var require_cacheHttpClient = __commonJS({
           const cacheListResult = response.result;
           const totalCount = cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.totalCount;
           if (totalCount && totalCount > 0) {
-            core.debug(`No matching cache found for cache key '${key}', version '${version2} and scope ${process.env["GITHUB_REF"]}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key 
+            core.debug(`No matching cache found for cache key '${key}', version '${version3} and scope ${process.env["GITHUB_REF"]}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key 
 Other caches with similar key:`);
             for (const cacheEntry of (cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.artifactCaches) || []) {
               core.debug(`Cache Key: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheKey}, Cache Version: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheVersion}, Cache Scope: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.scope}, Cache Created: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.creationTime}`);
@@ -59452,10 +59805,10 @@ Other caches with similar key:`);
     function reserveCache(key, paths, options) {
       return __awaiter2(this, void 0, void 0, function* () {
         const httpClient = createHttpClient();
-        const version2 = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
+        const version3 = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
         const reserveCacheRequest = {
           key,
-          version: version2,
+          version: version3,
           cacheSize: options === null || options === void 0 ? void 0 : options.cacheSize
         };
         const response = yield (0, requestUtils_1.retryTypedResponse)("reserveCache", () => __awaiter2(this, void 0, void 0, function* () {
@@ -59862,19 +60215,19 @@ var require_cache = __commonJS({
     var utils = __importStar2(require_cacheUtils());
     var cacheHttpClient = __importStar2(require_cacheHttpClient());
     var tar_1 = require_tar();
-    var ValidationError = class extends Error {
+    var ValidationError = class _ValidationError extends Error {
       constructor(message) {
         super(message);
         this.name = "ValidationError";
-        Object.setPrototypeOf(this, ValidationError.prototype);
+        Object.setPrototypeOf(this, _ValidationError.prototype);
       }
     };
     exports.ValidationError = ValidationError;
-    var ReserveCacheError = class extends Error {
+    var ReserveCacheError = class _ReserveCacheError extends Error {
       constructor(message) {
         super(message);
         this.name = "ReserveCacheError";
-        Object.setPrototypeOf(this, ReserveCacheError.prototype);
+        Object.setPrototypeOf(this, _ReserveCacheError.prototype);
       }
     };
     exports.ReserveCacheError = ReserveCacheError;
@@ -60133,74 +60486,74 @@ var require_semver5 = __commonJS({
       }
     }
     var i;
-    exports.parse = parse2;
-    function parse2(version2, options) {
+    exports.parse = parse3;
+    function parse3(version3, options) {
       if (!options || typeof options !== "object") {
         options = {
           loose: !!options,
           includePrerelease: false
         };
       }
-      if (version2 instanceof SemVer) {
-        return version2;
+      if (version3 instanceof SemVer) {
+        return version3;
       }
-      if (typeof version2 !== "string") {
+      if (typeof version3 !== "string") {
         return null;
       }
-      if (version2.length > MAX_LENGTH) {
+      if (version3.length > MAX_LENGTH) {
         return null;
       }
       var r = options.loose ? re[t.LOOSE] : re[t.FULL];
-      if (!r.test(version2)) {
+      if (!r.test(version3)) {
         return null;
       }
       try {
-        return new SemVer(version2, options);
+        return new SemVer(version3, options);
       } catch (er) {
         return null;
       }
     }
     exports.valid = valid;
-    function valid(version2, options) {
-      var v = parse2(version2, options);
+    function valid(version3, options) {
+      var v = parse3(version3, options);
       return v ? v.version : null;
     }
     exports.clean = clean;
-    function clean(version2, options) {
-      var s = parse2(version2.trim().replace(/^[=v]+/, ""), options);
+    function clean(version3, options) {
+      var s = parse3(version3.trim().replace(/^[=v]+/, ""), options);
       return s ? s.version : null;
     }
     exports.SemVer = SemVer;
-    function SemVer(version2, options) {
+    function SemVer(version3, options) {
       if (!options || typeof options !== "object") {
         options = {
           loose: !!options,
           includePrerelease: false
         };
       }
-      if (version2 instanceof SemVer) {
-        if (version2.loose === options.loose) {
-          return version2;
+      if (version3 instanceof SemVer) {
+        if (version3.loose === options.loose) {
+          return version3;
         } else {
-          version2 = version2.version;
+          version3 = version3.version;
         }
-      } else if (typeof version2 !== "string") {
-        throw new TypeError("Invalid Version: " + version2);
+      } else if (typeof version3 !== "string") {
+        throw new TypeError("Invalid Version: " + version3);
       }
-      if (version2.length > MAX_LENGTH) {
+      if (version3.length > MAX_LENGTH) {
         throw new TypeError("version is longer than " + MAX_LENGTH + " characters");
       }
       if (!(this instanceof SemVer)) {
-        return new SemVer(version2, options);
+        return new SemVer(version3, options);
       }
-      debug("SemVer", version2, options);
+      debug("SemVer", version3, options);
       this.options = options;
       this.loose = !!options.loose;
-      var m = version2.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
+      var m = version3.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
       if (!m) {
-        throw new TypeError("Invalid Version: " + version2);
+        throw new TypeError("Invalid Version: " + version3);
       }
-      this.raw = version2;
+      this.raw = version3;
       this.major = +m[1];
       this.minor = +m[2];
       this.patch = +m[3];
@@ -60383,32 +60736,32 @@ var require_semver5 = __commonJS({
       return this;
     };
     exports.inc = inc;
-    function inc(version2, release, loose, identifier) {
+    function inc(version3, release, loose, identifier) {
       if (typeof loose === "string") {
         identifier = loose;
         loose = void 0;
       }
       try {
-        return new SemVer(version2, loose).inc(release, identifier).version;
+        return new SemVer(version3, loose).inc(release, identifier).version;
       } catch (er) {
         return null;
       }
     }
     exports.diff = diff;
-    function diff(version1, version2) {
-      if (eq(version1, version2)) {
+    function diff(version1, version22) {
+      if (eq(version1, version22)) {
         return null;
       } else {
-        var v12 = parse2(version1);
-        var v2 = parse2(version2);
+        var v13 = parse3(version1);
+        var v2 = parse3(version22);
         var prefix = "";
-        if (v12.prerelease.length || v2.prerelease.length) {
+        if (v13.prerelease.length || v2.prerelease.length) {
           prefix = "pre";
           var defaultResult = "prerelease";
         }
-        for (var key in v12) {
+        for (var key in v13) {
           if (key === "major" || key === "minor" || key === "patch") {
-            if (v12[key] !== v2[key]) {
+            if (v13[key] !== v2[key]) {
               return prefix + key;
             }
           }
@@ -60579,19 +60932,19 @@ var require_semver5 = __commonJS({
     Comparator.prototype.toString = function() {
       return this.value;
     };
-    Comparator.prototype.test = function(version2) {
-      debug("Comparator.test", version2, this.options.loose);
-      if (this.semver === ANY || version2 === ANY) {
+    Comparator.prototype.test = function(version3) {
+      debug("Comparator.test", version3, this.options.loose);
+      if (this.semver === ANY || version3 === ANY) {
         return true;
       }
-      if (typeof version2 === "string") {
+      if (typeof version3 === "string") {
         try {
-          version2 = new SemVer(version2, this.options);
+          version3 = new SemVer(version3, this.options);
         } catch (er) {
           return false;
         }
       }
-      return cmp(version2, this.operator, this.semver, this.options);
+      return cmp(version3, this.operator, this.semver, this.options);
     };
     Comparator.prototype.intersects = function(comp, options) {
       if (!(comp instanceof Comparator)) {
@@ -60902,31 +61255,31 @@ var require_semver5 = __commonJS({
       }
       return (from + " " + to).trim();
     }
-    Range.prototype.test = function(version2) {
-      if (!version2) {
+    Range.prototype.test = function(version3) {
+      if (!version3) {
         return false;
       }
-      if (typeof version2 === "string") {
+      if (typeof version3 === "string") {
         try {
-          version2 = new SemVer(version2, this.options);
+          version3 = new SemVer(version3, this.options);
         } catch (er) {
           return false;
         }
       }
       for (var i2 = 0; i2 < this.set.length; i2++) {
-        if (testSet(this.set[i2], version2, this.options)) {
+        if (testSet(this.set[i2], version3, this.options)) {
           return true;
         }
       }
       return false;
     };
-    function testSet(set, version2, options) {
+    function testSet(set, version3, options) {
       for (var i2 = 0; i2 < set.length; i2++) {
-        if (!set[i2].test(version2)) {
+        if (!set[i2].test(version3)) {
           return false;
         }
       }
-      if (version2.prerelease.length && !options.includePrerelease) {
+      if (version3.prerelease.length && !options.includePrerelease) {
         for (i2 = 0; i2 < set.length; i2++) {
           debug(set[i2].semver);
           if (set[i2].semver === ANY) {
@@ -60934,7 +61287,7 @@ var require_semver5 = __commonJS({
           }
           if (set[i2].semver.prerelease.length > 0) {
             var allowed = set[i2].semver;
-            if (allowed.major === version2.major && allowed.minor === version2.minor && allowed.patch === version2.patch) {
+            if (allowed.major === version3.major && allowed.minor === version3.minor && allowed.patch === version3.patch) {
               return true;
             }
           }
@@ -60944,13 +61297,13 @@ var require_semver5 = __commonJS({
       return true;
     }
     exports.satisfies = satisfies;
-    function satisfies(version2, range, options) {
+    function satisfies(version3, range, options) {
       try {
         range = new Range(range, options);
       } catch (er) {
         return false;
       }
-      return range.test(version2);
+      return range.test(version3);
     }
     exports.maxSatisfying = maxSatisfying;
     function maxSatisfying(versions, range, options) {
@@ -61042,16 +61395,16 @@ var require_semver5 = __commonJS({
       }
     }
     exports.ltr = ltr;
-    function ltr(version2, range, options) {
-      return outside(version2, range, "<", options);
+    function ltr(version3, range, options) {
+      return outside(version3, range, "<", options);
     }
     exports.gtr = gtr;
-    function gtr(version2, range, options) {
-      return outside(version2, range, ">", options);
+    function gtr(version3, range, options) {
+      return outside(version3, range, ">", options);
     }
     exports.outside = outside;
-    function outside(version2, range, hilo, options) {
-      version2 = new SemVer(version2, options);
+    function outside(version3, range, hilo, options) {
+      version3 = new SemVer(version3, options);
       range = new Range(range, options);
       var gtfn, ltefn, ltfn, comp, ecomp;
       switch (hilo) {
@@ -61072,7 +61425,7 @@ var require_semver5 = __commonJS({
         default:
           throw new TypeError('Must provide a hilo val of "<" or ">"');
       }
-      if (satisfies(version2, range, options)) {
+      if (satisfies(version3, range, options)) {
         return false;
       }
       for (var i2 = 0; i2 < range.set.length; ++i2) {
@@ -61094,17 +61447,17 @@ var require_semver5 = __commonJS({
         if (high.operator === comp || high.operator === ecomp) {
           return false;
         }
-        if ((!low.operator || low.operator === comp) && ltefn(version2, low.semver)) {
+        if ((!low.operator || low.operator === comp) && ltefn(version3, low.semver)) {
           return false;
-        } else if (low.operator === ecomp && ltfn(version2, low.semver)) {
+        } else if (low.operator === ecomp && ltfn(version3, low.semver)) {
           return false;
         }
       }
       return true;
     }
     exports.prerelease = prerelease;
-    function prerelease(version2, options) {
-      var parsed = parse2(version2, options);
+    function prerelease(version3, options) {
+      var parsed = parse3(version3, options);
       return parsed && parsed.prerelease.length ? parsed.prerelease : null;
     }
     exports.intersects = intersects;
@@ -61114,23 +61467,23 @@ var require_semver5 = __commonJS({
       return r1.intersects(r2);
     }
     exports.coerce = coerce;
-    function coerce(version2, options) {
-      if (version2 instanceof SemVer) {
-        return version2;
+    function coerce(version3, options) {
+      if (version3 instanceof SemVer) {
+        return version3;
       }
-      if (typeof version2 === "number") {
-        version2 = String(version2);
+      if (typeof version3 === "number") {
+        version3 = String(version3);
       }
-      if (typeof version2 !== "string") {
+      if (typeof version3 !== "string") {
         return null;
       }
       options = options || {};
       var match = null;
       if (!options.rtl) {
-        match = version2.match(re[t.COERCE]);
+        match = version3.match(re[t.COERCE]);
       } else {
         var next;
-        while ((next = re[t.COERCERTL].exec(version2)) && (!match || match.index + match[0].length !== version2.length)) {
+        while ((next = re[t.COERCERTL].exec(version3)) && (!match || match.index + match[0].length !== version3.length)) {
           if (!match || next.index + next[0].length !== match.index + match[0].length) {
             match = next;
           }
@@ -61141,7 +61494,7 @@ var require_semver5 = __commonJS({
       if (match === null) {
         return null;
       }
-      return parse2(match[2] + "." + (match[3] || "0") + "." + (match[4] || "0"), options);
+      return parse3(match[2] + "." + (match[3] || "0") + "." + (match[4] || "0"), options);
     }
   }
 });
@@ -61219,9 +61572,9 @@ var require_manifest = __commonJS({
         let match;
         let file;
         for (const candidate of candidates) {
-          const version2 = candidate.version;
-          core_1.debug(`check ${version2} satisfies ${versionSpec}`);
-          if (semver2.satisfies(version2, versionSpec) && (!stable || candidate.stable === stable)) {
+          const version3 = candidate.version;
+          core_1.debug(`check ${version3} satisfies ${versionSpec}`);
+          if (semver2.satisfies(version3, versionSpec) && (!stable || candidate.stable === stable)) {
             file = candidate.files.find((item) => {
               core_1.debug(`${item.arch}===${archFilter} && ${item.platform}===${platFilter}`);
               let chk = item.arch === archFilter && item.platform === platFilter;
@@ -61252,9 +61605,9 @@ var require_manifest = __commonJS({
     exports._findMatch = _findMatch;
     function _getOsVersion() {
       const plat = os2.platform();
-      let version2 = "";
+      let version3 = "";
       if (plat === "darwin") {
-        version2 = cp.execSync("sw_vers -productVersion").toString();
+        version3 = cp.execSync("sw_vers -productVersion").toString();
       } else if (plat === "linux") {
         const lsbContents = module2.exports._readLinuxVersionFile();
         if (lsbContents) {
@@ -61262,13 +61615,13 @@ var require_manifest = __commonJS({
           for (const line of lines) {
             const parts = line.split("=");
             if (parts.length === 2 && (parts[0].trim() === "VERSION_ID" || parts[0].trim() === "DISTRIB_RELEASE")) {
-              version2 = parts[1].trim().replace(/^"/, "").replace(/"$/, "");
+              version3 = parts[1].trim().replace(/^"/, "").replace(/"$/, "");
               break;
             }
           }
         }
       }
-      return version2;
+      return version3;
     }
     exports._getOsVersion = _getOsVersion;
     function _readLinuxVersionFile() {
@@ -61283,80 +61636,6 @@ var require_manifest = __commonJS({
       return contents;
     }
     exports._readLinuxVersionFile = _readLinuxVersionFile;
-  }
-});
-
-// node_modules/@actions/tool-cache/node_modules/uuid/lib/rng.js
-var require_rng2 = __commonJS({
-  "node_modules/@actions/tool-cache/node_modules/uuid/lib/rng.js"(exports, module2) {
-    var crypto4 = require("crypto");
-    module2.exports = function nodeRNG() {
-      return crypto4.randomBytes(16);
-    };
-  }
-});
-
-// node_modules/@actions/tool-cache/node_modules/uuid/lib/bytesToUuid.js
-var require_bytesToUuid2 = __commonJS({
-  "node_modules/@actions/tool-cache/node_modules/uuid/lib/bytesToUuid.js"(exports, module2) {
-    var byteToHex2 = [];
-    for (i = 0; i < 256; ++i) {
-      byteToHex2[i] = (i + 256).toString(16).substr(1);
-    }
-    var i;
-    function bytesToUuid(buf, offset) {
-      var i2 = offset || 0;
-      var bth = byteToHex2;
-      return [
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]]
-      ].join("");
-    }
-    module2.exports = bytesToUuid;
-  }
-});
-
-// node_modules/@actions/tool-cache/node_modules/uuid/v4.js
-var require_v42 = __commonJS({
-  "node_modules/@actions/tool-cache/node_modules/uuid/v4.js"(exports, module2) {
-    var rng2 = require_rng2();
-    var bytesToUuid = require_bytesToUuid2();
-    function v42(options, buf, offset) {
-      var i = buf && offset || 0;
-      if (typeof options == "string") {
-        buf = options === "binary" ? new Array(16) : null;
-        options = null;
-      }
-      options = options || {};
-      var rnds = options.random || (options.rng || rng2)();
-      rnds[6] = rnds[6] & 15 | 64;
-      rnds[8] = rnds[8] & 63 | 128;
-      if (buf) {
-        for (var ii = 0; ii < 16; ++ii) {
-          buf[i + ii] = rnds[ii];
-        }
-      }
-      return buf || bytesToUuid(rnds);
-    }
-    module2.exports = v42;
   }
 });
 
@@ -61542,7 +61821,7 @@ var require_tool_cache = __commonJS({
     var stream = __importStar2(require("stream"));
     var util = __importStar2(require("util"));
     var assert_1 = require("assert");
-    var v4_1 = __importDefault2(require_v42());
+    var v4_1 = __importDefault2(require_v4());
     var exec_1 = require_exec();
     var retry_helper_1 = require_retry_helper();
     var HTTPError = class extends Error {
@@ -61811,39 +62090,39 @@ var require_tool_cache = __commonJS({
         yield exec_1.exec(`"${unzipPath}"`, args, { cwd: dest });
       });
     }
-    function cacheDir(sourceDir, tool, version2, arch) {
+    function cacheDir(sourceDir, tool, version3, arch) {
       return __awaiter2(this, void 0, void 0, function* () {
-        version2 = semver2.clean(version2) || version2;
+        version3 = semver2.clean(version3) || version3;
         arch = arch || os2.arch();
-        core.debug(`Caching tool ${tool} ${version2} ${arch}`);
+        core.debug(`Caching tool ${tool} ${version3} ${arch}`);
         core.debug(`source dir: ${sourceDir}`);
         if (!fs.statSync(sourceDir).isDirectory()) {
           throw new Error("sourceDir is not a directory");
         }
-        const destPath = yield _createToolPath(tool, version2, arch);
+        const destPath = yield _createToolPath(tool, version3, arch);
         for (const itemName of fs.readdirSync(sourceDir)) {
           const s = path2.join(sourceDir, itemName);
           yield io.cp(s, destPath, { recursive: true });
         }
-        _completeToolPath(tool, version2, arch);
+        _completeToolPath(tool, version3, arch);
         return destPath;
       });
     }
     exports.cacheDir = cacheDir;
-    function cacheFile(sourceFile, targetFile, tool, version2, arch) {
+    function cacheFile(sourceFile, targetFile, tool, version3, arch) {
       return __awaiter2(this, void 0, void 0, function* () {
-        version2 = semver2.clean(version2) || version2;
+        version3 = semver2.clean(version3) || version3;
         arch = arch || os2.arch();
-        core.debug(`Caching tool ${tool} ${version2} ${arch}`);
+        core.debug(`Caching tool ${tool} ${version3} ${arch}`);
         core.debug(`source file: ${sourceFile}`);
         if (!fs.statSync(sourceFile).isFile()) {
           throw new Error("sourceFile is not a file");
         }
-        const destFolder = yield _createToolPath(tool, version2, arch);
+        const destFolder = yield _createToolPath(tool, version3, arch);
         const destPath = path2.join(destFolder, targetFile);
         core.debug(`destination file ${destPath}`);
         yield io.cp(sourceFile, destPath);
-        _completeToolPath(tool, version2, arch);
+        _completeToolPath(tool, version3, arch);
         return destFolder;
       });
     }
@@ -61945,9 +62224,9 @@ var require_tool_cache = __commonJS({
         return dest;
       });
     }
-    function _createToolPath(tool, version2, arch) {
+    function _createToolPath(tool, version3, arch) {
       return __awaiter2(this, void 0, void 0, function* () {
-        const folderPath = path2.join(_getCacheDirectory(), tool, semver2.clean(version2) || version2, arch || "");
+        const folderPath = path2.join(_getCacheDirectory(), tool, semver2.clean(version3) || version3, arch || "");
         core.debug(`destination ${folderPath}`);
         const markerPath = `${folderPath}.complete`;
         yield io.rmRF(folderPath);
@@ -61956,8 +62235,8 @@ var require_tool_cache = __commonJS({
         return folderPath;
       });
     }
-    function _completeToolPath(tool, version2, arch) {
-      const folderPath = path2.join(_getCacheDirectory(), tool, semver2.clean(version2) || version2, arch || "");
+    function _completeToolPath(tool, version3, arch) {
+      const folderPath = path2.join(_getCacheDirectory(), tool, semver2.clean(version3) || version3, arch || "");
       const markerPath = `${folderPath}.complete`;
       fs.writeFileSync(markerPath, "");
       core.debug("finished caching tool");
@@ -61971,7 +62250,7 @@ var require_tool_cache = __commonJS({
     }
     exports.isExplicitVersion = isExplicitVersion;
     function evaluateVersions(versions, versionSpec) {
-      let version2 = "";
+      let version3 = "";
       core.debug(`evaluating ${versions.length} versions`);
       versions = versions.sort((a, b) => {
         if (semver2.gt(a, b)) {
@@ -61983,16 +62262,16 @@ var require_tool_cache = __commonJS({
         const potential = versions[i];
         const satisfied = semver2.satisfies(potential, versionSpec);
         if (satisfied) {
-          version2 = potential;
+          version3 = potential;
           break;
         }
       }
-      if (version2) {
-        core.debug(`matched: ${version2}`);
+      if (version3) {
+        core.debug(`matched: ${version3}`);
       } else {
         core.debug("match not found");
       }
-      return version2;
+      return version3;
     }
     exports.evaluateVersions = evaluateVersions;
     function _getCacheDirectory() {
@@ -62354,16 +62633,16 @@ var require_versions = __commonJS({
         win32: "zip"
       }[platform];
     }
-    function resolveCommit2(platform, version2) {
+    function resolveCommit2(platform, version3) {
       const ext = extForPlatform2(platform);
       const addrhost = {
         linux: "linux-x86_64",
         darwin: "macos-x86_64",
         win32: "windows-x86_64"
       }[platform];
-      const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version2}.${ext}`;
-      const variantName = `zig-${addrhost}-${version2}`;
-      return { downloadUrl, variantName, version: version2 };
+      const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version3}.${ext}`;
+      const variantName = `zig-${addrhost}-${version3}`;
+      return { downloadUrl, variantName, version: version3 };
     }
     function getJSON(opts) {
       return new Promise((resolve, reject) => {
@@ -62376,7 +62655,7 @@ var require_versions = __commonJS({
         });
       });
     }
-    async function resolveVersion2(platform, version2) {
+    async function resolveVersion2(platform, version3) {
       const ext = extForPlatform2(platform);
       const host = {
         linux: "x86_64-linux",
@@ -62385,14 +62664,14 @@ var require_versions = __commonJS({
       }[platform] || platform;
       const index = await getJSON({ url: "https://ziglang.org/download/index.json" });
       const availableVersions = Object.keys(index);
-      const useVersion = semver2.valid(version2) ? semver2.maxSatisfying(availableVersions.filter((v) => semver2.valid(v)), version2) : null;
-      const meta = index[useVersion || version2];
+      const useVersion = semver2.valid(version3) ? semver2.maxSatisfying(availableVersions.filter((v) => semver2.valid(v)), version3) : null;
+      const meta = index[useVersion || version3];
       if (!meta || !meta[host]) {
-        throw new Error(`Could not find version ${useVersion || version2} for platform ${host}`);
+        throw new Error(`Could not find version ${useVersion || version3} for platform ${host}`);
       }
       const downloadUrl = meta[host].tarball;
       const variantName = path2.basename(meta[host].tarball).replace(`.${ext}`, "");
-      return { downloadUrl, variantName, version: useVersion || version2 };
+      return { downloadUrl, variantName, version: useVersion || version3 };
     }
     module2.exports = {
       extForPlatform: extForPlatform2,
@@ -62415,9 +62694,9 @@ var {
   resolveVersion
 } = require_versions();
 var TOOL_NAME = "zig";
-async function downloadZig(platform, version2) {
+async function downloadZig(platform, version3) {
   const ext = extForPlatform(platform);
-  const { downloadUrl, variantName, version: useVersion } = version2.includes("+") ? resolveCommit(platform, version2) : await resolveVersion(platform, version2);
+  const { downloadUrl, variantName, version: useVersion } = version3.includes("+") ? resolveCommit(platform, version3) : await resolveVersion(platform, version3);
   const cachedPath = toolCache.find(TOOL_NAME, useVersion);
   if (cachedPath) {
     actions.info(`using cached zig install: ${cachedPath}`);
@@ -62445,12 +62724,12 @@ async function downloadZig(platform, version2) {
   return cachePath;
 }
 async function main() {
-  const version2 = actions.getInput("version") || "master";
-  if (semver.valid(version2) && semver.lt(version2, "0.3.0")) {
+  const version3 = actions.getInput("version") || "master";
+  if (semver.valid(version3) && semver.lt(version3, "0.3.0")) {
     actions.setFailed("This action does not work with Zig 0.1.0 and Zig 0.2.0");
     return;
   }
-  const zigPath = await downloadZig(os.platform(), version2);
+  const zigPath = await downloadZig(os.platform(), version3);
   actions.addPath(zigPath);
   actions.info(`zig installed at ${zigPath}`);
 }
