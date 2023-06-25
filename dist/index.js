@@ -64016,7 +64016,7 @@ async function downloadZig(platform, version3, useCache = true) {
   }
   actions.info(`no cached version found. downloading zig ${variantName}`);
   const downloadPath = await toolCache.downloadTool(downloadUrl);
-  zigPath = ext === "zip" ? await toolCache.extractZip(downloadPath) : await toolCache.extractTar(downloadPath, void 0, "x");
+  const zigPath = ext === "zip" ? await toolCache.extractZip(downloadPath) : await toolCache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
   const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion);
   if (useCache) {
@@ -64037,9 +64037,9 @@ async function main() {
     actions.setFailed('`with.cache` must be "true" or "false"');
     return;
   }
-  const zigPath2 = await downloadZig(os.platform(), version3, Boolean(useCache));
-  actions.addPath(zigPath2);
-  actions.info(`zig installed at ${zigPath2}`);
+  const zigPath = await downloadZig(os.platform(), version3, Boolean(useCache));
+  actions.addPath(zigPath);
+  actions.info(`zig installed at ${zigPath}`);
 }
 __name(main, "main");
 main().catch((err) => {

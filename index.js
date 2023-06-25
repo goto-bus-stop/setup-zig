@@ -40,7 +40,7 @@ async function downloadZig (platform, version, useCache = true) {
 
   actions.info(`no cached version found. downloading zig ${variantName}`)
   const downloadPath = await toolCache.downloadTool(downloadUrl)
-  zigPath = ext === 'zip'
+  const zigPath = ext === 'zip'
     ? await toolCache.extractZip(downloadPath)
     : await toolCache.extractTar(downloadPath, undefined, 'x')
 
