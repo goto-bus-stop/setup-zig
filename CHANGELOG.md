@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.4.0
+* The action now caches compilers in your repository's Actions cache by default. This significantly
+  speeds up installs on average. [#53](https://github.com/goto-bus-stop/setup-zig/pull/54)
+
 ## 1.3.0
 * Support pinning to a specific commit of the zig compiler. ([@codehz](https://github.com/codehz) in [#14](https://github.com/goto-bus-stop/setup-zig/pull/14))
   ```yaml
