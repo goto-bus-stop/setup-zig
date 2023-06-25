@@ -48,6 +48,16 @@ If you are running Zig on Windows machines, you need to make sure that your .zig
 *.zig text eol=lf
 ```
 
+This action caches the downloaded compilers in your repository's Actions cache by default,
+to reduce the load on the Zig Foundation's servers. If this is really bad for you for some
+reason you can disable the caching.
+
+```yaml
+- uses: goto-bus-stop/setup-zig@v2
+  with:
+    cache: false
+```
+
 ## License
 
 [Apache-2.0](LICENSE.md)

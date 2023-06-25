@@ -63996,7 +63996,7 @@ var {
   resolveVersion
 } = require_versions();
 var TOOL_NAME = "zig";
-async function downloadZig(platform, version3) {
+async function downloadZig(platform, version3, useCache = true) {
   const ext = extForPlatform(platform);
   const { downloadUrl, variantName, version: useVersion } = version3.includes("+") ? resolveCommit(platform, version3) : await resolveVersion(platform, version3);
   const cachedPath = toolCache.find(TOOL_NAME, useVersion);
@@ -64005,30 +64005,39 @@ async function downloadZig(platform, version3) {
     return cachedPath;
   }
   const cacheKey = `${TOOL_NAME}-${variantName}`;
-  const restorePath = `${process.env.RUNNER_TOOL_CACHE}/${TOOL_NAME}/${useVersion}/${os.arch()}`;
-  actions.info(`attempting restore of ${cacheKey} to ${restorePath}`);
-  const restoredKey = await cache.restoreCache([restorePath], cacheKey);
-  if (restoredKey) {
-    actions.info(`using cached zig install: ${restorePath}`);
-    return restorePath;
+  if (useCache) {
+    const restorePath = `${process.env.RUNNER_TOOL_CACHE}/${TOOL_NAME}/${useVersion}/${os.arch()}`;
+    actions.info(`attempting restore of ${cacheKey} to ${restorePath}`);
+    const restoredKey = await cache.restoreCache([restorePath], cacheKey);
+    if (restoredKey) {
+      actions.info(`using cached zig install: ${restorePath}`);
+      return restorePath;
+    }
   }
   actions.info(`no cached version found. downloading zig ${variantName}`);
   const downloadPath = await toolCache.downloadTool(downloadUrl);
   zigPath = ext === "zip" ? await toolCache.extractZip(downloadPath) : await toolCache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
   const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion);
-  actions.info(`adding zig ${useVersion} at ${cachePath} to local cache ${cacheKey}`);
-  await cache.saveCache([cachePath], cacheKey);
+  if (useCache) {
+    actions.info(`adding zig ${useVersion} at ${cachePath} to local cache ${cacheKey}`);
+    await cache.saveCache([cachePath], cacheKey);
+  }
   return cachePath;
 }
 __name(downloadZig, "downloadZig");
 async function main() {
   const version3 = actions.getInput("version") || "master";
+  const useCache = actions.getInput("cache") || "true";
   if (semver.valid(version3) && semver.lt(version3, "0.3.0")) {
     actions.setFailed("This action does not work with Zig 0.1.0 and Zig 0.2.0");
     return;
   }
-  const zigPath2 = await downloadZig(os.platform(), version3);
+  if (useCache !== "false" && useCache !== "true") {
+    actions.setFailed('`with.cache` must be "true" or "false"');
+    return;
+  }
+  const zigPath2 = await downloadZig(os.platform(), version3, Boolean(useCache));
   actions.addPath(zigPath2);
   actions.info(`zig installed at ${zigPath2}`);
 }
