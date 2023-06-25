@@ -32,6 +32,7 @@ async function downloadZig (platform, version) {
   const restorePath = `${process.env.RUNNER_TOOL_CACHE}/${TOOL_NAME}/${useVersion}`
   const restoredKey = await cache.restoreCache([restorePath], cacheKey)
   if (restoredKey) {
+    actions.info(`using cached zig install: ${restorePath}`)
     zigPath = restorePath
   }
 
@@ -45,9 +46,9 @@ async function downloadZig (platform, version) {
 
   const binPath = path.join(zigPath, variantName)
   const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion)
-  actions.info(`added zig ${useVersion} to the tool cache`)
 
   if (!restoredKey) {
+    actions.info(`adding zig ${useVersion} to local cache ${cacheKey}`)
     await cache.saveCache([cachePath], cacheKey)
   }
 
