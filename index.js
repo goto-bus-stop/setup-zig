@@ -29,7 +29,7 @@ async function downloadZig (platform, version) {
 
   const cacheKey = `${TOOL_NAME}-${variantName}`
   let zigPath = null
-  const restorePath = `${process.env.RUNNER_TOOL_CACHE}/${TOOL_NAME}/${useVersion}`
+  const restorePath = `${process.env.RUNNER_TOOL_CACHE}/${TOOL_NAME}/${useVersion}/${os.arch()}`
   actions.info(`attempting restore of ${cacheKey} to ${restorePath}`)
   const restoredKey = await cache.restoreCache([restorePath], cacheKey)
   if (restoredKey) {
