@@ -4027,10 +4027,10 @@ var require_oidc_utils = __commonJS({
         return __awaiter2(this, void 0, void 0, function* () {
           const httpclient = _OidcClient.createHttpClient();
           const res = yield httpclient.getJson(id_token_url).catch((error) => {
-            throw new Error(`Failed to get ID Token. 
- 
+            throw new Error(`Failed to get ID Token.
+
         Error Code : ${error.statusCode}
- 
+
         Error Message: ${error.result.message}`);
           });
           const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
@@ -32540,7 +32540,7 @@ var require_dist6 = __commonJS({
        * Logging method for util.inspect in Node
        */
       [custom]() {
-        return `RestError: ${this.message} 
+        return `RestError: ${this.message}
  ${errorSanitizer.sanitize(this)}`;
       }
     };
@@ -59781,7 +59781,7 @@ var require_cacheHttpClient = __commonJS({
           const cacheListResult = response.result;
           const totalCount = cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.totalCount;
           if (totalCount && totalCount > 0) {
-            core.debug(`No matching cache found for cache key '${key}', version '${version3} and scope ${process.env["GITHUB_REF"]}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key 
+            core.debug(`No matching cache found for cache key '${key}', version '${version3} and scope ${process.env["GITHUB_REF"]}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
 Other caches with similar key:`);
             for (const cacheEntry of (cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.artifactCaches) || []) {
               core.debug(`Cache Key: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheKey}, Cache Version: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheVersion}, Cache Scope: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.scope}, Cache Created: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.creationTime}`);
@@ -60292,6 +60292,7 @@ var require_cache = __commonJS({
           if (typedError.name === ValidationError.name) {
             throw error;
           } else {
+            core.warning(error.stack)
             core.warning(`Failed to restore: ${error.message}`);
           }
         } finally {
