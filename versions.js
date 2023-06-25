@@ -21,7 +21,7 @@ function resolveCommit (platform, version) {
   const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
   const variantName = `zig-${addrhost}-${version}`
 
-  return { downloadUrl, variantName }
+  return { downloadUrl, variantName, version }
 }
 
 function getJSON (opts) {
@@ -59,7 +59,7 @@ async function resolveVersion (platform, version) {
   const downloadUrl = meta[host].tarball
   const variantName = path.basename(meta[host].tarball).replace(`.${ext}`, '')
 
-  return { downloadUrl, variantName }
+  return { downloadUrl, variantName, version: useVersion || version }
 }
 
 module.exports = {

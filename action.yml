@@ -9,6 +9,10 @@ inputs:
     description: 'Version of the zig compiler to use (must be 0.3.0 or up)'
     required: true
     default: '0.5.0'
+  cache:
+    description: 'Cache downloaded compilers for faster action runs. Strongly recommended.'
+    required: false
+    default: 'true'
 runs:
   using: 'node12'
   main: 'dist/index.js'
