@@ -49,8 +49,10 @@ If you are running Zig on Windows machines, you need to make sure that your .zig
 ```
 
 This action caches the downloaded compilers in your repository's Actions cache by default,
-to reduce the load on the Zig Foundation's servers. If this is really bad for you for some
-reason you can disable the caching.
+to reduce the load on the Zig Foundation's servers. Cached compilers are only about 60MB
+each per version/OS/architecture.
+
+If this is really bad for you for some reason you can disable the caching.
 
 ```yaml
 - uses: goto-bus-stop/setup-zig@v2
