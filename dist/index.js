@@ -28408,6 +28408,7 @@ var require_lib4 = __commonJS({
         if ("signal" in init)
           signal = init.signal;
         if (signal != null && !isAbortSignal(signal)) {
+          console.log(signal)
           throw new TypeError("Expected signal to be an instanceof AbortSignal");
         }
         this[INTERNALS$2] = {
@@ -60292,7 +60293,6 @@ var require_cache = __commonJS({
           if (typedError.name === ValidationError.name) {
             throw error;
           } else {
-            core.warning(error.stack)
             core.warning(`Failed to restore: ${error.message}`);
           }
         } finally {
