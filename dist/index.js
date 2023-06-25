@@ -62705,6 +62705,7 @@ async function downloadZig(platform, version3) {
   const cacheKey = `${TOOL_NAME}-${variantName}`;
   let zigPath = null;
   const restorePath = `${process.env.RUNNER_TOOL_CACHE}/${TOOL_NAME}/${useVersion}`;
+  actions.info(`attempting restore of ${cacheKey} to ${restorePath}`);
   const restoredKey = await cache.restoreCache([restorePath], cacheKey);
   if (restoredKey) {
     actions.info(`using cached zig install: ${restorePath}`);
@@ -62718,7 +62719,7 @@ async function downloadZig(platform, version3) {
   const binPath = path.join(zigPath, variantName);
   const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion);
   if (!restoredKey) {
-    actions.info(`adding zig ${useVersion} to local cache ${cacheKey}`);
+    actions.info(`adding zig ${useVersion} at ${cachePath} to local cache ${cacheKey}`);
     await cache.saveCache([cachePath], cacheKey);
   }
   return cachePath;
