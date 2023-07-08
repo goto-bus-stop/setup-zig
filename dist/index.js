@@ -77,7 +77,11 @@ var require_debug = __commonJS({
 // node_modules/semver/internal/re.js
 var require_re = __commonJS({
   "node_modules/semver/internal/re.js"(exports, module2) {
-    var { MAX_SAFE_COMPONENT_LENGTH, MAX_SAFE_BUILD_LENGTH } = require_constants();
+    var {
+      MAX_SAFE_COMPONENT_LENGTH,
+      MAX_SAFE_BUILD_LENGTH,
+      MAX_LENGTH
+    } = require_constants();
     var debug = require_debug();
     exports = module2.exports = {};
     var re = exports.re = [];
@@ -88,7 +92,7 @@ var require_re = __commonJS({
     var LETTERDASHNUMBER = "[a-zA-Z0-9-]";
     var safeRegexReplacements = [
       ["\\s", 1],
-      ["\\d", MAX_SAFE_COMPONENT_LENGTH],
+      ["\\d", MAX_LENGTH],
       [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH]
     ];
     var makeSafeRegex = /* @__PURE__ */ __name((value) => {
@@ -1471,7 +1475,7 @@ var require_range = __commonJS({
         this.loose = !!options.loose;
         this.includePrerelease = !!options.includePrerelease;
         this.raw = range.trim().split(/\s+/).join(" ");
-        this.set = this.raw.split("||").map((r) => this.parseRange(r)).filter((c) => c.length);
+        this.set = this.raw.split("||").map((r) => this.parseRange(r.trim())).filter((c) => c.length);
         if (!this.set.length) {
           throw new TypeError(`Invalid SemVer Range: ${this.raw}`);
         }
@@ -9605,6 +9609,7 @@ var init_esm_node2 = __esm({
 // node_modules/tslib/tslib.es6.mjs
 var tslib_es6_exports = {};
 __export(tslib_es6_exports, {
+  __addDisposableResource: () => __addDisposableResource,
   __assign: () => __assign,
   __asyncDelegator: () => __asyncDelegator,
   __asyncGenerator: () => __asyncGenerator,
@@ -9616,6 +9621,7 @@ __export(tslib_es6_exports, {
   __classPrivateFieldSet: () => __classPrivateFieldSet,
   __createBinding: () => __createBinding,
   __decorate: () => __decorate,
+  __disposeResources: () => __disposeResources,
   __esDecorate: () => __esDecorate,
   __exportStar: () => __exportStar,
   __extends: () => __extends,
@@ -10035,7 +10041,56 @@ function __classPrivateFieldIn(state, receiver) {
     throw new TypeError("Cannot use 'in' operator on non-object");
   return typeof state === "function" ? receiver === state : state.has(receiver);
 }
-var extendStatics, __assign, __createBinding, __setModuleDefault, tslib_es6_default;
+function __addDisposableResource(env, value, async) {
+  if (value !== null && value !== void 0) {
+    if (typeof value !== "object")
+      throw new TypeError("Object expected.");
+    var dispose;
+    if (async) {
+      if (!Symbol.asyncDispose)
+        throw new TypeError("Symbol.asyncDispose is not defined.");
+      dispose = value[Symbol.asyncDispose];
+    }
+    if (dispose === void 0) {
+      if (!Symbol.dispose)
+        throw new TypeError("Symbol.dispose is not defined.");
+      dispose = value[Symbol.dispose];
+    }
+    if (typeof dispose !== "function")
+      throw new TypeError("Object not disposable.");
+    env.stack.push({ value, dispose, async });
+  } else if (async) {
+    env.stack.push({ async: true });
+  }
+  return value;
+}
+function __disposeResources(env) {
+  function fail(e) {
+    env.error = env.hasError ? new _SuppressedError(e, env.error, "An error was suppressed during disposal.") : e;
+    env.hasError = true;
+  }
+  __name(fail, "fail");
+  function next() {
+    while (env.stack.length) {
+      var rec = env.stack.pop();
+      try {
+        var result = rec.dispose && rec.dispose.call(rec.value);
+        if (rec.async)
+          return Promise.resolve(result).then(next, function(e) {
+            fail(e);
+            return next();
+          });
+      } catch (e) {
+        fail(e);
+      }
+    }
+    if (env.hasError)
+      throw env.error;
+  }
+  __name(next, "next");
+  return next();
+}
+var extendStatics, __assign, __createBinding, __setModuleDefault, _SuppressedError, tslib_es6_default;
 var init_tslib_es6 = __esm({
   "node_modules/tslib/tslib.es6.mjs"() {
     extendStatics = /* @__PURE__ */ __name(function(d, b) {
@@ -10107,6 +10162,12 @@ var init_tslib_es6 = __esm({
     __name(__classPrivateFieldGet, "__classPrivateFieldGet");
     __name(__classPrivateFieldSet, "__classPrivateFieldSet");
     __name(__classPrivateFieldIn, "__classPrivateFieldIn");
+    __name(__addDisposableResource, "__addDisposableResource");
+    _SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
+      var e = new Error(message);
+      return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+    __name(__disposeResources, "__disposeResources");
     tslib_es6_default = {
       __extends,
       __assign,
@@ -10132,7 +10193,9 @@ var init_tslib_es6 = __esm({
       __importDefault,
       __classPrivateFieldGet,
       __classPrivateFieldSet,
-      __classPrivateFieldIn
+      __classPrivateFieldIn,
+      __addDisposableResource,
+      __disposeResources
     };
   }
 });
@@ -10291,7 +10354,7 @@ var require_XMLDOMImplementation = __commonJS({
   "node_modules/xmlbuilder/lib/XMLDOMImplementation.js"(exports, module2) {
     (function() {
       var XMLDOMImplementation;
-      module2.exports = XMLDOMImplementation = /* @__PURE__ */ function() {
+      module2.exports = XMLDOMImplementation = function() {
         function XMLDOMImplementation2() {
         }
         __name(XMLDOMImplementation2, "XMLDOMImplementation");
@@ -10321,7 +10384,7 @@ var require_XMLDOMErrorHandler = __commonJS({
   "node_modules/xmlbuilder/lib/XMLDOMErrorHandler.js"(exports, module2) {
     (function() {
       var XMLDOMErrorHandler;
-      module2.exports = XMLDOMErrorHandler = /* @__PURE__ */ function() {
+      module2.exports = XMLDOMErrorHandler = function() {
         function XMLDOMErrorHandler2() {
         }
         __name(XMLDOMErrorHandler2, "XMLDOMErrorHandler");
@@ -10339,7 +10402,7 @@ var require_XMLDOMStringList = __commonJS({
   "node_modules/xmlbuilder/lib/XMLDOMStringList.js"(exports, module2) {
     (function() {
       var XMLDOMStringList;
-      module2.exports = XMLDOMStringList = /* @__PURE__ */ function() {
+      module2.exports = XMLDOMStringList = function() {
         function XMLDOMStringList2(arr) {
           this.arr = arr || [];
         }
@@ -10368,7 +10431,7 @@ var require_XMLDOMConfiguration = __commonJS({
       var XMLDOMConfiguration, XMLDOMErrorHandler, XMLDOMStringList;
       XMLDOMErrorHandler = require_XMLDOMErrorHandler();
       XMLDOMStringList = require_XMLDOMStringList();
-      module2.exports = XMLDOMConfiguration = /* @__PURE__ */ function() {
+      module2.exports = XMLDOMConfiguration = function() {
         function XMLDOMConfiguration2() {
           var clonedSelf;
           this.defaultParams = {
@@ -10455,7 +10518,7 @@ var require_XMLAttribute = __commonJS({
       var NodeType, XMLAttribute, XMLNode;
       NodeType = require_NodeType();
       XMLNode = require_XMLNode();
-      module2.exports = XMLAttribute = /* @__PURE__ */ function() {
+      module2.exports = XMLAttribute = function() {
         function XMLAttribute2(parent, name, value) {
           this.parent = parent;
           if (this.parent) {
@@ -10550,7 +10613,7 @@ var require_XMLNamedNodeMap = __commonJS({
   "node_modules/xmlbuilder/lib/XMLNamedNodeMap.js"(exports, module2) {
     (function() {
       var XMLNamedNodeMap;
-      module2.exports = XMLNamedNodeMap = /* @__PURE__ */ function() {
+      module2.exports = XMLNamedNodeMap = function() {
         function XMLNamedNodeMap2(nodes) {
           this.nodes = nodes;
         }
@@ -11744,7 +11807,7 @@ var require_XMLNodeList = __commonJS({
   "node_modules/xmlbuilder/lib/XMLNodeList.js"(exports, module2) {
     (function() {
       var XMLNodeList;
-      module2.exports = XMLNodeList = /* @__PURE__ */ function() {
+      module2.exports = XMLNodeList = function() {
         function XMLNodeList2(nodes) {
           this.nodes = nodes;
         }
@@ -11801,7 +11864,7 @@ var require_XMLNode = __commonJS({
       XMLNodeList = null;
       XMLNamedNodeMap = null;
       DocumentPosition = null;
-      module2.exports = XMLNode = /* @__PURE__ */ function() {
+      module2.exports = XMLNode = function() {
         function XMLNode2(parent1) {
           this.parent = parent1;
           if (this.parent) {
@@ -12487,7 +12550,7 @@ var require_XMLStringifier = __commonJS({
           return fn.apply(me, arguments);
         };
       }, "bind"), hasProp = {}.hasOwnProperty;
-      module2.exports = XMLStringifier = /* @__PURE__ */ function() {
+      module2.exports = XMLStringifier = function() {
         function XMLStringifier2(options) {
           this.assertLegalName = bind(this.assertLegalName, this);
           this.assertLegalChar = bind(this.assertLegalChar, this);
@@ -12730,7 +12793,7 @@ var require_XMLWriterBase = __commonJS({
       XMLDTDEntity = require_XMLDTDEntity();
       XMLDTDNotation = require_XMLDTDNotation();
       WriterState = require_WriterState();
-      module2.exports = XMLWriterBase = /* @__PURE__ */ function() {
+      module2.exports = XMLWriterBase = function() {
         function XMLWriterBase2(options) {
           var key, ref, value;
           options || (options = {});
@@ -13386,7 +13449,7 @@ var require_XMLDocumentCB = __commonJS({
       XMLStringifier = require_XMLStringifier();
       XMLStringWriter = require_XMLStringWriter();
       WriterState = require_WriterState();
-      module2.exports = XMLDocumentCB = /* @__PURE__ */ function() {
+      module2.exports = XMLDocumentCB = function() {
         function XMLDocumentCB2(options, onData, onEnd) {
           var writerOptions;
           this.name = "?xml";
@@ -14075,7 +14138,7 @@ var require_builder = __commonJS({
       escapeCDATA = /* @__PURE__ */ __name(function(entry) {
         return entry.replace("]]>", "]]]]><![CDATA[>");
       }, "escapeCDATA");
-      exports.Builder = /* @__PURE__ */ function() {
+      exports.Builder = function() {
         function Builder(opts) {
           var key, ref, value;
           this.options = {};
@@ -29326,7 +29389,7 @@ var require_lib4 = __commonJS({
         const headers = response.headers;
         if (headers["transfer-encoding"] === "chunked" && !headers["content-length"]) {
           response.once("close", function(hadError) {
-            const hasDataListener = socket.listenerCount("data") > 0;
+            const hasDataListener = socket && socket.listenerCount("data") > 0;
             if (hasDataListener && !hadError) {
               const err = new Error("Premature close");
               err.code = "ERR_STREAM_PREMATURE_CLOSE";
