@@ -64037,7 +64037,7 @@ async function main() {
     actions.setFailed('`with.cache` must be "true" or "false"');
     return;
   }
-  const zigPath = await downloadZig(os.platform(), version3, Boolean(useCache));
+  const zigPath = await downloadZig(os.platform(), version3, useCache === "true");
   actions.addPath(zigPath);
   actions.info(`zig installed at ${zigPath}`);
 }

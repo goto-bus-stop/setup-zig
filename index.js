@@ -67,7 +67,7 @@ async function main () {
     return
   }
 
-  const zigPath = await downloadZig(os.platform(), version, Boolean(useCache))
+  const zigPath = await downloadZig(os.platform(), version, useCache === 'true')
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
