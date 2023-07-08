@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.1.1
+* Fix `cache: false`, see [#55](https://github.com/goto-bus-stop/setup-zig/issues/55).
+
+Thanks to [@linusg](https://github.com/linusg) for the report!
+
 ## 2.1.0
 * The action now caches compilers in your repository's Actions cache by default. This significantly
   speeds up installs on average. [#53](https://github.com/goto-bus-stop/setup-zig/pull/53)
