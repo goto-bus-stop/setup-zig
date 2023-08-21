@@ -6,6 +6,7 @@ const semver = require('semver')
 const actions = require('@actions/core')
 const cache = require('@actions/cache')
 const toolCache = require('@actions/tool-cache')
+const fs = require('fs')
 const {
   extForPlatform,
   resolveCommit,
@@ -13,6 +14,30 @@ const {
 } = require('./versions')
 
 const TOOL_NAME = 'zig'
+
+function get7zUrl(arch) {
+    if (arch == 'x64')
+        return 'https://github.com/marler8997/7-Zip/releases/download/23.0.1/7z-x86_64.exe'
+    return null
+}
+
+async function extractZipFast(file, dest) {
+  if (os.platform() != "win32")
+      return toolCache.extractZip(file, dest)
+  const _7zUrl = get7zUrl(os.arch())
+  if (!_7zUrl)
+      return toolCache.extractZip(file, dest)
+  actions.info(`downloading 7z.exe from ${_7zUrl}`)
+  const _7z_tmp = await toolCache.downloadTool(_7zUrl)
+  const _7z = _7z_tmp + ".exe"
+  fs.rename(_7z_tmp, _7z, (error) => {
+    if (error) {
+      actions.setFailed('failed to rename 7z to an exe: ' + error)
+    }
+  })
+  actions.info(`7z.exe extracting ${file}...`)
+  return toolCache.extract7z(file, dest, _7z)
+}
 
 async function downloadZig (platform, version, useCache = true) {
   const ext = extForPlatform(platform)
@@ -41,7 +66,7 @@ async function downloadZig (platform, version, useCache = true) {
   actions.info(`no cached version found. downloading zig ${variantName}`)
   const downloadPath = await toolCache.downloadTool(downloadUrl)
   const zigPath = ext === 'zip'
-    ? await toolCache.extractZip(downloadPath)
+    ? await extractZipFast(downloadPath)
     : await toolCache.extractTar(downloadPath, undefined, 'x')
 
   const binPath = path.join(zigPath, variantName)
