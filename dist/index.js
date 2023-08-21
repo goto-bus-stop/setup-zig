@@ -2987,7 +2987,7 @@ var require_file_command = __commonJS({
     };
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
-    var fs = __importStar2(require("fs"));
+    var fs2 = __importStar2(require("fs"));
     var os2 = __importStar2(require("os"));
     var uuid_1 = (init_esm_node(), __toCommonJS(esm_node_exports));
     var utils_1 = require_utils();
@@ -2996,10 +2996,10 @@ var require_file_command = __commonJS({
       if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
       }
-      if (!fs.existsSync(filePath)) {
+      if (!fs2.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
       }
-      fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os2.EOL}`, {
+      fs2.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os2.EOL}`, {
         encoding: "utf8"
       });
     }
@@ -4843,12 +4843,12 @@ var require_io_util = __commonJS({
     var _a;
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getCmdPath = exports.tryGetExecutablePath = exports.isRooted = exports.isDirectory = exports.exists = exports.READONLY = exports.UV_FS_O_EXLOCK = exports.IS_WINDOWS = exports.unlink = exports.symlink = exports.stat = exports.rmdir = exports.rm = exports.rename = exports.readlink = exports.readdir = exports.open = exports.mkdir = exports.lstat = exports.copyFile = exports.chmod = void 0;
-    var fs = __importStar2(require("fs"));
+    var fs2 = __importStar2(require("fs"));
     var path2 = __importStar2(require("path"));
-    _a = fs.promises, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
+    _a = fs2.promises, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.open = _a.open, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rm = _a.rm, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
     exports.IS_WINDOWS = process.platform === "win32";
     exports.UV_FS_O_EXLOCK = 268435456;
-    exports.READONLY = fs.constants.O_RDONLY;
+    exports.READONLY = fs2.constants.O_RDONLY;
     function exists(fsPath) {
       return __awaiter2(this, void 0, void 0, function* () {
         try {
@@ -7464,7 +7464,7 @@ var require_internal_globber = __commonJS({
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.DefaultGlobber = void 0;
     var core = __importStar2(require_core());
-    var fs = __importStar2(require("fs"));
+    var fs2 = __importStar2(require("fs"));
     var globOptionsHelper = __importStar2(require_internal_glob_options_helper());
     var path2 = __importStar2(require("path"));
     var patternHelper = __importStar2(require_internal_pattern_helper());
@@ -7518,7 +7518,7 @@ var require_internal_globber = __commonJS({
           for (const searchPath of patternHelper.getSearchPaths(patterns)) {
             core.debug(`Search path '${searchPath}'`);
             try {
-              yield __await2(fs.promises.lstat(searchPath));
+              yield __await2(fs2.promises.lstat(searchPath));
             } catch (err) {
               if (err.code === "ENOENT") {
                 continue;
@@ -7549,7 +7549,7 @@ var require_internal_globber = __commonJS({
                 continue;
               }
               const childLevel = item.level + 1;
-              const childItems = (yield __await2(fs.promises.readdir(item.path))).map((x) => new internal_search_state_1.SearchState(path2.join(item.path, x), childLevel));
+              const childItems = (yield __await2(fs2.promises.readdir(item.path))).map((x) => new internal_search_state_1.SearchState(path2.join(item.path, x), childLevel));
               stack.push(...childItems.reverse());
             } else if (match & internal_match_kind_1.MatchKind.File) {
               yield yield __await2(item.path);
@@ -7584,7 +7584,7 @@ var require_internal_globber = __commonJS({
           let stats;
           if (options.followSymbolicLinks) {
             try {
-              stats = yield fs.promises.stat(item.path);
+              stats = yield fs2.promises.stat(item.path);
             } catch (err) {
               if (err.code === "ENOENT") {
                 if (options.omitBrokenSymbolicLinks) {
@@ -7596,10 +7596,10 @@ var require_internal_globber = __commonJS({
               throw err;
             }
           } else {
-            stats = yield fs.promises.lstat(item.path);
+            stats = yield fs2.promises.lstat(item.path);
           }
           if (stats.isDirectory() && options.followSymbolicLinks) {
-            const realPath = yield fs.promises.realpath(item.path);
+            const realPath = yield fs2.promises.realpath(item.path);
             while (traversalChain.length >= item.level) {
               traversalChain.pop();
             }
@@ -9153,7 +9153,7 @@ var require_cacheUtils = __commonJS({
     var exec = __importStar2(require_exec());
     var glob = __importStar2(require_glob());
     var io = __importStar2(require_io());
-    var fs = __importStar2(require("fs"));
+    var fs2 = __importStar2(require("fs"));
     var path2 = __importStar2(require("path"));
     var semver2 = __importStar2(require_semver3());
     var util = __importStar2(require("util"));
@@ -9184,7 +9184,7 @@ var require_cacheUtils = __commonJS({
     __name(createTempDirectory, "createTempDirectory");
     exports.createTempDirectory = createTempDirectory;
     function getArchiveFileSizeInBytes(filePath) {
-      return fs.statSync(filePath).size;
+      return fs2.statSync(filePath).size;
     }
     __name(getArchiveFileSizeInBytes, "getArchiveFileSizeInBytes");
     exports.getArchiveFileSizeInBytes = getArchiveFileSizeInBytes;
@@ -9232,7 +9232,7 @@ var require_cacheUtils = __commonJS({
     exports.resolvePaths = resolvePaths;
     function unlinkFile(filePath) {
       return __awaiter2(this, void 0, void 0, function* () {
-        return util.promisify(fs.unlink)(filePath);
+        return util.promisify(fs2.unlink)(filePath);
       });
     }
     __name(unlinkFile, "unlinkFile");
@@ -9281,7 +9281,7 @@ var require_cacheUtils = __commonJS({
     exports.getCacheFileName = getCacheFileName;
     function getGnuTarPathOnWindows() {
       return __awaiter2(this, void 0, void 0, function* () {
-        if (fs.existsSync(constants_1.GnuTarPathOnWindows)) {
+        if (fs2.existsSync(constants_1.GnuTarPathOnWindows)) {
           return constants_1.GnuTarPathOnWindows;
         }
         const versionOutput = yield getVersion("tar");
@@ -26093,7 +26093,7 @@ var require_form_data = __commonJS({
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
-    var fs = require("fs");
+    var fs2 = require("fs");
     var Stream = require("stream").Stream;
     var mime = require_mime_types();
     var asynckit = require_asynckit();
@@ -26159,7 +26159,7 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs.stat(value.path, function(err, stat) {
+          fs2.stat(value.path, function(err, stat) {
             var fileSize;
             if (err) {
               callback(err);
@@ -29227,9 +29227,6 @@ var require_lib4 = __commonJS({
       let agent = request.agent;
       if (typeof agent === "function") {
         agent = agent(parsedURL);
-      }
-      if (!headers.has("Connection") && !agent) {
-        headers.set("Connection", "close");
       }
       return Object.assign({}, parsedURL, {
         method: request.method,
@@ -37003,7 +37000,7 @@ var require_dist9 = __commonJS({
     require_dist7();
     var coreLro = require_dist8();
     var events = require("events");
-    var fs = require("fs");
+    var fs2 = require("fs");
     var util = require("util");
     function _interopNamespace(e) {
       if (e && e.__esModule)
@@ -37028,7 +37025,7 @@ var require_dist9 = __commonJS({
     __name(_interopNamespace, "_interopNamespace");
     var coreHttp__namespace = /* @__PURE__ */ _interopNamespace(coreHttp);
     var os__namespace = /* @__PURE__ */ _interopNamespace(os2);
-    var fs__namespace = /* @__PURE__ */ _interopNamespace(fs);
+    var fs__namespace = /* @__PURE__ */ _interopNamespace(fs2);
     var util__namespace = /* @__PURE__ */ _interopNamespace(util);
     var BlobServiceProperties = {
       serializedName: "BlobServiceProperties",
@@ -60640,7 +60637,7 @@ var require_downloadUtils = __commonJS({
     var http_client_1 = require_lib();
     var storage_blob_1 = require_dist9();
     var buffer = __importStar2(require("buffer"));
-    var fs = __importStar2(require("fs"));
+    var fs2 = __importStar2(require("fs"));
     var stream = __importStar2(require("stream"));
     var util = __importStar2(require("util"));
     var utils = __importStar2(require_cacheUtils());
@@ -60754,7 +60751,7 @@ var require_downloadUtils = __commonJS({
     exports.DownloadProgress = DownloadProgress;
     function downloadCacheHttpClient(archiveLocation, archivePath) {
       return __awaiter2(this, void 0, void 0, function* () {
-        const writeStream = fs.createWriteStream(archivePath);
+        const writeStream = fs2.createWriteStream(archivePath);
         const httpClient = new http_client_1.HttpClient("actions/cache");
         const downloadResponse = yield (0, requestUtils_1.retryHttpClientResponse)("downloadCache", () => __awaiter2(this, void 0, void 0, function* () {
           return httpClient.get(archiveLocation);
@@ -60781,7 +60778,7 @@ var require_downloadUtils = __commonJS({
     function downloadCacheHttpClientConcurrent(archiveLocation, archivePath, options) {
       var _a;
       return __awaiter2(this, void 0, void 0, function* () {
-        const archiveDescriptor = yield fs.promises.open(archivePath, "w");
+        const archiveDescriptor = yield fs2.promises.open(archivePath, "w");
         const httpClient = new http_client_1.HttpClient("actions/cache", void 0, {
           socketTimeout: options.timeoutInMs,
           keepAlive: true
@@ -60901,7 +60898,7 @@ var require_downloadUtils = __commonJS({
         } else {
           const maxSegmentSize = Math.min(134217728, buffer.constants.MAX_LENGTH);
           const downloadProgress = new DownloadProgress(contentLength);
-          const fd = fs.openSync(archivePath, "w");
+          const fd = fs2.openSync(archivePath, "w");
           try {
             downloadProgress.startDisplayTimer();
             const controller = new abort_controller_1.AbortController();
@@ -60919,12 +60916,12 @@ var require_downloadUtils = __commonJS({
                 controller.abort();
                 throw new Error("Aborting cache download as the download time exceeded the timeout.");
               } else if (Buffer.isBuffer(result)) {
-                fs.writeFileSync(fd, result);
+                fs2.writeFileSync(fd, result);
               }
             }
           } finally {
             downloadProgress.stopDisplayTimer();
-            fs.closeSync(fd);
+            fs2.closeSync(fd);
           }
         }
       });
@@ -61121,7 +61118,7 @@ var require_cacheHttpClient = __commonJS({
     var http_client_1 = require_lib();
     var auth_1 = require_auth();
     var crypto7 = __importStar2(require("crypto"));
-    var fs = __importStar2(require("fs"));
+    var fs2 = __importStar2(require("fs"));
     var url_1 = require("url");
     var utils = __importStar2(require_cacheUtils());
     var downloadUtils_1 = require_downloadUtils();
@@ -61280,7 +61277,7 @@ Other caches with similar key:`);
       return __awaiter2(this, void 0, void 0, function* () {
         const fileSize = utils.getArchiveFileSizeInBytes(archivePath);
         const resourceUrl = getCacheApiUrl(`caches/${cacheId.toString()}`);
-        const fd = fs.openSync(archivePath, "r");
+        const fd = fs2.openSync(archivePath, "r");
         const uploadOptions = (0, options_1.getUploadOptions)(options);
         const concurrency = utils.assertDefined("uploadConcurrency", uploadOptions.uploadConcurrency);
         const maxChunkSize = utils.assertDefined("uploadChunkSize", uploadOptions.uploadChunkSize);
@@ -61294,7 +61291,7 @@ Other caches with similar key:`);
               const start = offset;
               const end = offset + chunkSize - 1;
               offset += maxChunkSize;
-              yield uploadChunk(httpClient, resourceUrl, () => fs.createReadStream(archivePath, {
+              yield uploadChunk(httpClient, resourceUrl, () => fs2.createReadStream(archivePath, {
                 fd,
                 start,
                 end,
@@ -61305,7 +61302,7 @@ Other caches with similar key:`);
             }
           })));
         } finally {
-          fs.closeSync(fd);
+          fs2.closeSync(fd);
         }
         return;
       });
@@ -63111,7 +63108,7 @@ var require_manifest = __commonJS({
     var core_1 = require_core();
     var os2 = require("os");
     var cp = require("child_process");
-    var fs = require("fs");
+    var fs2 = require("fs");
     function _findMatch(versionSpec, stable, candidates, archFilter) {
       return __awaiter2(this, void 0, void 0, function* () {
         const platFilter = os2.platform();
@@ -63177,10 +63174,10 @@ var require_manifest = __commonJS({
       const lsbReleaseFile = "/etc/lsb-release";
       const osReleaseFile = "/etc/os-release";
       let contents = "";
-      if (fs.existsSync(lsbReleaseFile)) {
-        contents = fs.readFileSync(lsbReleaseFile).toString();
-      } else if (fs.existsSync(osReleaseFile)) {
-        contents = fs.readFileSync(osReleaseFile).toString();
+      if (fs2.existsSync(lsbReleaseFile)) {
+        contents = fs2.readFileSync(lsbReleaseFile).toString();
+      } else if (fs2.existsSync(osReleaseFile)) {
+        contents = fs2.readFileSync(osReleaseFile).toString();
       }
       return contents;
     }
@@ -63372,7 +63369,7 @@ var require_tool_cache = __commonJS({
     exports.evaluateVersions = exports.isExplicitVersion = exports.findFromManifest = exports.getManifestFromRepo = exports.findAllVersions = exports.find = exports.cacheFile = exports.cacheDir = exports.extractZip = exports.extractXar = exports.extractTar = exports.extract7z = exports.downloadTool = exports.HTTPError = void 0;
     var core = __importStar2(require_core());
     var io = __importStar2(require_io());
-    var fs = __importStar2(require("fs"));
+    var fs2 = __importStar2(require("fs"));
     var mm = __importStar2(require_manifest());
     var os2 = __importStar2(require("os"));
     var path2 = __importStar2(require("path"));
@@ -63423,7 +63420,7 @@ var require_tool_cache = __commonJS({
     exports.downloadTool = downloadTool;
     function downloadToolAttempt(url, dest, auth, headers) {
       return __awaiter2(this, void 0, void 0, function* () {
-        if (fs.existsSync(dest)) {
+        if (fs2.existsSync(dest)) {
           throw new Error(`Destination file path ${dest} already exists`);
         }
         const http = new httpm.HttpClient(userAgent, [], {
@@ -63447,7 +63444,7 @@ var require_tool_cache = __commonJS({
         const readStream = responseMessageFactory();
         let succeeded = false;
         try {
-          yield pipeline(readStream, fs.createWriteStream(dest));
+          yield pipeline(readStream, fs2.createWriteStream(dest));
           core.debug("download complete");
           succeeded = true;
           return dest;
@@ -63666,11 +63663,11 @@ var require_tool_cache = __commonJS({
         arch = arch || os2.arch();
         core.debug(`Caching tool ${tool} ${version3} ${arch}`);
         core.debug(`source dir: ${sourceDir}`);
-        if (!fs.statSync(sourceDir).isDirectory()) {
+        if (!fs2.statSync(sourceDir).isDirectory()) {
           throw new Error("sourceDir is not a directory");
         }
         const destPath = yield _createToolPath(tool, version3, arch);
-        for (const itemName of fs.readdirSync(sourceDir)) {
+        for (const itemName of fs2.readdirSync(sourceDir)) {
           const s = path2.join(sourceDir, itemName);
           yield io.cp(s, destPath, { recursive: true });
         }
@@ -63686,7 +63683,7 @@ var require_tool_cache = __commonJS({
         arch = arch || os2.arch();
         core.debug(`Caching tool ${tool} ${version3} ${arch}`);
         core.debug(`source file: ${sourceFile}`);
-        if (!fs.statSync(sourceFile).isFile()) {
+        if (!fs2.statSync(sourceFile).isFile()) {
           throw new Error("sourceFile is not a file");
         }
         const destFolder = yield _createToolPath(tool, version3, arch);
@@ -63717,7 +63714,7 @@ var require_tool_cache = __commonJS({
         versionSpec = semver2.clean(versionSpec) || "";
         const cachePath = path2.join(_getCacheDirectory(), toolName, versionSpec, arch);
         core.debug(`checking cache: ${cachePath}`);
-        if (fs.existsSync(cachePath) && fs.existsSync(`${cachePath}.complete`)) {
+        if (fs2.existsSync(cachePath) && fs2.existsSync(`${cachePath}.complete`)) {
           core.debug(`Found tool in cache ${toolName} ${versionSpec} ${arch}`);
           toolPath = cachePath;
         } else {
@@ -63732,12 +63729,12 @@ var require_tool_cache = __commonJS({
       const versions = [];
       arch = arch || os2.arch();
       const toolPath = path2.join(_getCacheDirectory(), toolName);
-      if (fs.existsSync(toolPath)) {
-        const children2 = fs.readdirSync(toolPath);
+      if (fs2.existsSync(toolPath)) {
+        const children2 = fs2.readdirSync(toolPath);
         for (const child of children2) {
           if (isExplicitVersion(child)) {
             const fullPath = path2.join(toolPath, child, arch || "");
-            if (fs.existsSync(fullPath) && fs.existsSync(`${fullPath}.complete`)) {
+            if (fs2.existsSync(fullPath) && fs2.existsSync(`${fullPath}.complete`)) {
               versions.push(child);
             }
           }
@@ -63816,7 +63813,7 @@ var require_tool_cache = __commonJS({
     function _completeToolPath(tool, version3, arch) {
       const folderPath = path2.join(_getCacheDirectory(), tool, semver2.clean(version3) || version3, arch || "");
       const markerPath = `${folderPath}.complete`;
-      fs.writeFileSync(markerPath, "");
+      fs2.writeFileSync(markerPath, "");
       core.debug("finished caching tool");
     }
     __name(_completeToolPath, "_completeToolPath");
@@ -64282,12 +64279,37 @@ var semver = require_semver2();
 var actions = require_core();
 var cache = require_cache();
 var toolCache = require_tool_cache();
+var fs = require("fs");
 var {
   extForPlatform,
   resolveCommit,
   resolveVersion
 } = require_versions();
 var TOOL_NAME = "zig";
+function get7zUrl(arch) {
+  if (arch == "x64")
+    return "https://github.com/marler8997/7-Zip/releases/download/23.0.1/7z-x86_64.exe";
+  return null;
+}
+__name(get7zUrl, "get7zUrl");
+async function extractZipFast(file, dest) {
+  if (os.platform() != "win32")
+    return toolCache.extractZip(file, dest);
+  const _7zUrl = get7zUrl(os.arch());
+  if (!_7zUrl)
+    return toolCache.extractZip(file, dest);
+  actions.info(`downloading 7z.exe from ${_7zUrl}`);
+  const _7z_tmp = await toolCache.downloadTool(_7zUrl);
+  const _7z = _7z_tmp + ".exe";
+  fs.rename(_7z_tmp, _7z, (error) => {
+    if (error) {
+      actions.setFailed("failed to rename 7z to an exe: " + error);
+    }
+  });
+  actions.info(`7z.exe extracting ${file}...`);
+  return toolCache.extract7z(file, dest, _7z);
+}
+__name(extractZipFast, "extractZipFast");
 async function downloadZig(platform, version3, useCache = true) {
   const ext = extForPlatform(platform);
   const { downloadUrl, variantName, version: useVersion } = version3.includes("+") ? resolveCommit(platform, version3) : await resolveVersion(platform, version3);
@@ -64308,7 +64330,7 @@ async function downloadZig(platform, version3, useCache = true) {
   }
   actions.info(`no cached version found. downloading zig ${variantName}`);
   const downloadPath = await toolCache.downloadTool(downloadUrl);
-  const zigPath = ext === "zip" ? await toolCache.extractZip(downloadPath) : await toolCache.extractTar(downloadPath, void 0, "x");
+  const zigPath = ext === "zip" ? await extractZipFast(downloadPath) : await toolCache.extractTar(downloadPath, void 0, "x");
   const binPath = path.join(zigPath, variantName);
   const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion);
   if (useCache) {
