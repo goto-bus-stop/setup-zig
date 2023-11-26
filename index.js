@@ -17,7 +17,12 @@ const TOOL_NAME = 'zig'
 async function downloadZig (platform, version, useCache = true) {
   const ext = extForPlatform(platform)
 
-  const { downloadUrl, variantName, version: useVersion } = version.includes('+')
+  const {
+    downloadUrl,
+    fileWithoutFileType,
+    variantName,
+    version: useVersion
+  } = version.includes('+')
     ? resolveCommit(platform, version)
     : await resolveVersion(platform, version)
 
@@ -44,7 +49,7 @@ async function downloadZig (platform, version, useCache = true) {
     ? await toolCache.extractZip(downloadPath)
     : await toolCache.extractTar(downloadPath, undefined, 'x')
 
-  const binPath = path.join(zigPath, variantName)
+  const binPath = path.join(zigPath, fileWithoutFileType)
   const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion)
 
   if (useCache) {

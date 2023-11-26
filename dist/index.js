@@ -80701,10 +80701,16 @@ var require_versions = __commonJS({
         darwin: "macos-x86_64",
         win32: "windows-x86_64"
       }[platform];
-      const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version2}.${ext}`;
+      const fileWithoutFileType = `zig-${addrhost}-${version2}`;
+      const downloadUrl = `https://ziglang.org/builds/${fileWithoutFileType}.${ext}`;
       const versionWithoutBuildHash = semver2.clean(version2);
       const variantName = `zig-${addrhost}-${versionWithoutBuildHash}`;
-      return { downloadUrl, variantName, version: versionWithoutBuildHash };
+      return {
+        downloadUrl,
+        fileWithoutFileType,
+        variantName,
+        version: versionWithoutBuildHash
+      };
     }
     __name(resolveCommit2, "resolveCommit");
     function getJSON(opts) {
@@ -80761,7 +80767,12 @@ var {
 var TOOL_NAME = "zig";
 async function downloadZig(platform, version2, useCache = true) {
   const ext = extForPlatform(platform);
-  const { downloadUrl, variantName, version: useVersion } = version2.includes("+") ? resolveCommit(platform, version2) : await resolveVersion(platform, version2);
+  const {
+    downloadUrl,
+    fileWithoutFileType,
+    variantName,
+    version: useVersion
+  } = version2.includes("+") ? resolveCommit(platform, version2) : await resolveVersion(platform, version2);
   const cachedPath = toolCache.find(TOOL_NAME, useVersion);
   if (cachedPath) {
     actions.info(`using cached zig install: ${cachedPath}`);
@@ -80780,7 +80791,7 @@ async function downloadZig(platform, version2, useCache = true) {
   actions.info(`no cached version found. downloading zig ${variantName}`);
   const downloadPath = await toolCache.downloadTool(downloadUrl);
   const zigPath = ext === "zip" ? await toolCache.extractZip(downloadPath) : await toolCache.extractTar(downloadPath, void 0, "x");
-  const binPath = path.join(zigPath, variantName);
+  const binPath = path.join(zigPath, fileWithoutFileType);
   const cachePath = await toolCache.cacheDir(binPath, TOOL_NAME, useVersion);
   if (useCache) {
     actions.info(`adding zig ${useVersion} at ${cachePath} to local cache ${cacheKey}`);

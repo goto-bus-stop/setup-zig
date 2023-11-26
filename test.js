@@ -7,21 +7,25 @@ const {
 async function test () {
   assert.deepEqual(resolveCommit('linux', '0.6.0+4b48fccad'), {
     downloadUrl: 'https://ziglang.org/builds/zig-linux-x86_64-0.6.0+4b48fccad.tar.xz',
+    fileWithoutFileType: 'zig-linux-x86_64-0.6.0+4b48fccad',
     variantName: 'zig-linux-x86_64-0.6.0',
     version: '0.6.0'
   })
   assert.deepEqual(resolveCommit('win32', '0.6.0+4b48fccad'), {
     downloadUrl: 'https://ziglang.org/builds/zig-windows-x86_64-0.6.0+4b48fccad.zip',
+    fileWithoutFileType: 'zig-windows-x86_64-0.6.0+4b48fccad',
     variantName: 'zig-windows-x86_64-0.6.0',
     version: '0.6.0'
   })
   assert.deepEqual(resolveCommit('win32', '0.12.0-dev.1092+68ed78775'), {
     downloadUrl: 'https://ziglang.org/builds/zig-windows-x86_64-0.12.0-dev.1092+68ed78775.zip',
+    fileWithoutFileType: 'zig-windows-x86_64-0.12.0-dev.1092+68ed78775',
     variantName: 'zig-windows-x86_64-0.12.0-dev.1092',
     version: '0.12.0-dev.1092'
   })
   assert.deepEqual(resolveCommit('darwin', '0.12.0-dev.1150+3c22cecee'), {
     downloadUrl: 'https://ziglang.org/builds/zig-macos-x86_64-0.12.0-dev.1150+3c22cecee.tar.xz',
+    fileWithoutFileType: 'zig-macos-x86_64-0.12.0-dev.1150+3c22cecee',
     variantName: 'zig-macos-x86_64-0.12.0-dev.1150',
     version: '0.12.0-dev.1150'
   })
