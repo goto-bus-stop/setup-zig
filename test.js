@@ -1,5 +1,4 @@
 const assert = require('assert').strict
-const semver = require('semver')
 const {
   resolveCommit,
   resolveVersion
@@ -20,6 +19,11 @@ async function test () {
     downloadUrl: 'https://ziglang.org/builds/zig-windows-x86_64-0.12.0-dev.1092+68ed78775.zip',
     variantName: 'zig-windows-x86_64-0.12.0-dev.1092',
     version: '0.12.0-dev.1092'
+  })
+  assert.deepEqual(resolveCommit('darwin', '0.12.0-dev.1150+3c22cecee'), {
+    downloadUrl: 'https://ziglang.org/builds/zig-macos-x86_64-0.12.0-dev.1150+3c22cecee.tar.xz',
+    variantName: 'zig-macos-x86_64-0.12.0-dev.1150',
+    version: '0.12.0-dev.1150'
   })
 
   assert.deepEqual(await resolveVersion('linux', '0.7.0'), {
