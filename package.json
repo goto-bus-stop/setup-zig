@@ -31,7 +31,7 @@
     "url": "https://github.com/goto-bus-stop/setup-zig.git"
   },
   "scripts": {
-    "prepare": "esbuild index.js --outdir=dist --keep-names --bundle --platform=node --target=node16",
+    "prepare": "esbuild index.js --outdir=dist --keep-names --bundle --platform=node --target=node20",
     "test": "standard && node test"
   },
   "standard": {
