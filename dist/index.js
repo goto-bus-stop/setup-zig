@@ -33563,9 +33563,9 @@ var require_dist = __commonJS({
   }
 });
 
-// node_modules/@azure/core-http/node_modules/@azure/core-util/dist/index.js
+// node_modules/@azure/core-util/dist/index.js
 var require_dist2 = __commonJS({
-  "node_modules/@azure/core-http/node_modules/@azure/core-util/dist/index.js"(exports2) {
+  "node_modules/@azure/core-util/dist/index.js"(exports2) {
     "use strict";
     var abortController = require_dist();
     var crypto7 = require("crypto");
@@ -33965,9 +33965,9 @@ var require_dist3 = __commonJS({
   }
 });
 
-// node_modules/@azure/core-http/node_modules/@azure/core-auth/dist/index.js
+// node_modules/@azure/core-auth/dist/index.js
 var require_dist4 = __commonJS({
-  "node_modules/@azure/core-http/node_modules/@azure/core-auth/dist/index.js"(exports2) {
+  "node_modules/@azure/core-auth/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var coreUtil = require_dist2();
@@ -53159,221 +53159,14 @@ var require_dist7 = __commonJS({
   }
 });
 
-// node_modules/@azure/core-lro/node_modules/@azure/core-util/dist/index.js
-var require_dist8 = __commonJS({
-  "node_modules/@azure/core-lro/node_modules/@azure/core-util/dist/index.js"(exports2) {
-    "use strict";
-    var abortController = require_dist();
-    var crypto7 = require("crypto");
-    function createAbortablePromise(buildPromise, options) {
-      const { cleanupBeforeAbort, abortSignal, abortErrorMsg } = options !== null && options !== void 0 ? options : {};
-      return new Promise((resolve, reject) => {
-        function rejectOnAbort() {
-          reject(new abortController.AbortError(abortErrorMsg !== null && abortErrorMsg !== void 0 ? abortErrorMsg : "The operation was aborted."));
-        }
-        __name(rejectOnAbort, "rejectOnAbort");
-        function removeListeners() {
-          abortSignal === null || abortSignal === void 0 ? void 0 : abortSignal.removeEventListener("abort", onAbort);
-        }
-        __name(removeListeners, "removeListeners");
-        function onAbort() {
-          cleanupBeforeAbort === null || cleanupBeforeAbort === void 0 ? void 0 : cleanupBeforeAbort();
-          removeListeners();
-          rejectOnAbort();
-        }
-        __name(onAbort, "onAbort");
-        if (abortSignal === null || abortSignal === void 0 ? void 0 : abortSignal.aborted) {
-          return rejectOnAbort();
-        }
-        try {
-          buildPromise((x) => {
-            removeListeners();
-            resolve(x);
-          }, (x) => {
-            removeListeners();
-            reject(x);
-          });
-        } catch (err) {
-          reject(err);
-        }
-        abortSignal === null || abortSignal === void 0 ? void 0 : abortSignal.addEventListener("abort", onAbort);
-      });
-    }
-    __name(createAbortablePromise, "createAbortablePromise");
-    var StandardAbortMessage = "The delay was aborted.";
-    function delay(timeInMs, options) {
-      let token;
-      const { abortSignal, abortErrorMsg } = options !== null && options !== void 0 ? options : {};
-      return createAbortablePromise((resolve) => {
-        token = setTimeout(resolve, timeInMs);
-      }, {
-        cleanupBeforeAbort: () => clearTimeout(token),
-        abortSignal,
-        abortErrorMsg: abortErrorMsg !== null && abortErrorMsg !== void 0 ? abortErrorMsg : StandardAbortMessage
-      });
-    }
-    __name(delay, "delay");
-    async function cancelablePromiseRace(abortablePromiseBuilders, options) {
-      var _a2, _b2;
-      const aborter = new abortController.AbortController();
-      function abortHandler() {
-        aborter.abort();
-      }
-      __name(abortHandler, "abortHandler");
-      (_a2 = options === null || options === void 0 ? void 0 : options.abortSignal) === null || _a2 === void 0 ? void 0 : _a2.addEventListener("abort", abortHandler);
-      try {
-        return await Promise.race(abortablePromiseBuilders.map((p) => p({ abortSignal: aborter.signal })));
-      } finally {
-        aborter.abort();
-        (_b2 = options === null || options === void 0 ? void 0 : options.abortSignal) === null || _b2 === void 0 ? void 0 : _b2.removeEventListener("abort", abortHandler);
-      }
-    }
-    __name(cancelablePromiseRace, "cancelablePromiseRace");
-    function getRandomIntegerInclusive(min, max) {
-      min = Math.ceil(min);
-      max = Math.floor(max);
-      const offset = Math.floor(Math.random() * (max - min + 1));
-      return offset + min;
-    }
-    __name(getRandomIntegerInclusive, "getRandomIntegerInclusive");
-    function isObject(input) {
-      return typeof input === "object" && input !== null && !Array.isArray(input) && !(input instanceof RegExp) && !(input instanceof Date);
-    }
-    __name(isObject, "isObject");
-    function isError(e) {
-      if (isObject(e)) {
-        const hasName = typeof e.name === "string";
-        const hasMessage = typeof e.message === "string";
-        return hasName && hasMessage;
-      }
-      return false;
-    }
-    __name(isError, "isError");
-    function getErrorMessage(e) {
-      if (isError(e)) {
-        return e.message;
-      } else {
-        let stringified;
-        try {
-          if (typeof e === "object" && e) {
-            stringified = JSON.stringify(e);
-          } else {
-            stringified = String(e);
-          }
-        } catch (err) {
-          stringified = "[unable to stringify input]";
-        }
-        return `Unknown error ${stringified}`;
-      }
-    }
-    __name(getErrorMessage, "getErrorMessage");
-    async function computeSha256Hmac(key, stringToSign, encoding) {
-      const decodedKey = Buffer.from(key, "base64");
-      return crypto7.createHmac("sha256", decodedKey).update(stringToSign).digest(encoding);
-    }
-    __name(computeSha256Hmac, "computeSha256Hmac");
-    async function computeSha256Hash(content, encoding) {
-      return crypto7.createHash("sha256").update(content).digest(encoding);
-    }
-    __name(computeSha256Hash, "computeSha256Hash");
-    function isDefined(thing) {
-      return typeof thing !== "undefined" && thing !== null;
-    }
-    __name(isDefined, "isDefined");
-    function isObjectWithProperties(thing, properties) {
-      if (!isDefined(thing) || typeof thing !== "object") {
-        return false;
-      }
-      for (const property of properties) {
-        if (!objectHasProperty(thing, property)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    __name(isObjectWithProperties, "isObjectWithProperties");
-    function objectHasProperty(thing, property) {
-      return isDefined(thing) && typeof thing === "object" && property in thing;
-    }
-    __name(objectHasProperty, "objectHasProperty");
-    function generateUUID() {
-      let uuid = "";
-      for (let i = 0; i < 32; i++) {
-        const randomNumber = Math.floor(Math.random() * 16);
-        if (i === 12) {
-          uuid += "4";
-        } else if (i === 16) {
-          uuid += randomNumber & 3 | 8;
-        } else {
-          uuid += randomNumber.toString(16);
-        }
-        if (i === 7 || i === 11 || i === 15 || i === 19) {
-          uuid += "-";
-        }
-      }
-      return uuid;
-    }
-    __name(generateUUID, "generateUUID");
-    var _a$1;
-    var uuidFunction = typeof ((_a$1 = globalThis === null || globalThis === void 0 ? void 0 : globalThis.crypto) === null || _a$1 === void 0 ? void 0 : _a$1.randomUUID) === "function" ? globalThis.crypto.randomUUID.bind(globalThis.crypto) : crypto7.randomUUID;
-    if (!uuidFunction) {
-      uuidFunction = generateUUID;
-    }
-    function randomUUID() {
-      return uuidFunction();
-    }
-    __name(randomUUID, "randomUUID");
-    var _a;
-    var _b;
-    var _c;
-    var _d;
-    var isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
-    var isWebWorker = typeof self === "object" && typeof (self === null || self === void 0 ? void 0 : self.importScripts) === "function" && (((_a = self.constructor) === null || _a === void 0 ? void 0 : _a.name) === "DedicatedWorkerGlobalScope" || ((_b = self.constructor) === null || _b === void 0 ? void 0 : _b.name) === "ServiceWorkerGlobalScope" || ((_c = self.constructor) === null || _c === void 0 ? void 0 : _c.name) === "SharedWorkerGlobalScope");
-    var isDeno = typeof Deno !== "undefined" && typeof Deno.version !== "undefined" && typeof Deno.version.deno !== "undefined";
-    var isNode = typeof process !== "undefined" && Boolean(process.version) && Boolean((_d = process.versions) === null || _d === void 0 ? void 0 : _d.node) && // Deno thought it was a good idea to spoof process.versions.node, see https://deno.land/std@0.177.0/node/process.ts?s=versions
-    !isDeno;
-    var isBun = typeof Bun !== "undefined" && typeof Bun.version !== "undefined";
-    var isReactNative = typeof navigator !== "undefined" && (navigator === null || navigator === void 0 ? void 0 : navigator.product) === "ReactNative";
-    function uint8ArrayToString(bytes, format) {
-      return Buffer.from(bytes).toString(format);
-    }
-    __name(uint8ArrayToString, "uint8ArrayToString");
-    function stringToUint8Array(value, format) {
-      return Buffer.from(value, format);
-    }
-    __name(stringToUint8Array, "stringToUint8Array");
-    exports2.cancelablePromiseRace = cancelablePromiseRace;
-    exports2.computeSha256Hash = computeSha256Hash;
-    exports2.computeSha256Hmac = computeSha256Hmac;
-    exports2.createAbortablePromise = createAbortablePromise;
-    exports2.delay = delay;
-    exports2.getErrorMessage = getErrorMessage;
-    exports2.getRandomIntegerInclusive = getRandomIntegerInclusive;
-    exports2.isBrowser = isBrowser;
-    exports2.isBun = isBun;
-    exports2.isDefined = isDefined;
-    exports2.isDeno = isDeno;
-    exports2.isError = isError;
-    exports2.isNode = isNode;
-    exports2.isObject = isObject;
-    exports2.isObjectWithProperties = isObjectWithProperties;
-    exports2.isReactNative = isReactNative;
-    exports2.isWebWorker = isWebWorker;
-    exports2.objectHasProperty = objectHasProperty;
-    exports2.randomUUID = randomUUID;
-    exports2.stringToUint8Array = stringToUint8Array;
-    exports2.uint8ArrayToString = uint8ArrayToString;
-  }
-});
-
 // node_modules/@azure/core-lro/dist/index.js
-var require_dist9 = __commonJS({
+var require_dist8 = __commonJS({
   "node_modules/@azure/core-lro/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var logger$1 = require_dist3();
     var abortController = require_dist();
-    var coreUtil = require_dist8();
+    var coreUtil = require_dist2();
     var logger = logger$1.createClientLogger("core-lro");
     var POLL_INTERVAL_IN_MS = 2e3;
     var terminalStates = ["succeeded", "canceled", "failed"];
@@ -54419,7 +54212,7 @@ var require_dist9 = __commonJS({
 });
 
 // node_modules/@azure/storage-blob/dist/index.js
-var require_dist10 = __commonJS({
+var require_dist9 = __commonJS({
   "node_modules/@azure/storage-blob/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -54432,7 +54225,7 @@ var require_dist10 = __commonJS({
     var crypto7 = require("crypto");
     var stream = require("stream");
     require_dist7();
-    var coreLro = require_dist9();
+    var coreLro = require_dist8();
     var events = require("events");
     var fs = require("fs");
     var util = require("util");
@@ -78142,7 +77935,7 @@ var require_downloadUtils = __commonJS({
     exports2.downloadCacheStorageSDK = exports2.downloadCacheHttpClientConcurrent = exports2.downloadCacheHttpClient = exports2.DownloadProgress = void 0;
     var core = __importStar2(require_core());
     var http_client_1 = require_lib();
-    var storage_blob_1 = require_dist10();
+    var storage_blob_1 = require_dist9();
     var buffer = __importStar2(require("buffer"));
     var fs = __importStar2(require("fs"));
     var stream = __importStar2(require("stream"));
