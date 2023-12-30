@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.2.0
+* Update the action to use Node.js 20. [#61](https://github.com/goto-bus-stop/setup-zig/pull/61)
+* Add a test for zig 0.11.0. [#62](https://github.com/goto-bus-stop/setup-zig/pull/62)
+
+Thanks [@chenrui333](https://github.com/chenrui333)!
+
 ## 2.1.1
 * Fix `cache: false`, see [#55](https://github.com/goto-bus-stop/setup-zig/issues/55).
 
