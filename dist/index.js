@@ -33,28 +33,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __accessCheck = (obj, member, msg) => {
-  if (!member.has(obj))
-    throw TypeError("Cannot " + msg);
-};
-var __privateGet = (obj, member, getter) => {
-  __accessCheck(obj, member, "read from private field");
-  return getter ? getter.call(obj) : member.get(obj);
-};
-var __privateAdd = (obj, member, value) => {
-  if (member.has(obj))
-    throw TypeError("Cannot add the same private member more than once");
-  member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
-};
-var __privateSet = (obj, member, value, setter) => {
-  __accessCheck(obj, member, "write to private field");
-  setter ? setter.call(obj, value) : member.set(obj, value);
-  return value;
-};
-var __privateMethod = (obj, member, method) => {
-  __accessCheck(obj, member, "access private method");
-  return method;
-};
 
 // node_modules/semver/internal/constants.js
 var require_constants = __commonJS({
@@ -225,7 +203,10 @@ var require_semver = __commonJS({
     var { safeRe: re, t } = require_re();
     var parseOptions = require_parse_options();
     var { compareIdentifiers } = require_identifiers();
-    var _SemVer = class _SemVer {
+    var SemVer = class _SemVer {
+      static {
+        __name(this, "SemVer");
+      }
       constructor(version3, options) {
         options = parseOptions(options);
         if (version3 instanceof _SemVer) {
@@ -455,8 +436,6 @@ var require_semver = __commonJS({
         return this;
       }
     };
-    __name(_SemVer, "SemVer");
-    var SemVer = _SemVer;
     module2.exports = SemVer;
   }
 });
@@ -1216,7 +1195,10 @@ var require_lru_cache = __commonJS({
     var CACHE = Symbol("cache");
     var UPDATE_AGE_ON_GET = Symbol("updateAgeOnGet");
     var naiveLength = /* @__PURE__ */ __name(() => 1, "naiveLength");
-    var _LRUCache = class _LRUCache {
+    var LRUCache = class {
+      static {
+        __name(this, "LRUCache");
+      }
       constructor(options) {
         if (typeof options === "number")
           options = { max: options };
@@ -1404,8 +1386,6 @@ var require_lru_cache = __commonJS({
         this[CACHE].forEach((value, key) => get(this, key, false));
       }
     };
-    __name(_LRUCache, "LRUCache");
-    var LRUCache = _LRUCache;
     var get = /* @__PURE__ */ __name((self2, key, doUse) => {
       const node = self2[CACHE].get(key);
       if (node) {
@@ -1449,7 +1429,10 @@ var require_lru_cache = __commonJS({
         self2[LRU_LIST].removeNode(node);
       }
     }, "del");
-    var _Entry = class _Entry {
+    var Entry = class {
+      static {
+        __name(this, "Entry");
+      }
       constructor(key, value, length, now, maxAge) {
         this.key = key;
         this.value = value;
@@ -1458,8 +1441,6 @@ var require_lru_cache = __commonJS({
         this.maxAge = maxAge || 0;
       }
     };
-    __name(_Entry, "Entry");
-    var Entry = _Entry;
     var forEachStep = /* @__PURE__ */ __name((self2, fn, node, thisp) => {
       let hit = node.value;
       if (isStale(self2, hit)) {
@@ -1477,7 +1458,10 @@ var require_lru_cache = __commonJS({
 // node_modules/semver/classes/range.js
 var require_range = __commonJS({
   "node_modules/semver/classes/range.js"(exports2, module2) {
-    var _Range = class _Range {
+    var Range = class _Range {
+      static {
+        __name(this, "Range");
+      }
       constructor(range, options) {
         options = parseOptions(options);
         if (range instanceof _Range) {
@@ -1598,8 +1582,6 @@ var require_range = __commonJS({
         return false;
       }
     };
-    __name(_Range, "Range");
-    var Range = _Range;
     module2.exports = Range;
     var LRU = require_lru_cache();
     var cache2 = new LRU({ max: 1e3 });
@@ -1837,7 +1819,10 @@ var require_range = __commonJS({
 var require_comparator = __commonJS({
   "node_modules/semver/classes/comparator.js"(exports2, module2) {
     var ANY = Symbol("SemVer ANY");
-    var _Comparator = class _Comparator {
+    var Comparator = class _Comparator {
+      static {
+        __name(this, "Comparator");
+      }
       static get ANY() {
         return ANY;
       }
@@ -1935,8 +1920,6 @@ var require_comparator = __commonJS({
         return false;
       }
     };
-    __name(_Comparator, "Comparator");
-    var Comparator = _Comparator;
     module2.exports = Comparator;
     var parseOptions = require_parse_options();
     var { safeRe: re, t } = require_re();
@@ -2585,7 +2568,10 @@ var require_command = __commonJS({
     __name(issue, "issue");
     exports2.issue = issue;
     var CMD_STRING = "::";
-    var _Command = class _Command {
+    var Command = class {
+      static {
+        __name(this, "Command");
+      }
       constructor(command, properties, message) {
         if (!command) {
           command = "missing.command";
@@ -2617,8 +2603,6 @@ var require_command = __commonJS({
         return cmdStr;
       }
     };
-    __name(_Command, "Command");
-    var Command = _Command;
     function escapeData(s) {
       return utils_1.toCommandValue(s).replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
     }
@@ -3439,16 +3423,20 @@ var require_symbols = __commonJS({
 var require_errors = __commonJS({
   "node_modules/undici/lib/core/errors.js"(exports2, module2) {
     "use strict";
-    var _UndiciError = class _UndiciError extends Error {
+    var UndiciError = class extends Error {
+      static {
+        __name(this, "UndiciError");
+      }
       constructor(message) {
         super(message);
         this.name = "UndiciError";
         this.code = "UND_ERR";
       }
     };
-    __name(_UndiciError, "UndiciError");
-    var UndiciError = _UndiciError;
-    var _ConnectTimeoutError = class _ConnectTimeoutError extends UndiciError {
+    var ConnectTimeoutError = class _ConnectTimeoutError extends UndiciError {
+      static {
+        __name(this, "ConnectTimeoutError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _ConnectTimeoutError);
@@ -3457,9 +3445,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_CONNECT_TIMEOUT";
       }
     };
-    __name(_ConnectTimeoutError, "ConnectTimeoutError");
-    var ConnectTimeoutError = _ConnectTimeoutError;
-    var _HeadersTimeoutError = class _HeadersTimeoutError extends UndiciError {
+    var HeadersTimeoutError = class _HeadersTimeoutError extends UndiciError {
+      static {
+        __name(this, "HeadersTimeoutError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _HeadersTimeoutError);
@@ -3468,9 +3457,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_HEADERS_TIMEOUT";
       }
     };
-    __name(_HeadersTimeoutError, "HeadersTimeoutError");
-    var HeadersTimeoutError = _HeadersTimeoutError;
-    var _HeadersOverflowError = class _HeadersOverflowError extends UndiciError {
+    var HeadersOverflowError = class _HeadersOverflowError extends UndiciError {
+      static {
+        __name(this, "HeadersOverflowError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _HeadersOverflowError);
@@ -3479,9 +3469,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_HEADERS_OVERFLOW";
       }
     };
-    __name(_HeadersOverflowError, "HeadersOverflowError");
-    var HeadersOverflowError = _HeadersOverflowError;
-    var _BodyTimeoutError = class _BodyTimeoutError extends UndiciError {
+    var BodyTimeoutError = class _BodyTimeoutError extends UndiciError {
+      static {
+        __name(this, "BodyTimeoutError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _BodyTimeoutError);
@@ -3490,9 +3481,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_BODY_TIMEOUT";
       }
     };
-    __name(_BodyTimeoutError, "BodyTimeoutError");
-    var BodyTimeoutError = _BodyTimeoutError;
-    var _ResponseStatusCodeError = class _ResponseStatusCodeError extends UndiciError {
+    var ResponseStatusCodeError = class _ResponseStatusCodeError extends UndiciError {
+      static {
+        __name(this, "ResponseStatusCodeError");
+      }
       constructor(message, statusCode, headers, body) {
         super(message);
         Error.captureStackTrace(this, _ResponseStatusCodeError);
@@ -3505,9 +3497,10 @@ var require_errors = __commonJS({
         this.headers = headers;
       }
     };
-    __name(_ResponseStatusCodeError, "ResponseStatusCodeError");
-    var ResponseStatusCodeError = _ResponseStatusCodeError;
-    var _InvalidArgumentError = class _InvalidArgumentError extends UndiciError {
+    var InvalidArgumentError = class _InvalidArgumentError extends UndiciError {
+      static {
+        __name(this, "InvalidArgumentError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _InvalidArgumentError);
@@ -3516,9 +3509,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_INVALID_ARG";
       }
     };
-    __name(_InvalidArgumentError, "InvalidArgumentError");
-    var InvalidArgumentError = _InvalidArgumentError;
-    var _InvalidReturnValueError = class _InvalidReturnValueError extends UndiciError {
+    var InvalidReturnValueError = class _InvalidReturnValueError extends UndiciError {
+      static {
+        __name(this, "InvalidReturnValueError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _InvalidReturnValueError);
@@ -3527,9 +3521,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_INVALID_RETURN_VALUE";
       }
     };
-    __name(_InvalidReturnValueError, "InvalidReturnValueError");
-    var InvalidReturnValueError = _InvalidReturnValueError;
-    var _RequestAbortedError = class _RequestAbortedError extends UndiciError {
+    var RequestAbortedError = class _RequestAbortedError extends UndiciError {
+      static {
+        __name(this, "RequestAbortedError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _RequestAbortedError);
@@ -3538,9 +3533,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_ABORTED";
       }
     };
-    __name(_RequestAbortedError, "RequestAbortedError");
-    var RequestAbortedError = _RequestAbortedError;
-    var _InformationalError = class _InformationalError extends UndiciError {
+    var InformationalError = class _InformationalError extends UndiciError {
+      static {
+        __name(this, "InformationalError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _InformationalError);
@@ -3549,9 +3545,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_INFO";
       }
     };
-    __name(_InformationalError, "InformationalError");
-    var InformationalError = _InformationalError;
-    var _RequestContentLengthMismatchError = class _RequestContentLengthMismatchError extends UndiciError {
+    var RequestContentLengthMismatchError = class _RequestContentLengthMismatchError extends UndiciError {
+      static {
+        __name(this, "RequestContentLengthMismatchError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _RequestContentLengthMismatchError);
@@ -3560,9 +3557,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_REQ_CONTENT_LENGTH_MISMATCH";
       }
     };
-    __name(_RequestContentLengthMismatchError, "RequestContentLengthMismatchError");
-    var RequestContentLengthMismatchError = _RequestContentLengthMismatchError;
-    var _ResponseContentLengthMismatchError = class _ResponseContentLengthMismatchError extends UndiciError {
+    var ResponseContentLengthMismatchError = class _ResponseContentLengthMismatchError extends UndiciError {
+      static {
+        __name(this, "ResponseContentLengthMismatchError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _ResponseContentLengthMismatchError);
@@ -3571,9 +3569,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_RES_CONTENT_LENGTH_MISMATCH";
       }
     };
-    __name(_ResponseContentLengthMismatchError, "ResponseContentLengthMismatchError");
-    var ResponseContentLengthMismatchError = _ResponseContentLengthMismatchError;
-    var _ClientDestroyedError = class _ClientDestroyedError extends UndiciError {
+    var ClientDestroyedError = class _ClientDestroyedError extends UndiciError {
+      static {
+        __name(this, "ClientDestroyedError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _ClientDestroyedError);
@@ -3582,9 +3581,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_DESTROYED";
       }
     };
-    __name(_ClientDestroyedError, "ClientDestroyedError");
-    var ClientDestroyedError = _ClientDestroyedError;
-    var _ClientClosedError = class _ClientClosedError extends UndiciError {
+    var ClientClosedError = class _ClientClosedError extends UndiciError {
+      static {
+        __name(this, "ClientClosedError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _ClientClosedError);
@@ -3593,9 +3593,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_CLOSED";
       }
     };
-    __name(_ClientClosedError, "ClientClosedError");
-    var ClientClosedError = _ClientClosedError;
-    var _SocketError = class _SocketError extends UndiciError {
+    var SocketError = class _SocketError extends UndiciError {
+      static {
+        __name(this, "SocketError");
+      }
       constructor(message, socket) {
         super(message);
         Error.captureStackTrace(this, _SocketError);
@@ -3605,9 +3606,10 @@ var require_errors = __commonJS({
         this.socket = socket;
       }
     };
-    __name(_SocketError, "SocketError");
-    var SocketError = _SocketError;
-    var _NotSupportedError = class _NotSupportedError extends UndiciError {
+    var NotSupportedError = class _NotSupportedError extends UndiciError {
+      static {
+        __name(this, "NotSupportedError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _NotSupportedError);
@@ -3616,9 +3618,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_NOT_SUPPORTED";
       }
     };
-    __name(_NotSupportedError, "NotSupportedError");
-    var NotSupportedError = _NotSupportedError;
-    var _BalancedPoolMissingUpstreamError = class _BalancedPoolMissingUpstreamError extends UndiciError {
+    var BalancedPoolMissingUpstreamError = class extends UndiciError {
+      static {
+        __name(this, "BalancedPoolMissingUpstreamError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, NotSupportedError);
@@ -3627,9 +3630,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_BPL_MISSING_UPSTREAM";
       }
     };
-    __name(_BalancedPoolMissingUpstreamError, "BalancedPoolMissingUpstreamError");
-    var BalancedPoolMissingUpstreamError = _BalancedPoolMissingUpstreamError;
-    var _HTTPParserError = class _HTTPParserError extends Error {
+    var HTTPParserError = class _HTTPParserError extends Error {
+      static {
+        __name(this, "HTTPParserError");
+      }
       constructor(message, code, data) {
         super(message);
         Error.captureStackTrace(this, _HTTPParserError);
@@ -3638,9 +3642,10 @@ var require_errors = __commonJS({
         this.data = data ? data.toString() : void 0;
       }
     };
-    __name(_HTTPParserError, "HTTPParserError");
-    var HTTPParserError = _HTTPParserError;
-    var _ResponseExceededMaxSizeError = class _ResponseExceededMaxSizeError extends UndiciError {
+    var ResponseExceededMaxSizeError = class _ResponseExceededMaxSizeError extends UndiciError {
+      static {
+        __name(this, "ResponseExceededMaxSizeError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _ResponseExceededMaxSizeError);
@@ -3649,9 +3654,10 @@ var require_errors = __commonJS({
         this.code = "UND_ERR_RES_EXCEEDED_MAX_SIZE";
       }
     };
-    __name(_ResponseExceededMaxSizeError, "ResponseExceededMaxSizeError");
-    var ResponseExceededMaxSizeError = _ResponseExceededMaxSizeError;
-    var _RequestRetryError = class _RequestRetryError extends UndiciError {
+    var RequestRetryError = class _RequestRetryError extends UndiciError {
+      static {
+        __name(this, "RequestRetryError");
+      }
       constructor(message, code, { headers, data }) {
         super(message);
         Error.captureStackTrace(this, _RequestRetryError);
@@ -3663,8 +3669,6 @@ var require_errors = __commonJS({
         this.headers = headers;
       }
     };
-    __name(_RequestRetryError, "RequestRetryError");
-    var RequestRetryError = _RequestRetryError;
     module2.exports = {
       HTTPParserError,
       UndiciError,
@@ -4151,7 +4155,10 @@ var require_timers = __commonJS({
       }
     }
     __name(refreshTimeout, "refreshTimeout");
-    var _Timeout = class _Timeout {
+    var Timeout = class {
+      static {
+        __name(this, "Timeout");
+      }
       constructor(callback, delay, opaque) {
         this.callback = callback;
         this.delay = delay;
@@ -4172,8 +4179,6 @@ var require_timers = __commonJS({
         this.state = -1;
       }
     };
-    __name(_Timeout, "Timeout");
-    var Timeout = _Timeout;
     module2.exports = {
       setTimeout(callback, delay, opaque) {
         return delay < 1e3 ? setTimeout(callback, delay, opaque) : new Timeout(callback, delay, opaque);
@@ -6152,10 +6157,9 @@ var require_main = __commonJS({
     __name(Busboy, "Busboy");
     inherits(Busboy, WritableStream);
     Busboy.prototype.emit = function(ev) {
-      var _a;
       if (ev === "finish") {
         if (!this._done) {
-          (_a = this._parser) == null ? void 0 : _a.end();
+          this._parser?.end();
           return;
         } else if (this._finished) {
           return;
@@ -6362,7 +6366,7 @@ var require_constants2 = __commonJS({
       }
       channel.port1.unref();
       channel.port2.unref();
-      channel.port1.postMessage(value, options == null ? void 0 : options.transfer);
+      channel.port1.postMessage(value, options?.transfer);
       return receiveMessageOnPort(channel.port2).message;
     }, "structuredClone");
     module2.exports = {
@@ -6479,8 +6483,7 @@ var require_util2 = __commonJS({
     }
     __name(requestBadPort, "requestBadPort");
     function isErrorLike(object) {
-      var _a, _b;
-      return object instanceof Error || (((_a = object == null ? void 0 : object.constructor) == null ? void 0 : _a.name) === "Error" || ((_b = object == null ? void 0 : object.constructor) == null ? void 0 : _b.name) === "DOMException");
+      return object instanceof Error || (object?.constructor?.name === "Error" || object?.constructor?.name === "DOMException");
     }
     __name(isErrorLike, "isErrorLike");
     function isValidReasonPhrase(statusText) {
@@ -7082,10 +7085,10 @@ var require_webidl = __commonJS({
       });
     };
     webidl.brandCheck = function(V, I, opts = void 0) {
-      if ((opts == null ? void 0 : opts.strict) !== false && !(V instanceof I)) {
+      if (opts?.strict !== false && !(V instanceof I)) {
         throw new TypeError("Illegal invocation");
       } else {
-        return (V == null ? void 0 : V[Symbol.toStringTag]) === I.prototype[Symbol.toStringTag];
+        return V?.[Symbol.toStringTag] === I.prototype[Symbol.toStringTag];
       }
     };
     webidl.argumentLengthCheck = function({ length }, min, ctx) {
@@ -7190,14 +7193,13 @@ var require_webidl = __commonJS({
     };
     webidl.sequenceConverter = function(converter) {
       return (V) => {
-        var _a;
         if (webidl.util.Type(V) !== "Object") {
           throw webidl.errors.exception({
             header: "Sequence",
             message: `Value of type ${webidl.util.Type(V)} is not an Object.`
           });
         }
-        const method = (_a = V == null ? void 0 : V[Symbol.iterator]) == null ? void 0 : _a.call(V);
+        const method = V?.[Symbol.iterator]?.();
         const seq = [];
         if (method === void 0 || typeof method.next !== "function") {
           throw webidl.errors.exception({
@@ -7236,7 +7238,7 @@ var require_webidl = __commonJS({
         const keys = Reflect.ownKeys(O);
         for (const key of keys) {
           const desc = Reflect.getOwnPropertyDescriptor(O, key);
-          if (desc == null ? void 0 : desc.enumerable) {
+          if (desc?.enumerable) {
             const typedKey = keyConverter(key);
             const typedValue = valueConverter(O[key]);
             result[typedKey] = typedValue;
@@ -7739,7 +7741,10 @@ var require_file = __commonJS({
     var { parseMIMEType, serializeAMimeType } = require_dataURL();
     var { kEnumerableProperty } = require_util();
     var encoder = new TextEncoder();
-    var _File = class _File extends Blob2 {
+    var File = class _File extends Blob2 {
+      static {
+        __name(this, "File");
+      }
       constructor(fileBits, fileName, options = {}) {
         webidl.argumentLengthCheck(arguments, 2, { header: "File constructor" });
         fileBits = webidl.converters["sequence<BlobPart>"](fileBits);
@@ -7779,9 +7784,10 @@ var require_file = __commonJS({
         return this[kState].type;
       }
     };
-    __name(_File, "File");
-    var File = _File;
-    var _FileLike = class _FileLike {
+    var FileLike = class _FileLike {
+      static {
+        __name(this, "FileLike");
+      }
       constructor(blobLike, fileName, options = {}) {
         const n = fileName;
         const t = options.type;
@@ -7829,8 +7835,6 @@ var require_file = __commonJS({
         return "File";
       }
     };
-    __name(_FileLike, "FileLike");
-    var FileLike = _FileLike;
     Object.defineProperties(File.prototype, {
       [Symbol.toStringTag]: {
         value: "File",
@@ -7930,7 +7934,10 @@ var require_formdata = __commonJS({
     var { webidl } = require_webidl();
     var { Blob: Blob2, File: NativeFile } = require("buffer");
     var File = NativeFile ?? UndiciFile;
-    var _FormData = class _FormData {
+    var FormData = class _FormData {
+      static {
+        __name(this, "FormData");
+      }
       constructor(form) {
         if (form !== void 0) {
           throw webidl.errors.conversionFailed({
@@ -8047,8 +8054,6 @@ var require_formdata = __commonJS({
         }
       }
     };
-    __name(_FormData, "FormData");
-    var FormData = _FormData;
     FormData.prototype[Symbol.iterator] = FormData.prototype.entries;
     Object.defineProperties(FormData.prototype, {
       [Symbol.toStringTag]: {
@@ -8496,7 +8501,10 @@ var require_request = __commonJS({
       channels.trailers = { hasSubscribers: false };
       channels.error = { hasSubscribers: false };
     }
-    var _Request = class _Request {
+    var Request = class _Request {
+      static {
+        __name(this, "Request");
+      }
       constructor(origin, {
         path: path2,
         method,
@@ -8770,8 +8778,6 @@ var require_request = __commonJS({
         return headers;
       }
     };
-    __name(_Request, "Request");
-    var Request = _Request;
     function processHeaderValue(key, val, skipAppend) {
       if (val && typeof val === "object") {
         throw new InvalidArgumentError(`invalid ${key} header`);
@@ -8853,7 +8859,10 @@ var require_dispatcher = __commonJS({
   "node_modules/undici/lib/dispatcher.js"(exports2, module2) {
     "use strict";
     var EventEmitter = require("events");
-    var _Dispatcher = class _Dispatcher extends EventEmitter {
+    var Dispatcher = class extends EventEmitter {
+      static {
+        __name(this, "Dispatcher");
+      }
       dispatch() {
         throw new Error("not implemented");
       }
@@ -8864,8 +8873,6 @@ var require_dispatcher = __commonJS({
         throw new Error("not implemented");
       }
     };
-    __name(_Dispatcher, "Dispatcher");
-    var Dispatcher = _Dispatcher;
     module2.exports = Dispatcher;
   }
 });
@@ -8886,7 +8893,10 @@ var require_dispatcher_base = __commonJS({
     var kOnDestroyed = Symbol("onDestroyed");
     var kOnClosed = Symbol("onClosed");
     var kInterceptedDispatch = Symbol("Intercepted Dispatch");
-    var _DispatcherBase = class _DispatcherBase extends Dispatcher {
+    var DispatcherBase = class extends Dispatcher {
+      static {
+        __name(this, "DispatcherBase");
+      }
       constructor() {
         super();
         this[kDestroyed] = false;
@@ -9029,8 +9039,6 @@ var require_dispatcher_base = __commonJS({
         }
       }
     };
-    __name(_DispatcherBase, "DispatcherBase");
-    var DispatcherBase = _DispatcherBase;
     module2.exports = DispatcherBase;
   }
 });
@@ -9045,9 +9053,11 @@ var require_connect = __commonJS({
     var { InvalidArgumentError, ConnectTimeoutError } = require_errors();
     var tls;
     var SessionCache;
-    var _a, _b;
     if (global.FinalizationRegistry && !process.env.NODE_V8_COVERAGE) {
-      SessionCache = (_a = class {
+      SessionCache = class WeakSessionCache {
+        static {
+          __name(this, "WeakSessionCache");
+        }
         constructor(maxCachedSessions) {
           this._maxCachedSessions = maxCachedSessions;
           this._sessionCache = /* @__PURE__ */ new Map();
@@ -9072,9 +9082,12 @@ var require_connect = __commonJS({
           this._sessionCache.set(sessionKey, new WeakRef(session));
           this._sessionRegistry.register(session, sessionKey);
         }
-      }, __name(_a, "WeakSessionCache"), _a);
+      };
     } else {
-      SessionCache = (_b = class {
+      SessionCache = class SimpleSessionCache {
+        static {
+          __name(this, "SimpleSessionCache");
+        }
         constructor(maxCachedSessions) {
           this._maxCachedSessions = maxCachedSessions;
           this._sessionCache = /* @__PURE__ */ new Map();
@@ -9092,7 +9105,7 @@ var require_connect = __commonJS({
           }
           this._sessionCache.set(sessionKey, session);
         }
-      }, __name(_b, "SimpleSessionCache"), _b);
+      };
     }
     function buildConnector({ allowH2, maxCachedSessions, socketPath, timeout, ...opts }) {
       if (maxCachedSessions != null && (!Number.isInteger(maxCachedSessions) || maxCachedSessions < 0)) {
@@ -9548,7 +9561,10 @@ var require_RedirectHandler = __commonJS({
     var EE = require("events");
     var redirectableStatusCodes = [300, 301, 302, 303, 307, 308];
     var kBody = Symbol("body");
-    var _BodyAsyncIterable = class _BodyAsyncIterable {
+    var BodyAsyncIterable = class {
+      static {
+        __name(this, "BodyAsyncIterable");
+      }
       constructor(body) {
         this[kBody] = body;
         this[kBodyUsed] = false;
@@ -9559,9 +9575,10 @@ var require_RedirectHandler = __commonJS({
         yield* this[kBody];
       }
     };
-    __name(_BodyAsyncIterable, "BodyAsyncIterable");
-    var BodyAsyncIterable = _BodyAsyncIterable;
-    var _RedirectHandler = class _RedirectHandler {
+    var RedirectHandler = class {
+      static {
+        __name(this, "RedirectHandler");
+      }
       constructor(dispatch, maxRedirections, opts, handler) {
         if (maxRedirections != null && (!Number.isInteger(maxRedirections) || maxRedirections < 0)) {
           throw new InvalidArgumentError("maxRedirections must be a positive number");
@@ -9643,8 +9660,6 @@ var require_RedirectHandler = __commonJS({
         }
       }
     };
-    __name(_RedirectHandler, "RedirectHandler");
-    var RedirectHandler = _RedirectHandler;
     function parseLocation(statusCode, headers) {
       if (redirectableStatusCodes.indexOf(statusCode) === -1) {
         return null;
@@ -9833,7 +9848,10 @@ var require_client = __commonJS({
       channels.connectError = { hasSubscribers: false };
       channels.connected = { hasSubscribers: false };
     }
-    var _Client = class _Client extends DispatcherBase {
+    var Client = class extends DispatcherBase {
+      static {
+        __name(this, "Client");
+      }
       /**
        *
        * @param {string|URL} url
@@ -10062,8 +10080,6 @@ var require_client = __commonJS({
         });
       }
     };
-    __name(_Client, "Client");
-    var Client = _Client;
     function onHttp2SessionError(err) {
       assert(err.code !== "ERR_TLS_CERT_ALTNAME_INVALID");
       this[kSocket][kError] = err;
@@ -10175,7 +10191,10 @@ var require_client = __commonJS({
     var TIMEOUT_HEADERS = 1;
     var TIMEOUT_BODY = 2;
     var TIMEOUT_IDLE = 3;
-    var _Parser = class _Parser {
+    var Parser = class {
+      static {
+        __name(this, "Parser");
+      }
       constructor(client, socket, { exports: exports3 }) {
         assert(Number.isFinite(client[kMaxHeadersSize]) && client[kMaxHeadersSize] > 0);
         this.llhttp = exports3;
@@ -10524,8 +10543,6 @@ var require_client = __commonJS({
         }
       }
     };
-    __name(_Parser, "Parser");
-    var Parser = _Parser;
     function onParserTimeout(parser) {
       const { socket, timeoutType, client } = parser;
       if (timeoutType === TIMEOUT_HEADERS) {
@@ -11341,7 +11358,10 @@ upgrade: ${upgrade}\r
       }
     }
     __name(writeIterable, "writeIterable");
-    var _AsyncWriter = class _AsyncWriter {
+    var AsyncWriter = class {
+      static {
+        __name(this, "AsyncWriter");
+      }
       constructor({ socket, request, contentLength, client, expectsPayload, header }) {
         this.socket = socket;
         this.request = request;
@@ -11447,8 +11467,6 @@ ${len.toString(16)}\r
         }
       }
     };
-    __name(_AsyncWriter, "AsyncWriter");
-    var AsyncWriter = _AsyncWriter;
     function errorRequest(client, request, err) {
       try {
         request.onError(err);
@@ -11468,7 +11486,10 @@ var require_fixed_queue = __commonJS({
     "use strict";
     var kSize = 2048;
     var kMask = kSize - 1;
-    var _FixedCircularBuffer = class _FixedCircularBuffer {
+    var FixedCircularBuffer = class {
+      static {
+        __name(this, "FixedCircularBuffer");
+      }
       constructor() {
         this.bottom = 0;
         this.top = 0;
@@ -11494,10 +11515,10 @@ var require_fixed_queue = __commonJS({
         return nextItem;
       }
     };
-    __name(_FixedCircularBuffer, "FixedCircularBuffer");
-    var FixedCircularBuffer = _FixedCircularBuffer;
-    var _a;
-    module2.exports = (_a = class {
+    module2.exports = class FixedQueue {
+      static {
+        __name(this, "FixedQueue");
+      }
       constructor() {
         this.head = this.tail = new FixedCircularBuffer();
       }
@@ -11518,7 +11539,7 @@ var require_fixed_queue = __commonJS({
         }
         return next;
       }
-    }, __name(_a, "FixedQueue"), _a);
+    };
   }
 });
 
@@ -11527,7 +11548,10 @@ var require_pool_stats = __commonJS({
   "node_modules/undici/lib/pool-stats.js"(exports2, module2) {
     var { kFree, kConnected, kPending, kQueued, kRunning, kSize } = require_symbols();
     var kPool = Symbol("pool");
-    var _PoolStats = class _PoolStats {
+    var PoolStats = class {
+      static {
+        __name(this, "PoolStats");
+      }
       constructor(pool) {
         this[kPool] = pool;
       }
@@ -11550,8 +11574,6 @@ var require_pool_stats = __commonJS({
         return this[kPool][kSize];
       }
     };
-    __name(_PoolStats, "PoolStats");
-    var PoolStats = _PoolStats;
     module2.exports = PoolStats;
   }
 });
@@ -11576,7 +11598,10 @@ var require_pool_base = __commonJS({
     var kAddClient = Symbol("add client");
     var kRemoveClient = Symbol("remove client");
     var kStats = Symbol("stats");
-    var _PoolBase = class _PoolBase extends DispatcherBase {
+    var PoolBase = class extends DispatcherBase {
+      static {
+        __name(this, "PoolBase");
+      }
       constructor() {
         super();
         this[kQueue] = new FixedQueue();
@@ -11700,8 +11725,6 @@ var require_pool_base = __commonJS({
         this[kNeedDrain] = this[kClients].some((dispatcher) => !dispatcher[kNeedDrain] && dispatcher.closed !== true && dispatcher.destroyed !== true);
       }
     };
-    __name(_PoolBase, "PoolBase");
-    var PoolBase = _PoolBase;
     module2.exports = {
       PoolBase,
       kClients,
@@ -11738,7 +11761,10 @@ var require_pool = __commonJS({
       return new Client(origin, opts);
     }
     __name(defaultFactory, "defaultFactory");
-    var _Pool = class _Pool extends PoolBase {
+    var Pool = class extends PoolBase {
+      static {
+        __name(this, "Pool");
+      }
       constructor(origin, {
         connections,
         factory = defaultFactory,
@@ -11792,8 +11818,6 @@ var require_pool = __commonJS({
         return dispatcher;
       }
     };
-    __name(_Pool, "Pool");
-    var Pool = _Pool;
     module2.exports = Pool;
   }
 });
@@ -11835,7 +11859,10 @@ var require_balanced_pool = __commonJS({
       return new Pool(origin, opts);
     }
     __name(defaultFactory, "defaultFactory");
-    var _BalancedPool = class _BalancedPool extends PoolBase {
+    var BalancedPool = class extends PoolBase {
+      static {
+        __name(this, "BalancedPool");
+      }
       constructor(upstreams = [], { factory = defaultFactory, ...opts } = {}) {
         super();
         this[kOptions] = opts;
@@ -11932,8 +11959,6 @@ var require_balanced_pool = __commonJS({
         return this[kClients][maxWeightIndex];
       }
     };
-    __name(_BalancedPool, "BalancedPool");
-    var BalancedPool = _BalancedPool;
     module2.exports = BalancedPool;
   }
 });
@@ -11943,7 +11968,10 @@ var require_dispatcher_weakref = __commonJS({
   "node_modules/undici/lib/compat/dispatcher-weakref.js"(exports2, module2) {
     "use strict";
     var { kConnected, kSize } = require_symbols();
-    var _CompatWeakRef = class _CompatWeakRef {
+    var CompatWeakRef = class {
+      static {
+        __name(this, "CompatWeakRef");
+      }
       constructor(value) {
         this.value = value;
       }
@@ -11951,9 +11979,10 @@ var require_dispatcher_weakref = __commonJS({
         return this.value[kConnected] === 0 && this.value[kSize] === 0 ? void 0 : this.value;
       }
     };
-    __name(_CompatWeakRef, "CompatWeakRef");
-    var CompatWeakRef = _CompatWeakRef;
-    var _CompatFinalizer = class _CompatFinalizer {
+    var CompatFinalizer = class {
+      static {
+        __name(this, "CompatFinalizer");
+      }
       constructor(finalizer) {
         this.finalizer = finalizer;
       }
@@ -11967,8 +11996,6 @@ var require_dispatcher_weakref = __commonJS({
         }
       }
     };
-    __name(_CompatFinalizer, "CompatFinalizer");
-    var CompatFinalizer = _CompatFinalizer;
     module2.exports = function() {
       if (process.env.NODE_V8_COVERAGE) {
         return {
@@ -12008,7 +12035,10 @@ var require_agent = __commonJS({
       return opts && opts.connections === 1 ? new Client(origin, opts) : new Pool(origin, opts);
     }
     __name(defaultFactory, "defaultFactory");
-    var _Agent = class _Agent extends DispatcherBase {
+    var Agent = class extends DispatcherBase {
+      static {
+        __name(this, "Agent");
+      }
       constructor({ factory = defaultFactory, maxRedirections = 0, connect, ...options } = {}) {
         super();
         if (typeof factory !== "function") {
@@ -12099,8 +12129,6 @@ var require_agent = __commonJS({
         await Promise.all(destroyPromises);
       }
     };
-    __name(_Agent, "Agent");
-    var Agent = _Agent;
     module2.exports = Agent;
   }
 });
@@ -12122,8 +12150,10 @@ var require_readable = __commonJS({
     var kContentType = Symbol("kContentType");
     var noop = /* @__PURE__ */ __name(() => {
     }, "noop");
-    var _a;
-    module2.exports = (_a = class extends Readable {
+    module2.exports = class BodyReadable extends Readable {
+      static {
+        __name(this, "BodyReadable");
+      }
       constructor({
         resume,
         abort,
@@ -12259,7 +12289,7 @@ var require_readable = __commonJS({
           }).resume();
         });
       }
-    }, __name(_a, "BodyReadable"), _a);
+    };
     function isLocked(self2) {
       return self2[kBody] && self2[kBody].locked === true || self2[kConsume];
     }
@@ -12474,7 +12504,10 @@ var require_api_request = __commonJS({
     var { getResolveErrorBodyCallback } = require_util3();
     var { AsyncResource } = require("async_hooks");
     var { addSignal, removeSignal } = require_abort_signal();
-    var _RequestHandler = class _RequestHandler extends AsyncResource {
+    var RequestHandler = class extends AsyncResource {
+      static {
+        __name(this, "RequestHandler");
+      }
       constructor(opts, callback) {
         if (!opts || typeof opts !== "object") {
           throw new InvalidArgumentError("invalid opts");
@@ -12592,8 +12625,6 @@ var require_api_request = __commonJS({
         }
       }
     };
-    __name(_RequestHandler, "RequestHandler");
-    var RequestHandler = _RequestHandler;
     function request(opts, callback) {
       if (callback === void 0) {
         return new Promise((resolve, reject) => {
@@ -12632,7 +12663,10 @@ var require_api_stream = __commonJS({
     var { getResolveErrorBodyCallback } = require_util3();
     var { AsyncResource } = require("async_hooks");
     var { addSignal, removeSignal } = require_abort_signal();
-    var _StreamHandler = class _StreamHandler extends AsyncResource {
+    var StreamHandler = class extends AsyncResource {
+      static {
+        __name(this, "StreamHandler");
+      }
       constructor(opts, factory, callback) {
         if (!opts || typeof opts !== "object") {
           throw new InvalidArgumentError("invalid opts");
@@ -12770,8 +12804,6 @@ var require_api_stream = __commonJS({
         }
       }
     };
-    __name(_StreamHandler, "StreamHandler");
-    var StreamHandler = _StreamHandler;
     function stream(opts, factory, callback) {
       if (callback === void 0) {
         return new Promise((resolve, reject) => {
@@ -12814,7 +12846,10 @@ var require_api_pipeline = __commonJS({
     var { addSignal, removeSignal } = require_abort_signal();
     var assert = require("assert");
     var kResume = Symbol("resume");
-    var _PipelineRequest = class _PipelineRequest extends Readable {
+    var PipelineRequest = class extends Readable {
+      static {
+        __name(this, "PipelineRequest");
+      }
       constructor() {
         super({ autoDestroy: true });
         this[kResume] = null;
@@ -12831,9 +12866,10 @@ var require_api_pipeline = __commonJS({
         callback(err);
       }
     };
-    __name(_PipelineRequest, "PipelineRequest");
-    var PipelineRequest = _PipelineRequest;
-    var _PipelineResponse = class _PipelineResponse extends Readable {
+    var PipelineResponse = class extends Readable {
+      static {
+        __name(this, "PipelineResponse");
+      }
       constructor(resume) {
         super({ autoDestroy: true });
         this[kResume] = resume;
@@ -12848,9 +12884,10 @@ var require_api_pipeline = __commonJS({
         callback(err);
       }
     };
-    __name(_PipelineResponse, "PipelineResponse");
-    var PipelineResponse = _PipelineResponse;
-    var _PipelineHandler = class _PipelineHandler extends AsyncResource {
+    var PipelineHandler = class extends AsyncResource {
+      static {
+        __name(this, "PipelineHandler");
+      }
       constructor(opts, handler) {
         if (!opts || typeof opts !== "object") {
           throw new InvalidArgumentError("invalid opts");
@@ -12984,8 +13021,6 @@ var require_api_pipeline = __commonJS({
         util.destroy(ret, err);
       }
     };
-    __name(_PipelineHandler, "PipelineHandler");
-    var PipelineHandler = _PipelineHandler;
     function pipeline(opts, handler) {
       try {
         const pipelineHandler = new PipelineHandler(opts, handler);
@@ -13009,7 +13044,10 @@ var require_api_upgrade = __commonJS({
     var util = require_util();
     var { addSignal, removeSignal } = require_abort_signal();
     var assert = require("assert");
-    var _UpgradeHandler = class _UpgradeHandler extends AsyncResource {
+    var UpgradeHandler = class extends AsyncResource {
+      static {
+        __name(this, "UpgradeHandler");
+      }
       constructor(opts, callback) {
         if (!opts || typeof opts !== "object") {
           throw new InvalidArgumentError("invalid opts");
@@ -13063,8 +13101,6 @@ var require_api_upgrade = __commonJS({
         }
       }
     };
-    __name(_UpgradeHandler, "UpgradeHandler");
-    var UpgradeHandler = _UpgradeHandler;
     function upgrade(opts, callback) {
       if (callback === void 0) {
         return new Promise((resolve, reject) => {
@@ -13101,7 +13137,10 @@ var require_api_connect = __commonJS({
     var { InvalidArgumentError, RequestAbortedError, SocketError } = require_errors();
     var util = require_util();
     var { addSignal, removeSignal } = require_abort_signal();
-    var _ConnectHandler = class _ConnectHandler extends AsyncResource {
+    var ConnectHandler = class extends AsyncResource {
+      static {
+        __name(this, "ConnectHandler");
+      }
       constructor(opts, callback) {
         if (!opts || typeof opts !== "object") {
           throw new InvalidArgumentError("invalid opts");
@@ -13157,8 +13196,6 @@ var require_api_connect = __commonJS({
         }
       }
     };
-    __name(_ConnectHandler, "ConnectHandler");
-    var ConnectHandler = _ConnectHandler;
     function connect(opts, callback) {
       if (callback === void 0) {
         return new Promise((resolve, reject) => {
@@ -13200,7 +13237,10 @@ var require_mock_errors = __commonJS({
   "node_modules/undici/lib/mock/mock-errors.js"(exports2, module2) {
     "use strict";
     var { UndiciError } = require_errors();
-    var _MockNotMatchedError = class _MockNotMatchedError extends UndiciError {
+    var MockNotMatchedError = class _MockNotMatchedError extends UndiciError {
+      static {
+        __name(this, "MockNotMatchedError");
+      }
       constructor(message) {
         super(message);
         Error.captureStackTrace(this, _MockNotMatchedError);
@@ -13209,8 +13249,6 @@ var require_mock_errors = __commonJS({
         this.code = "UND_MOCK_ERR_MOCK_NOT_MATCHED";
       }
     };
-    __name(_MockNotMatchedError, "MockNotMatchedError");
-    var MockNotMatchedError = _MockNotMatchedError;
     module2.exports = {
       MockNotMatchedError
     };
@@ -13561,7 +13599,10 @@ var require_mock_interceptor = __commonJS({
     } = require_mock_symbols();
     var { InvalidArgumentError } = require_errors();
     var { buildURL } = require_util();
-    var _MockScope = class _MockScope {
+    var MockScope = class {
+      static {
+        __name(this, "MockScope");
+      }
       constructor(mockDispatch) {
         this[kMockDispatch] = mockDispatch;
       }
@@ -13593,9 +13634,10 @@ var require_mock_interceptor = __commonJS({
         return this;
       }
     };
-    __name(_MockScope, "MockScope");
-    var MockScope = _MockScope;
-    var _MockInterceptor = class _MockInterceptor {
+    var MockInterceptor = class {
+      static {
+        __name(this, "MockInterceptor");
+      }
       constructor(opts, mockDispatches) {
         if (typeof opts !== "object") {
           throw new InvalidArgumentError("opts must be an object");
@@ -13704,8 +13746,6 @@ var require_mock_interceptor = __commonJS({
         return this;
       }
     };
-    __name(_MockInterceptor, "MockInterceptor");
-    var MockInterceptor = _MockInterceptor;
     module2.exports.MockInterceptor = MockInterceptor;
     module2.exports.MockScope = MockScope;
   }
@@ -13730,7 +13770,10 @@ var require_mock_client = __commonJS({
     var { MockInterceptor } = require_mock_interceptor();
     var Symbols = require_symbols();
     var { InvalidArgumentError } = require_errors();
-    var _MockClient = class _MockClient extends Client {
+    var MockClient = class extends Client {
+      static {
+        __name(this, "MockClient");
+      }
       constructor(origin, opts) {
         super(origin, opts);
         if (!opts || !opts.agent || typeof opts.agent.dispatch !== "function") {
@@ -13760,8 +13803,6 @@ var require_mock_client = __commonJS({
         this[kMockAgent][Symbols.kClients].delete(this[kOrigin]);
       }
     };
-    __name(_MockClient, "MockClient");
-    var MockClient = _MockClient;
     module2.exports = MockClient;
   }
 });
@@ -13785,7 +13826,10 @@ var require_mock_pool = __commonJS({
     var { MockInterceptor } = require_mock_interceptor();
     var Symbols = require_symbols();
     var { InvalidArgumentError } = require_errors();
-    var _MockPool = class _MockPool extends Pool {
+    var MockPool = class extends Pool {
+      static {
+        __name(this, "MockPool");
+      }
       constructor(origin, opts) {
         super(origin, opts);
         if (!opts || !opts.agent || typeof opts.agent.dispatch !== "function") {
@@ -13815,8 +13859,6 @@ var require_mock_pool = __commonJS({
         this[kMockAgent][Symbols.kClients].delete(this[kOrigin]);
       }
     };
-    __name(_MockPool, "MockPool");
-    var MockPool = _MockPool;
     module2.exports = MockPool;
   }
 });
@@ -13837,8 +13879,10 @@ var require_pluralizer = __commonJS({
       was: "were",
       this: "these"
     };
-    var _a;
-    module2.exports = (_a = class {
+    module2.exports = class Pluralizer {
+      static {
+        __name(this, "Pluralizer");
+      }
       constructor(singular, plural) {
         this.singular = singular;
         this.plural = plural;
@@ -13849,7 +13893,7 @@ var require_pluralizer = __commonJS({
         const noun = one ? this.singular : this.plural;
         return { ...keys, count, noun };
       }
-    }, __name(_a, "Pluralizer"), _a);
+    };
   }
 });
 
@@ -13859,8 +13903,10 @@ var require_pending_interceptors_formatter = __commonJS({
     "use strict";
     var { Transform } = require("stream");
     var { Console } = require("console");
-    var _a;
-    module2.exports = (_a = class {
+    module2.exports = class PendingInterceptorsFormatter {
+      static {
+        __name(this, "PendingInterceptorsFormatter");
+      }
       constructor({ disableColors } = {}) {
         this.transform = new Transform({
           transform(chunk, _enc, cb) {
@@ -13889,7 +13935,7 @@ var require_pending_interceptors_formatter = __commonJS({
         this.logger.table(withPrettyHeaders);
         return this.transform.read().toString();
       }
-    }, __name(_a, "PendingInterceptorsFormatter"), _a);
+    };
   }
 });
 
@@ -13917,7 +13963,10 @@ var require_mock_agent = __commonJS({
     var Dispatcher = require_dispatcher();
     var Pluralizer = require_pluralizer();
     var PendingInterceptorsFormatter = require_pending_interceptors_formatter();
-    var _FakeWeakRef = class _FakeWeakRef {
+    var FakeWeakRef = class {
+      static {
+        __name(this, "FakeWeakRef");
+      }
       constructor(value) {
         this.value = value;
       }
@@ -13925,9 +13974,10 @@ var require_mock_agent = __commonJS({
         return this.value;
       }
     };
-    __name(_FakeWeakRef, "FakeWeakRef");
-    var FakeWeakRef = _FakeWeakRef;
-    var _MockAgent = class _MockAgent extends Dispatcher {
+    var MockAgent = class extends Dispatcher {
+      static {
+        __name(this, "MockAgent");
+      }
       constructor(opts) {
         super(opts);
         this[kNetConnect] = true;
@@ -14030,8 +14080,6 @@ ${pendingInterceptorsFormatter.format(pending)}
 `.trim());
       }
     };
-    __name(_MockAgent, "MockAgent");
-    var MockAgent = _MockAgent;
     module2.exports = MockAgent;
   }
 });
@@ -14074,7 +14122,10 @@ var require_proxy_agent = __commonJS({
       return new Pool(origin, opts);
     }
     __name(defaultFactory, "defaultFactory");
-    var _ProxyAgent = class _ProxyAgent extends DispatcherBase {
+    var ProxyAgent = class extends DispatcherBase {
+      static {
+        __name(this, "ProxyAgent");
+      }
       constructor(opts) {
         super(opts);
         this[kProxy] = buildProxyOptions(opts);
@@ -14171,8 +14222,6 @@ var require_proxy_agent = __commonJS({
         await this[kClient].destroy();
       }
     };
-    __name(_ProxyAgent, "ProxyAgent");
-    var ProxyAgent = _ProxyAgent;
     function buildHeaders(headers) {
       if (Array.isArray(headers)) {
         const headersPair = {};
@@ -14208,7 +14257,10 @@ var require_RetryHandler = __commonJS({
       return diff;
     }
     __name(calculateRetryAfterHeader, "calculateRetryAfterHeader");
-    var _RetryHandler = class _RetryHandler {
+    var RetryHandler = class _RetryHandler {
+      static {
+        __name(this, "RetryHandler");
+      }
       constructor(opts, handlers) {
         const { retryOptions, ...dispatchOpts } = opts;
         const {
@@ -14461,8 +14513,6 @@ var require_RetryHandler = __commonJS({
         __name(onRetry, "onRetry");
       }
     };
-    __name(_RetryHandler, "RetryHandler");
-    var RetryHandler = _RetryHandler;
     module2.exports = RetryHandler;
   }
 });
@@ -14504,8 +14554,10 @@ var require_global2 = __commonJS({
 var require_DecoratorHandler = __commonJS({
   "node_modules/undici/lib/handler/DecoratorHandler.js"(exports2, module2) {
     "use strict";
-    var _a;
-    module2.exports = (_a = class {
+    module2.exports = class DecoratorHandler {
+      static {
+        __name(this, "DecoratorHandler");
+      }
       constructor(handler) {
         this.handler = handler;
       }
@@ -14530,7 +14582,7 @@ var require_DecoratorHandler = __commonJS({
       onBodySent(...args) {
         return this.handler.onBodySent(...args);
       }
-    }, __name(_a, "DecoratorHandler"), _a);
+    };
   }
 });
 
@@ -14612,7 +14664,10 @@ var require_headers = __commonJS({
       return headers[kHeadersList].append(name, value);
     }
     __name(appendHeader, "appendHeader");
-    var _HeadersList = class _HeadersList {
+    var HeadersList = class _HeadersList {
+      static {
+        __name(this, "HeadersList");
+      }
       /** @type {[string, string][]|null} */
       cookies = null;
       constructor(init) {
@@ -14692,9 +14747,10 @@ var require_headers = __commonJS({
         return headers;
       }
     };
-    __name(_HeadersList, "HeadersList");
-    var HeadersList = _HeadersList;
-    var _Headers = class _Headers {
+    var Headers = class _Headers {
+      static {
+        __name(this, "Headers");
+      }
       constructor(init = void 0) {
         if (init === kConstruct) {
           return;
@@ -14889,8 +14945,6 @@ var require_headers = __commonJS({
         return this[kHeadersList];
       }
     };
-    __name(_Headers, "Headers");
-    var Headers = _Headers;
     Headers.prototype[Symbol.iterator] = Headers.prototype.entries;
     Object.defineProperties(Headers.prototype, {
       append: kEnumerableProperty,
@@ -14962,7 +15016,10 @@ var require_response = __commonJS({
     var { types } = require("util");
     var ReadableStream = globalThis.ReadableStream || require("stream/web").ReadableStream;
     var textEncoder = new TextEncoder("utf-8");
-    var _Response = class _Response {
+    var Response = class _Response {
+      static {
+        __name(this, "Response");
+      }
       // Creates network error Response.
       static error() {
         const relevantRealm = { settingsObject: {} };
@@ -15104,8 +15161,6 @@ var require_response = __commonJS({
         return clonedResponseObject;
       }
     };
-    __name(_Response, "Response");
-    var Response = _Response;
     mixinBody(Response);
     Object.defineProperties(Response.prototype, {
       type: kEnumerableProperty,
@@ -15286,7 +15341,7 @@ var require_response = __commonJS({
       if (V instanceof ReadableStream) {
         return webidl.converters.ReadableStream(V);
       }
-      if (V == null ? void 0 : V[Symbol.asyncIterator]) {
+      if (V?.[Symbol.asyncIterator]) {
         return V;
       }
       return webidl.converters.XMLHttpRequestBodyInit(V);
@@ -15356,10 +15411,12 @@ var require_request2 = __commonJS({
     var requestFinalizer = new FinalizationRegistry(({ signal, abort }) => {
       signal.removeEventListener("abort", abort);
     });
-    var _Request = class _Request {
+    var Request = class _Request {
+      static {
+        __name(this, "Request");
+      }
       // https://fetch.spec.whatwg.org/#dom-request
       constructor(input, init = {}) {
-        var _a, _b;
         if (input === kConstruct) {
           return;
         }
@@ -15370,8 +15427,7 @@ var require_request2 = __commonJS({
           settingsObject: {
             baseUrl: getGlobalOrigin(),
             get origin() {
-              var _a2;
-              return (_a2 = this.baseUrl) == null ? void 0 : _a2.origin;
+              return this.baseUrl?.origin;
             },
             policyContainer: makePolicyContainer()
           }
@@ -15401,7 +15457,7 @@ var require_request2 = __commonJS({
         }
         const origin = this[kRealm].settingsObject.origin;
         let window2 = "client";
-        if (((_b = (_a = request.window) == null ? void 0 : _a.constructor) == null ? void 0 : _b.name) === "EnvironmentSettingsObject" && sameOrigin(request.window, origin)) {
+        if (request.window?.constructor?.name === "EnvironmentSettingsObject" && sameOrigin(request.window, origin)) {
           window2 = request.window;
         }
         if (init.window != null) {
@@ -15760,9 +15816,8 @@ var require_request2 = __commonJS({
       }
       // Returns a clone of request.
       clone() {
-        var _a;
         webidl.brandCheck(this, _Request);
-        if (this.bodyUsed || ((_a = this.body) == null ? void 0 : _a.locked)) {
+        if (this.bodyUsed || this.body?.locked) {
           throw new TypeError("unusable");
         }
         const clonedRequest = cloneRequest(this[kState]);
@@ -15788,8 +15843,6 @@ var require_request2 = __commonJS({
         return clonedRequestObject;
       }
     };
-    __name(_Request, "Request");
-    var Request = _Request;
     mixinBody(Request);
     function makeRequest(init) {
       const request = {
@@ -16031,7 +16084,10 @@ var require_fetch = __commonJS({
     var GET_OR_HEAD = ["GET", "HEAD"];
     var resolveObjectURL;
     var ReadableStream = globalThis.ReadableStream;
-    var _Fetch = class _Fetch extends EE {
+    var Fetch = class extends EE {
+      static {
+        __name(this, "Fetch");
+      }
       constructor(dispatcher) {
         super();
         this.dispatcher = dispatcher;
@@ -16041,17 +16097,15 @@ var require_fetch = __commonJS({
         this.setMaxListeners(21);
       }
       terminate(reason) {
-        var _a;
         if (this.state !== "ongoing") {
           return;
         }
         this.state = "terminated";
-        (_a = this.connection) == null ? void 0 : _a.destroy(reason);
+        this.connection?.destroy(reason);
         this.emit("terminated", reason);
       }
       // https://fetch.spec.whatwg.org/#fetch-controller-abort
       abort(error) {
-        var _a;
         if (this.state !== "ongoing") {
           return;
         }
@@ -16060,14 +16114,11 @@ var require_fetch = __commonJS({
           error = new DOMException2("The operation was aborted.", "AbortError");
         }
         this.serializedAbortReason = error;
-        (_a = this.connection) == null ? void 0 : _a.destroy(error);
+        this.connection?.destroy(error);
         this.emit("terminated", error);
       }
     };
-    __name(_Fetch, "Fetch");
-    var Fetch = _Fetch;
     function fetch(input, init = {}) {
-      var _a;
       webidl.argumentLengthCheck(arguments, 1, { header: "globalThis.fetch" });
       const p = createDeferredPromise();
       let requestObject;
@@ -16083,7 +16134,7 @@ var require_fetch = __commonJS({
         return p.promise;
       }
       const globalObject = request.client.globalObject;
-      if (((_a = globalObject == null ? void 0 : globalObject.constructor) == null ? void 0 : _a.name) === "ServiceWorkerGlobalScope") {
+      if (globalObject?.constructor?.name === "ServiceWorkerGlobalScope") {
         request.serviceWorkers = "none";
       }
       let responseObject = null;
@@ -16133,11 +16184,10 @@ var require_fetch = __commonJS({
     }
     __name(fetch, "fetch");
     function finalizeAndReportTiming(response, initiatorType = "other") {
-      var _a;
       if (response.type === "error" && response.aborted) {
         return;
       }
-      if (!((_a = response.urlList) == null ? void 0 : _a.length)) {
+      if (!response.urlList?.length) {
         return;
       }
       const originalURL = response.urlList[0];
@@ -16173,12 +16223,11 @@ var require_fetch = __commonJS({
     }
     __name(markResourceTiming, "markResourceTiming");
     function abortFetch(p, request, responseObject, error) {
-      var _a, _b;
       if (!error) {
         error = new DOMException2("The operation was aborted.", "AbortError");
       }
       p.reject(error);
-      if (request.body != null && isReadable((_a = request.body) == null ? void 0 : _a.stream)) {
+      if (request.body != null && isReadable(request.body?.stream)) {
         request.body.stream.cancel(error).catch((err) => {
           if (err.code === "ERR_INVALID_STATE") {
             return;
@@ -16190,7 +16239,7 @@ var require_fetch = __commonJS({
         return;
       }
       const response = responseObject[kState];
-      if (response.body != null && isReadable((_b = response.body) == null ? void 0 : _b.stream)) {
+      if (response.body != null && isReadable(response.body?.stream)) {
         response.body.stream.cancel(error).catch((err) => {
           if (err.code === "ERR_INVALID_STATE") {
             return;
@@ -16211,7 +16260,6 @@ var require_fetch = __commonJS({
       dispatcher
       // undici
     }) {
-      var _a, _b, _c, _d;
       let taskDestination = null;
       let crossOriginIsolatedCapability = false;
       if (request.client != null) {
@@ -16236,10 +16284,10 @@ var require_fetch = __commonJS({
       };
       assert(!request.body || request.body.stream);
       if (request.window === "client") {
-        request.window = ((_c = (_b = (_a = request.client) == null ? void 0 : _a.globalObject) == null ? void 0 : _b.constructor) == null ? void 0 : _c.name) === "Window" ? request.client : "no-window";
+        request.window = request.client?.globalObject?.constructor?.name === "Window" ? request.client : "no-window";
       }
       if (request.origin === "client") {
-        request.origin = (_d = request.client) == null ? void 0 : _d.origin;
+        request.origin = request.client?.origin;
       }
       if (request.policyContainer === "client") {
         if (request.client != null) {
@@ -16717,10 +16765,9 @@ var require_fetch = __commonJS({
         abort: null,
         destroyed: false,
         destroy(err) {
-          var _a;
           if (!this.destroyed) {
             this.destroyed = true;
-            (_a = this.abort) == null ? void 0 : _a.call(this, err ?? new DOMException2("The operation was aborted.", "AbortError"));
+            this.abort?.(err ?? new DOMException2("The operation was aborted.", "AbortError"));
           }
         }
       };
@@ -16740,12 +16787,11 @@ var require_fetch = __commonJS({
         queueMicrotask(() => fetchParams.processRequestEndOfBody());
       } else if (request.body != null) {
         const processBodyChunk = /* @__PURE__ */ __name(async function* (bytes) {
-          var _a;
           if (isCancelled(fetchParams)) {
             return;
           }
           yield bytes;
-          (_a = fetchParams.processRequestBodyChunkLength) == null ? void 0 : _a.call(fetchParams, bytes.byteLength);
+          fetchParams.processRequestBodyChunkLength?.(bytes.byteLength);
         }, "processBodyChunk");
         const processEndOfBody = /* @__PURE__ */ __name(() => {
           if (isCancelled(fetchParams)) {
@@ -16845,7 +16891,7 @@ var require_fetch = __commonJS({
             finalizeResponse(fetchParams, response);
             return;
           }
-          timingInfo.decodedBodySize += (bytes == null ? void 0 : bytes.byteLength) ?? 0;
+          timingInfo.decodedBodySize += bytes?.byteLength ?? 0;
           if (isFailure) {
             fetchParams.controller.terminate(bytes);
             return;
@@ -16984,11 +17030,10 @@ var require_fetch = __commonJS({
               this.body.push(null);
             },
             onError(error) {
-              var _a;
               if (this.abort) {
                 fetchParams.controller.off("terminated", this.abort);
               }
-              (_a = this.body) == null ? void 0 : _a.destroy(error);
+              this.body?.destroy(error);
               fetchParams.controller.terminate(error);
               reject(error);
             },
@@ -17046,7 +17091,10 @@ var require_progressevent = __commonJS({
     "use strict";
     var { webidl } = require_webidl();
     var kState = Symbol("ProgressEvent state");
-    var _ProgressEvent = class _ProgressEvent extends Event {
+    var ProgressEvent = class _ProgressEvent extends Event {
+      static {
+        __name(this, "ProgressEvent");
+      }
       constructor(type, eventInitDict = {}) {
         type = webidl.converters.DOMString(type);
         eventInitDict = webidl.converters.ProgressEventInit(eventInitDict ?? {});
@@ -17070,8 +17118,6 @@ var require_progressevent = __commonJS({
         return this[kState].total;
       }
     };
-    __name(_ProgressEvent, "ProgressEvent");
-    var ProgressEvent = _ProgressEvent;
     webidl.converters.ProgressEventInit = webidl.dictionaryConverter([
       {
         key: "lengthComputable",
@@ -17607,7 +17653,10 @@ var require_filereader = __commonJS({
     } = require_symbols3();
     var { webidl } = require_webidl();
     var { kEnumerableProperty } = require_util();
-    var _FileReader = class _FileReader extends EventTarget {
+    var FileReader = class _FileReader extends EventTarget {
+      static {
+        __name(this, "FileReader");
+      }
       constructor() {
         super();
         this[kState] = "empty";
@@ -17809,8 +17858,6 @@ var require_filereader = __commonJS({
         }
       }
     };
-    __name(_FileReader, "FileReader");
-    var FileReader = _FileReader;
     FileReader.EMPTY = FileReader.prototype.EMPTY = 0;
     FileReader.LOADING = FileReader.prototype.LOADING = 1;
     FileReader.DONE = FileReader.prototype.DONE = 2;
@@ -17911,41 +17958,20 @@ var require_cache = __commonJS({
     var { urlIsHttpHttpsScheme, createDeferredPromise, readAllBytes } = require_util2();
     var assert = require("assert");
     var { getGlobalDispatcher } = require_global2();
-    var _relevantRequestResponseList, _batchCacheOperations, batchCacheOperations_fn, _queryCache, queryCache_fn, _requestMatchesCachedItem, requestMatchesCachedItem_fn;
-    var _Cache = class _Cache {
+    var Cache = class _Cache {
+      static {
+        __name(this, "Cache");
+      }
+      /**
+       * @see https://w3c.github.io/ServiceWorker/#dfn-relevant-request-response-list
+       * @type {requestResponseList}
+       */
+      #relevantRequestResponseList;
       constructor() {
-        /**
-         * @see https://w3c.github.io/ServiceWorker/#batch-cache-operations-algorithm
-         * @param {CacheBatchOperation[]} operations
-         * @returns {requestResponseList}
-         */
-        __privateAdd(this, _batchCacheOperations);
-        /**
-         * @see https://w3c.github.io/ServiceWorker/#query-cache
-         * @param {any} requestQuery
-         * @param {import('../../types/cache').CacheQueryOptions} options
-         * @param {requestResponseList} targetStorage
-         * @returns {requestResponseList}
-         */
-        __privateAdd(this, _queryCache);
-        /**
-         * @see https://w3c.github.io/ServiceWorker/#request-matches-cached-item-algorithm
-         * @param {any} requestQuery
-         * @param {any} request
-         * @param {any | null} response
-         * @param {import('../../types/cache').CacheQueryOptions | undefined} options
-         * @returns {boolean}
-         */
-        __privateAdd(this, _requestMatchesCachedItem);
-        /**
-         * @see https://w3c.github.io/ServiceWorker/#dfn-relevant-request-response-list
-         * @type {requestResponseList}
-         */
-        __privateAdd(this, _relevantRequestResponseList, void 0);
         if (arguments[0] !== kConstruct) {
           webidl.illegalConstructor();
         }
-        __privateSet(this, _relevantRequestResponseList, arguments[1]);
+        this.#relevantRequestResponseList = arguments[1];
       }
       async match(request, options = {}) {
         webidl.brandCheck(this, _Cache);
@@ -17959,7 +17985,6 @@ var require_cache = __commonJS({
         return p[0];
       }
       async matchAll(request = void 0, options = {}) {
-        var _a;
         webidl.brandCheck(this, _Cache);
         if (request !== void 0)
           request = webidl.converters.RequestInfo(request);
@@ -17977,18 +18002,18 @@ var require_cache = __commonJS({
         }
         const responses = [];
         if (request === void 0) {
-          for (const requestResponse of __privateGet(this, _relevantRequestResponseList)) {
+          for (const requestResponse of this.#relevantRequestResponseList) {
             responses.push(requestResponse[1]);
           }
         } else {
-          const requestResponses = __privateMethod(this, _queryCache, queryCache_fn).call(this, r, options);
+          const requestResponses = this.#queryCache(r, options);
           for (const requestResponse of requestResponses) {
             responses.push(requestResponse[1]);
           }
         }
         const responseList = [];
         for (const response of responses) {
-          const responseObject = new Response(((_a = response.body) == null ? void 0 : _a.source) ?? null);
+          const responseObject = new Response(response.body?.source ?? null);
           const body = responseObject[kState].body;
           responseObject[kState] = response;
           responseObject[kState].body = body;
@@ -18091,7 +18116,7 @@ var require_cache = __commonJS({
         const cacheJobPromise = createDeferredPromise();
         let errorData = null;
         try {
-          __privateMethod(this, _batchCacheOperations, batchCacheOperations_fn).call(this, operations);
+          this.#batchCacheOperations(operations);
         } catch (e) {
           errorData = e;
         }
@@ -18171,7 +18196,7 @@ var require_cache = __commonJS({
         const cacheJobPromise = createDeferredPromise();
         let errorData = null;
         try {
-          __privateMethod(this, _batchCacheOperations, batchCacheOperations_fn).call(this, operations);
+          this.#batchCacheOperations(operations);
         } catch (e) {
           errorData = e;
         }
@@ -18210,13 +18235,13 @@ var require_cache = __commonJS({
         let errorData = null;
         let requestResponses;
         try {
-          requestResponses = __privateMethod(this, _batchCacheOperations, batchCacheOperations_fn).call(this, operations);
+          requestResponses = this.#batchCacheOperations(operations);
         } catch (e) {
           errorData = e;
         }
         queueMicrotask(() => {
           if (errorData === null) {
-            cacheJobPromise.resolve(!!(requestResponses == null ? void 0 : requestResponses.length));
+            cacheJobPromise.resolve(!!requestResponses?.length);
           } else {
             cacheJobPromise.reject(errorData);
           }
@@ -18248,11 +18273,11 @@ var require_cache = __commonJS({
         const promise = createDeferredPromise();
         const requests = [];
         if (request === void 0) {
-          for (const requestResponse of __privateGet(this, _relevantRequestResponseList)) {
+          for (const requestResponse of this.#relevantRequestResponseList) {
             requests.push(requestResponse[0]);
           }
         } else {
-          const requestResponses = __privateMethod(this, _queryCache, queryCache_fn).call(this, r, options);
+          const requestResponses = this.#queryCache(r, options);
           for (const requestResponse of requestResponses) {
             requests.push(requestResponse[0]);
           }
@@ -18271,127 +18296,141 @@ var require_cache = __commonJS({
         });
         return promise.promise;
       }
-    };
-    _relevantRequestResponseList = new WeakMap();
-    _batchCacheOperations = new WeakSet();
-    batchCacheOperations_fn = /* @__PURE__ */ __name(function(operations) {
-      const cache2 = __privateGet(this, _relevantRequestResponseList);
-      const backupCache = [...cache2];
-      const addedItems = [];
-      const resultList = [];
-      try {
-        for (const operation of operations) {
-          if (operation.type !== "delete" && operation.type !== "put") {
-            throw webidl.errors.exception({
-              header: "Cache.#batchCacheOperations",
-              message: 'operation type does not match "delete" or "put"'
-            });
-          }
-          if (operation.type === "delete" && operation.response != null) {
-            throw webidl.errors.exception({
-              header: "Cache.#batchCacheOperations",
-              message: "delete operation should not have an associated response"
-            });
-          }
-          if (__privateMethod(this, _queryCache, queryCache_fn).call(this, operation.request, operation.options, addedItems).length) {
-            throw new DOMException("???", "InvalidStateError");
-          }
-          let requestResponses;
-          if (operation.type === "delete") {
-            requestResponses = __privateMethod(this, _queryCache, queryCache_fn).call(this, operation.request, operation.options);
-            if (requestResponses.length === 0) {
-              return [];
-            }
-            for (const requestResponse of requestResponses) {
-              const idx = cache2.indexOf(requestResponse);
-              assert(idx !== -1);
-              cache2.splice(idx, 1);
-            }
-          } else if (operation.type === "put") {
-            if (operation.response == null) {
+      /**
+       * @see https://w3c.github.io/ServiceWorker/#batch-cache-operations-algorithm
+       * @param {CacheBatchOperation[]} operations
+       * @returns {requestResponseList}
+       */
+      #batchCacheOperations(operations) {
+        const cache2 = this.#relevantRequestResponseList;
+        const backupCache = [...cache2];
+        const addedItems = [];
+        const resultList = [];
+        try {
+          for (const operation of operations) {
+            if (operation.type !== "delete" && operation.type !== "put") {
               throw webidl.errors.exception({
                 header: "Cache.#batchCacheOperations",
-                message: "put operation should have an associated response"
+                message: 'operation type does not match "delete" or "put"'
               });
             }
-            const r = operation.request;
-            if (!urlIsHttpHttpsScheme(r.url)) {
+            if (operation.type === "delete" && operation.response != null) {
               throw webidl.errors.exception({
                 header: "Cache.#batchCacheOperations",
-                message: "expected http or https scheme"
+                message: "delete operation should not have an associated response"
               });
             }
-            if (r.method !== "GET") {
-              throw webidl.errors.exception({
-                header: "Cache.#batchCacheOperations",
-                message: "not get method"
-              });
+            if (this.#queryCache(operation.request, operation.options, addedItems).length) {
+              throw new DOMException("???", "InvalidStateError");
             }
-            if (operation.options != null) {
-              throw webidl.errors.exception({
-                header: "Cache.#batchCacheOperations",
-                message: "options must not be defined"
-              });
+            let requestResponses;
+            if (operation.type === "delete") {
+              requestResponses = this.#queryCache(operation.request, operation.options);
+              if (requestResponses.length === 0) {
+                return [];
+              }
+              for (const requestResponse of requestResponses) {
+                const idx = cache2.indexOf(requestResponse);
+                assert(idx !== -1);
+                cache2.splice(idx, 1);
+              }
+            } else if (operation.type === "put") {
+              if (operation.response == null) {
+                throw webidl.errors.exception({
+                  header: "Cache.#batchCacheOperations",
+                  message: "put operation should have an associated response"
+                });
+              }
+              const r = operation.request;
+              if (!urlIsHttpHttpsScheme(r.url)) {
+                throw webidl.errors.exception({
+                  header: "Cache.#batchCacheOperations",
+                  message: "expected http or https scheme"
+                });
+              }
+              if (r.method !== "GET") {
+                throw webidl.errors.exception({
+                  header: "Cache.#batchCacheOperations",
+                  message: "not get method"
+                });
+              }
+              if (operation.options != null) {
+                throw webidl.errors.exception({
+                  header: "Cache.#batchCacheOperations",
+                  message: "options must not be defined"
+                });
+              }
+              requestResponses = this.#queryCache(operation.request);
+              for (const requestResponse of requestResponses) {
+                const idx = cache2.indexOf(requestResponse);
+                assert(idx !== -1);
+                cache2.splice(idx, 1);
+              }
+              cache2.push([operation.request, operation.response]);
+              addedItems.push([operation.request, operation.response]);
             }
-            requestResponses = __privateMethod(this, _queryCache, queryCache_fn).call(this, operation.request);
-            for (const requestResponse of requestResponses) {
-              const idx = cache2.indexOf(requestResponse);
-              assert(idx !== -1);
-              cache2.splice(idx, 1);
-            }
-            cache2.push([operation.request, operation.response]);
-            addedItems.push([operation.request, operation.response]);
+            resultList.push([operation.request, operation.response]);
           }
-          resultList.push([operation.request, operation.response]);
+          return resultList;
+        } catch (e) {
+          this.#relevantRequestResponseList.length = 0;
+          this.#relevantRequestResponseList = backupCache;
+          throw e;
+        }
+      }
+      /**
+       * @see https://w3c.github.io/ServiceWorker/#query-cache
+       * @param {any} requestQuery
+       * @param {import('../../types/cache').CacheQueryOptions} options
+       * @param {requestResponseList} targetStorage
+       * @returns {requestResponseList}
+       */
+      #queryCache(requestQuery, options, targetStorage) {
+        const resultList = [];
+        const storage = targetStorage ?? this.#relevantRequestResponseList;
+        for (const requestResponse of storage) {
+          const [cachedRequest, cachedResponse] = requestResponse;
+          if (this.#requestMatchesCachedItem(requestQuery, cachedRequest, cachedResponse, options)) {
+            resultList.push(requestResponse);
+          }
         }
         return resultList;
-      } catch (e) {
-        __privateGet(this, _relevantRequestResponseList).length = 0;
-        __privateSet(this, _relevantRequestResponseList, backupCache);
-        throw e;
       }
-    }, "#batchCacheOperations");
-    _queryCache = new WeakSet();
-    queryCache_fn = /* @__PURE__ */ __name(function(requestQuery, options, targetStorage) {
-      const resultList = [];
-      const storage = targetStorage ?? __privateGet(this, _relevantRequestResponseList);
-      for (const requestResponse of storage) {
-        const [cachedRequest, cachedResponse] = requestResponse;
-        if (__privateMethod(this, _requestMatchesCachedItem, requestMatchesCachedItem_fn).call(this, requestQuery, cachedRequest, cachedResponse, options)) {
-          resultList.push(requestResponse);
+      /**
+       * @see https://w3c.github.io/ServiceWorker/#request-matches-cached-item-algorithm
+       * @param {any} requestQuery
+       * @param {any} request
+       * @param {any | null} response
+       * @param {import('../../types/cache').CacheQueryOptions | undefined} options
+       * @returns {boolean}
+       */
+      #requestMatchesCachedItem(requestQuery, request, response = null, options) {
+        const queryURL = new URL(requestQuery.url);
+        const cachedURL = new URL(request.url);
+        if (options?.ignoreSearch) {
+          cachedURL.search = "";
+          queryURL.search = "";
         }
-      }
-      return resultList;
-    }, "#queryCache");
-    _requestMatchesCachedItem = new WeakSet();
-    requestMatchesCachedItem_fn = /* @__PURE__ */ __name(function(requestQuery, request, response = null, options) {
-      const queryURL = new URL(requestQuery.url);
-      const cachedURL = new URL(request.url);
-      if (options == null ? void 0 : options.ignoreSearch) {
-        cachedURL.search = "";
-        queryURL.search = "";
-      }
-      if (!urlEquals(queryURL, cachedURL, true)) {
-        return false;
-      }
-      if (response == null || (options == null ? void 0 : options.ignoreVary) || !response.headersList.contains("vary")) {
+        if (!urlEquals(queryURL, cachedURL, true)) {
+          return false;
+        }
+        if (response == null || options?.ignoreVary || !response.headersList.contains("vary")) {
+          return true;
+        }
+        const fieldValues = getFieldValues(response.headersList.get("vary"));
+        for (const fieldValue of fieldValues) {
+          if (fieldValue === "*") {
+            return false;
+          }
+          const requestValue = request.headersList.get(fieldValue);
+          const queryValue = requestQuery.headersList.get(fieldValue);
+          if (requestValue !== queryValue) {
+            return false;
+          }
+        }
         return true;
       }
-      const fieldValues = getFieldValues(response.headersList.get("vary"));
-      for (const fieldValue of fieldValues) {
-        if (fieldValue === "*") {
-          return false;
-        }
-        const requestValue = request.headersList.get(fieldValue);
-        const queryValue = requestQuery.headersList.get(fieldValue);
-        if (requestValue !== queryValue) {
-          return false;
-        }
-      }
-      return true;
-    }, "#requestMatchesCachedItem");
-    __name(_Cache, "Cache");
-    var Cache = _Cache;
+    };
     Object.defineProperties(Cache.prototype, {
       [Symbol.toStringTag]: {
         value: "Cache",
@@ -18448,14 +18487,16 @@ var require_cachestorage = __commonJS({
     var { Cache } = require_cache();
     var { webidl } = require_webidl();
     var { kEnumerableProperty } = require_util();
-    var _caches;
-    var _CacheStorage = class _CacheStorage {
+    var CacheStorage = class _CacheStorage {
+      static {
+        __name(this, "CacheStorage");
+      }
+      /**
+       * @see https://w3c.github.io/ServiceWorker/#dfn-relevant-name-to-cache-map
+       * @type {Map<string, import('./cache').requestResponseList}
+       */
+      #caches = /* @__PURE__ */ new Map();
       constructor() {
-        /**
-         * @see https://w3c.github.io/ServiceWorker/#dfn-relevant-name-to-cache-map
-         * @type {Map<string, import('./cache').requestResponseList}
-         */
-        __privateAdd(this, _caches, /* @__PURE__ */ new Map());
         if (arguments[0] !== kConstruct) {
           webidl.illegalConstructor();
         }
@@ -18466,13 +18507,13 @@ var require_cachestorage = __commonJS({
         request = webidl.converters.RequestInfo(request);
         options = webidl.converters.MultiCacheQueryOptions(options);
         if (options.cacheName != null) {
-          if (__privateGet(this, _caches).has(options.cacheName)) {
-            const cacheList = __privateGet(this, _caches).get(options.cacheName);
+          if (this.#caches.has(options.cacheName)) {
+            const cacheList = this.#caches.get(options.cacheName);
             const cache2 = new Cache(kConstruct, cacheList);
             return await cache2.match(request, options);
           }
         } else {
-          for (const cacheList of __privateGet(this, _caches).values()) {
+          for (const cacheList of this.#caches.values()) {
             const cache2 = new Cache(kConstruct, cacheList);
             const response = await cache2.match(request, options);
             if (response !== void 0) {
@@ -18490,7 +18531,7 @@ var require_cachestorage = __commonJS({
         webidl.brandCheck(this, _CacheStorage);
         webidl.argumentLengthCheck(arguments, 1, { header: "CacheStorage.has" });
         cacheName = webidl.converters.DOMString(cacheName);
-        return __privateGet(this, _caches).has(cacheName);
+        return this.#caches.has(cacheName);
       }
       /**
        * @see https://w3c.github.io/ServiceWorker/#dom-cachestorage-open
@@ -18501,12 +18542,12 @@ var require_cachestorage = __commonJS({
         webidl.brandCheck(this, _CacheStorage);
         webidl.argumentLengthCheck(arguments, 1, { header: "CacheStorage.open" });
         cacheName = webidl.converters.DOMString(cacheName);
-        if (__privateGet(this, _caches).has(cacheName)) {
-          const cache3 = __privateGet(this, _caches).get(cacheName);
+        if (this.#caches.has(cacheName)) {
+          const cache3 = this.#caches.get(cacheName);
           return new Cache(kConstruct, cache3);
         }
         const cache2 = [];
-        __privateGet(this, _caches).set(cacheName, cache2);
+        this.#caches.set(cacheName, cache2);
         return new Cache(kConstruct, cache2);
       }
       /**
@@ -18518,7 +18559,7 @@ var require_cachestorage = __commonJS({
         webidl.brandCheck(this, _CacheStorage);
         webidl.argumentLengthCheck(arguments, 1, { header: "CacheStorage.delete" });
         cacheName = webidl.converters.DOMString(cacheName);
-        return __privateGet(this, _caches).delete(cacheName);
+        return this.#caches.delete(cacheName);
       }
       /**
        * @see https://w3c.github.io/ServiceWorker/#cache-storage-keys
@@ -18526,13 +18567,10 @@ var require_cachestorage = __commonJS({
        */
       async keys() {
         webidl.brandCheck(this, _CacheStorage);
-        const keys = __privateGet(this, _caches).keys();
+        const keys = this.#caches.keys();
         return [...keys];
       }
     };
-    _caches = new WeakMap();
-    __name(_CacheStorage, "CacheStorage");
-    var CacheStorage = _CacheStorage;
     Object.defineProperties(CacheStorage.prototype, {
       [Symbol.toStringTag]: {
         value: "CacheStorage",
@@ -19073,38 +19111,40 @@ var require_events = __commonJS({
     var { webidl } = require_webidl();
     var { kEnumerableProperty } = require_util();
     var { MessagePort } = require("worker_threads");
-    var _eventInit;
-    var _MessageEvent = class _MessageEvent extends Event {
+    var MessageEvent = class _MessageEvent extends Event {
+      static {
+        __name(this, "MessageEvent");
+      }
+      #eventInit;
       constructor(type, eventInitDict = {}) {
         webidl.argumentLengthCheck(arguments, 1, { header: "MessageEvent constructor" });
         type = webidl.converters.DOMString(type);
         eventInitDict = webidl.converters.MessageEventInit(eventInitDict);
         super(type, eventInitDict);
-        __privateAdd(this, _eventInit, void 0);
-        __privateSet(this, _eventInit, eventInitDict);
+        this.#eventInit = eventInitDict;
       }
       get data() {
         webidl.brandCheck(this, _MessageEvent);
-        return __privateGet(this, _eventInit).data;
+        return this.#eventInit.data;
       }
       get origin() {
         webidl.brandCheck(this, _MessageEvent);
-        return __privateGet(this, _eventInit).origin;
+        return this.#eventInit.origin;
       }
       get lastEventId() {
         webidl.brandCheck(this, _MessageEvent);
-        return __privateGet(this, _eventInit).lastEventId;
+        return this.#eventInit.lastEventId;
       }
       get source() {
         webidl.brandCheck(this, _MessageEvent);
-        return __privateGet(this, _eventInit).source;
+        return this.#eventInit.source;
       }
       get ports() {
         webidl.brandCheck(this, _MessageEvent);
-        if (!Object.isFrozen(__privateGet(this, _eventInit).ports)) {
-          Object.freeze(__privateGet(this, _eventInit).ports);
+        if (!Object.isFrozen(this.#eventInit.ports)) {
+          Object.freeze(this.#eventInit.ports);
         }
-        return __privateGet(this, _eventInit).ports;
+        return this.#eventInit.ports;
       }
       initMessageEvent(type, bubbles = false, cancelable = false, data = null, origin = "", lastEventId = "", source = null, ports = []) {
         webidl.brandCheck(this, _MessageEvent);
@@ -19120,69 +19160,64 @@ var require_events = __commonJS({
         });
       }
     };
-    _eventInit = new WeakMap();
-    __name(_MessageEvent, "MessageEvent");
-    var MessageEvent = _MessageEvent;
-    var _eventInit2;
-    var _CloseEvent = class _CloseEvent extends Event {
+    var CloseEvent = class _CloseEvent extends Event {
+      static {
+        __name(this, "CloseEvent");
+      }
+      #eventInit;
       constructor(type, eventInitDict = {}) {
         webidl.argumentLengthCheck(arguments, 1, { header: "CloseEvent constructor" });
         type = webidl.converters.DOMString(type);
         eventInitDict = webidl.converters.CloseEventInit(eventInitDict);
         super(type, eventInitDict);
-        __privateAdd(this, _eventInit2, void 0);
-        __privateSet(this, _eventInit2, eventInitDict);
+        this.#eventInit = eventInitDict;
       }
       get wasClean() {
         webidl.brandCheck(this, _CloseEvent);
-        return __privateGet(this, _eventInit2).wasClean;
+        return this.#eventInit.wasClean;
       }
       get code() {
         webidl.brandCheck(this, _CloseEvent);
-        return __privateGet(this, _eventInit2).code;
+        return this.#eventInit.code;
       }
       get reason() {
         webidl.brandCheck(this, _CloseEvent);
-        return __privateGet(this, _eventInit2).reason;
+        return this.#eventInit.reason;
       }
     };
-    _eventInit2 = new WeakMap();
-    __name(_CloseEvent, "CloseEvent");
-    var CloseEvent = _CloseEvent;
-    var _eventInit3;
-    var _ErrorEvent = class _ErrorEvent extends Event {
+    var ErrorEvent = class _ErrorEvent extends Event {
+      static {
+        __name(this, "ErrorEvent");
+      }
+      #eventInit;
       constructor(type, eventInitDict) {
         webidl.argumentLengthCheck(arguments, 1, { header: "ErrorEvent constructor" });
         super(type, eventInitDict);
-        __privateAdd(this, _eventInit3, void 0);
         type = webidl.converters.DOMString(type);
         eventInitDict = webidl.converters.ErrorEventInit(eventInitDict ?? {});
-        __privateSet(this, _eventInit3, eventInitDict);
+        this.#eventInit = eventInitDict;
       }
       get message() {
         webidl.brandCheck(this, _ErrorEvent);
-        return __privateGet(this, _eventInit3).message;
+        return this.#eventInit.message;
       }
       get filename() {
         webidl.brandCheck(this, _ErrorEvent);
-        return __privateGet(this, _eventInit3).filename;
+        return this.#eventInit.filename;
       }
       get lineno() {
         webidl.brandCheck(this, _ErrorEvent);
-        return __privateGet(this, _eventInit3).lineno;
+        return this.#eventInit.lineno;
       }
       get colno() {
         webidl.brandCheck(this, _ErrorEvent);
-        return __privateGet(this, _eventInit3).colno;
+        return this.#eventInit.colno;
       }
       get error() {
         webidl.brandCheck(this, _ErrorEvent);
-        return __privateGet(this, _eventInit3).error;
+        return this.#eventInit.error;
       }
     };
-    _eventInit3 = new WeakMap();
-    __name(_ErrorEvent, "ErrorEvent");
-    var ErrorEvent = _ErrorEvent;
     Object.defineProperties(MessageEvent.prototype, {
       [Symbol.toStringTag]: {
         value: "MessageEvent",
@@ -19396,7 +19431,7 @@ var require_util7 = __commonJS({
     function failWebsocketConnection(ws, reason) {
       const { [kController]: controller, [kResponse]: response } = ws;
       controller.abort();
-      if ((response == null ? void 0 : response.socket) && !response.socket.destroyed) {
+      if (response?.socket && !response.socket.destroyed) {
         response.socket.destroy();
       }
       if (reason) {
@@ -19475,7 +19510,6 @@ var require_connection = __commonJS({
         useParallelQueue: true,
         dispatcher: options.dispatcher ?? getGlobalDispatcher(),
         processResponse(response) {
-          var _a, _b;
           if (response.type === "error" || response.status !== 101) {
             failWebsocketConnection(ws, "Received network error or non-101 status code.");
             return;
@@ -19484,11 +19518,11 @@ var require_connection = __commonJS({
             failWebsocketConnection(ws, "Server did not respond with sent protocols.");
             return;
           }
-          if (((_a = response.headersList.get("Upgrade")) == null ? void 0 : _a.toLowerCase()) !== "websocket") {
+          if (response.headersList.get("Upgrade")?.toLowerCase() !== "websocket") {
             failWebsocketConnection(ws, 'Server did not set Upgrade header to "websocket".');
             return;
           }
-          if (((_b = response.headersList.get("Connection")) == null ? void 0 : _b.toLowerCase()) !== "upgrade") {
+          if (response.headersList.get("Connection")?.toLowerCase() !== "upgrade") {
             failWebsocketConnection(ws, 'Server did not set Connection header to "upgrade".');
             return;
           }
@@ -19582,7 +19616,10 @@ var require_frame = __commonJS({
       crypto7 = require("crypto");
     } catch {
     }
-    var _WebsocketFrameSend = class _WebsocketFrameSend {
+    var WebsocketFrameSend = class {
+      static {
+        __name(this, "WebsocketFrameSend");
+      }
       /**
        * @param {Buffer|undefined} data
        */
@@ -19591,8 +19628,7 @@ var require_frame = __commonJS({
         this.maskKey = crypto7.randomBytes(4);
       }
       createFrame(opcode) {
-        var _a;
-        const bodyLength = ((_a = this.frameData) == null ? void 0 : _a.byteLength) ?? 0;
+        const bodyLength = this.frameData?.byteLength ?? 0;
         let payloadLength = bodyLength;
         let offset = 6;
         if (bodyLength > maxUnsigned16Bit) {
@@ -19624,8 +19660,6 @@ var require_frame = __commonJS({
         return buffer;
       }
     };
-    __name(_WebsocketFrameSend, "WebsocketFrameSend");
-    var WebsocketFrameSend = _WebsocketFrameSend;
     module2.exports = {
       WebsocketFrameSend
     };
@@ -19645,15 +19679,17 @@ var require_receiver = __commonJS({
     var channels = {};
     channels.ping = diagnosticsChannel.channel("undici:websocket:ping");
     channels.pong = diagnosticsChannel.channel("undici:websocket:pong");
-    var _buffers, _byteOffset, _state, _info, _fragments;
-    var _ByteParser = class _ByteParser extends Writable {
+    var ByteParser = class extends Writable {
+      static {
+        __name(this, "ByteParser");
+      }
+      #buffers = [];
+      #byteOffset = 0;
+      #state = parserStates.INFO;
+      #info = {};
+      #fragments = [];
       constructor(ws) {
         super();
-        __privateAdd(this, _buffers, []);
-        __privateAdd(this, _byteOffset, 0);
-        __privateAdd(this, _state, parserStates.INFO);
-        __privateAdd(this, _info, {});
-        __privateAdd(this, _fragments, []);
         this.ws = ws;
       }
       /**
@@ -19661,8 +19697,8 @@ var require_receiver = __commonJS({
        * @param {() => void} callback
        */
       _write(chunk, _, callback) {
-        __privateGet(this, _buffers).push(chunk);
-        __privateSet(this, _byteOffset, __privateGet(this, _byteOffset) + chunk.length);
+        this.#buffers.push(chunk);
+        this.#byteOffset += chunk.length;
         this.run(callback);
       }
       /**
@@ -19672,44 +19708,44 @@ var require_receiver = __commonJS({
        */
       run(callback) {
         while (true) {
-          if (__privateGet(this, _state) === parserStates.INFO) {
-            if (__privateGet(this, _byteOffset) < 2) {
+          if (this.#state === parserStates.INFO) {
+            if (this.#byteOffset < 2) {
               return callback();
             }
             const buffer = this.consume(2);
-            __privateGet(this, _info).fin = (buffer[0] & 128) !== 0;
-            __privateGet(this, _info).opcode = buffer[0] & 15;
-            __privateGet(this, _info).originalOpcode ??= __privateGet(this, _info).opcode;
-            __privateGet(this, _info).fragmented = !__privateGet(this, _info).fin && __privateGet(this, _info).opcode !== opcodes.CONTINUATION;
-            if (__privateGet(this, _info).fragmented && __privateGet(this, _info).opcode !== opcodes.BINARY && __privateGet(this, _info).opcode !== opcodes.TEXT) {
+            this.#info.fin = (buffer[0] & 128) !== 0;
+            this.#info.opcode = buffer[0] & 15;
+            this.#info.originalOpcode ??= this.#info.opcode;
+            this.#info.fragmented = !this.#info.fin && this.#info.opcode !== opcodes.CONTINUATION;
+            if (this.#info.fragmented && this.#info.opcode !== opcodes.BINARY && this.#info.opcode !== opcodes.TEXT) {
               failWebsocketConnection(this.ws, "Invalid frame type was fragmented.");
               return;
             }
             const payloadLength = buffer[1] & 127;
             if (payloadLength <= 125) {
-              __privateGet(this, _info).payloadLength = payloadLength;
-              __privateSet(this, _state, parserStates.READ_DATA);
+              this.#info.payloadLength = payloadLength;
+              this.#state = parserStates.READ_DATA;
             } else if (payloadLength === 126) {
-              __privateSet(this, _state, parserStates.PAYLOADLENGTH_16);
+              this.#state = parserStates.PAYLOADLENGTH_16;
             } else if (payloadLength === 127) {
-              __privateSet(this, _state, parserStates.PAYLOADLENGTH_64);
+              this.#state = parserStates.PAYLOADLENGTH_64;
             }
-            if (__privateGet(this, _info).fragmented && payloadLength > 125) {
+            if (this.#info.fragmented && payloadLength > 125) {
               failWebsocketConnection(this.ws, "Fragmented frame exceeded 125 bytes.");
               return;
-            } else if ((__privateGet(this, _info).opcode === opcodes.PING || __privateGet(this, _info).opcode === opcodes.PONG || __privateGet(this, _info).opcode === opcodes.CLOSE) && payloadLength > 125) {
+            } else if ((this.#info.opcode === opcodes.PING || this.#info.opcode === opcodes.PONG || this.#info.opcode === opcodes.CLOSE) && payloadLength > 125) {
               failWebsocketConnection(this.ws, "Payload length for control frame exceeded 125 bytes.");
               return;
-            } else if (__privateGet(this, _info).opcode === opcodes.CLOSE) {
+            } else if (this.#info.opcode === opcodes.CLOSE) {
               if (payloadLength === 1) {
                 failWebsocketConnection(this.ws, "Received close frame with a 1-byte body.");
                 return;
               }
               const body = this.consume(payloadLength);
-              __privateGet(this, _info).closeInfo = this.parseCloseBody(false, body);
+              this.#info.closeInfo = this.parseCloseBody(false, body);
               if (!this.ws[kSentClose]) {
                 const body2 = Buffer.allocUnsafe(2);
-                body2.writeUInt16BE(__privateGet(this, _info).closeInfo.code, 0);
+                body2.writeUInt16BE(this.#info.closeInfo.code, 0);
                 const closeFrame = new WebsocketFrameSend(body2);
                 this.ws[kResponse].socket.write(
                   closeFrame.createFrame(opcodes.CLOSE),
@@ -19724,7 +19760,7 @@ var require_receiver = __commonJS({
               this.ws[kReceivedClose] = true;
               this.end();
               return;
-            } else if (__privateGet(this, _info).opcode === opcodes.PING) {
+            } else if (this.#info.opcode === opcodes.PING) {
               const body = this.consume(payloadLength);
               if (!this.ws[kReceivedClose]) {
                 const frame = new WebsocketFrameSend(body);
@@ -19735,36 +19771,36 @@ var require_receiver = __commonJS({
                   });
                 }
               }
-              __privateSet(this, _state, parserStates.INFO);
-              if (__privateGet(this, _byteOffset) > 0) {
+              this.#state = parserStates.INFO;
+              if (this.#byteOffset > 0) {
                 continue;
               } else {
                 callback();
                 return;
               }
-            } else if (__privateGet(this, _info).opcode === opcodes.PONG) {
+            } else if (this.#info.opcode === opcodes.PONG) {
               const body = this.consume(payloadLength);
               if (channels.pong.hasSubscribers) {
                 channels.pong.publish({
                   payload: body
                 });
               }
-              if (__privateGet(this, _byteOffset) > 0) {
+              if (this.#byteOffset > 0) {
                 continue;
               } else {
                 callback();
                 return;
               }
             }
-          } else if (__privateGet(this, _state) === parserStates.PAYLOADLENGTH_16) {
-            if (__privateGet(this, _byteOffset) < 2) {
+          } else if (this.#state === parserStates.PAYLOADLENGTH_16) {
+            if (this.#byteOffset < 2) {
               return callback();
             }
             const buffer = this.consume(2);
-            __privateGet(this, _info).payloadLength = buffer.readUInt16BE(0);
-            __privateSet(this, _state, parserStates.READ_DATA);
-          } else if (__privateGet(this, _state) === parserStates.PAYLOADLENGTH_64) {
-            if (__privateGet(this, _byteOffset) < 8) {
+            this.#info.payloadLength = buffer.readUInt16BE(0);
+            this.#state = parserStates.READ_DATA;
+          } else if (this.#state === parserStates.PAYLOADLENGTH_64) {
+            if (this.#byteOffset < 8) {
               return callback();
             }
             const buffer = this.consume(8);
@@ -19774,24 +19810,24 @@ var require_receiver = __commonJS({
               return;
             }
             const lower = buffer.readUInt32BE(4);
-            __privateGet(this, _info).payloadLength = (upper << 8) + lower;
-            __privateSet(this, _state, parserStates.READ_DATA);
-          } else if (__privateGet(this, _state) === parserStates.READ_DATA) {
-            if (__privateGet(this, _byteOffset) < __privateGet(this, _info).payloadLength) {
+            this.#info.payloadLength = (upper << 8) + lower;
+            this.#state = parserStates.READ_DATA;
+          } else if (this.#state === parserStates.READ_DATA) {
+            if (this.#byteOffset < this.#info.payloadLength) {
               return callback();
-            } else if (__privateGet(this, _byteOffset) >= __privateGet(this, _info).payloadLength) {
-              const body = this.consume(__privateGet(this, _info).payloadLength);
-              __privateGet(this, _fragments).push(body);
-              if (!__privateGet(this, _info).fragmented || __privateGet(this, _info).fin && __privateGet(this, _info).opcode === opcodes.CONTINUATION) {
-                const fullMessage = Buffer.concat(__privateGet(this, _fragments));
-                websocketMessageReceived(this.ws, __privateGet(this, _info).originalOpcode, fullMessage);
-                __privateSet(this, _info, {});
-                __privateGet(this, _fragments).length = 0;
+            } else if (this.#byteOffset >= this.#info.payloadLength) {
+              const body = this.consume(this.#info.payloadLength);
+              this.#fragments.push(body);
+              if (!this.#info.fragmented || this.#info.fin && this.#info.opcode === opcodes.CONTINUATION) {
+                const fullMessage = Buffer.concat(this.#fragments);
+                websocketMessageReceived(this.ws, this.#info.originalOpcode, fullMessage);
+                this.#info = {};
+                this.#fragments.length = 0;
               }
-              __privateSet(this, _state, parserStates.INFO);
+              this.#state = parserStates.INFO;
             }
           }
-          if (__privateGet(this, _byteOffset) > 0) {
+          if (this.#byteOffset > 0) {
             continue;
           } else {
             callback();
@@ -19805,33 +19841,33 @@ var require_receiver = __commonJS({
        * @returns {Buffer|null}
        */
       consume(n) {
-        if (n > __privateGet(this, _byteOffset)) {
+        if (n > this.#byteOffset) {
           return null;
         } else if (n === 0) {
           return emptyBuffer;
         }
-        if (__privateGet(this, _buffers)[0].length === n) {
-          __privateSet(this, _byteOffset, __privateGet(this, _byteOffset) - __privateGet(this, _buffers)[0].length);
-          return __privateGet(this, _buffers).shift();
+        if (this.#buffers[0].length === n) {
+          this.#byteOffset -= this.#buffers[0].length;
+          return this.#buffers.shift();
         }
         const buffer = Buffer.allocUnsafe(n);
         let offset = 0;
         while (offset !== n) {
-          const next = __privateGet(this, _buffers)[0];
+          const next = this.#buffers[0];
           const { length } = next;
           if (length + offset === n) {
-            buffer.set(__privateGet(this, _buffers).shift(), offset);
+            buffer.set(this.#buffers.shift(), offset);
             break;
           } else if (length + offset > n) {
             buffer.set(next.subarray(0, n - offset), offset);
-            __privateGet(this, _buffers)[0] = next.subarray(n - offset);
+            this.#buffers[0] = next.subarray(n - offset);
             break;
           } else {
-            buffer.set(__privateGet(this, _buffers).shift(), offset);
+            buffer.set(this.#buffers.shift(), offset);
             offset += next.length;
           }
         }
-        __privateSet(this, _byteOffset, __privateGet(this, _byteOffset) - n);
+        this.#byteOffset -= n;
         return buffer;
       }
       parseCloseBody(onlyCode, data) {
@@ -19860,16 +19896,9 @@ var require_receiver = __commonJS({
         return { code, reason };
       }
       get closingInfo() {
-        return __privateGet(this, _info).closeInfo;
+        return this.#info.closeInfo;
       }
     };
-    _buffers = new WeakMap();
-    _byteOffset = new WeakMap();
-    _state = new WeakMap();
-    _info = new WeakMap();
-    _fragments = new WeakMap();
-    __name(_ByteParser, "ByteParser");
-    var ByteParser = _ByteParser;
     module2.exports = {
       ByteParser
     };
@@ -19902,27 +19931,25 @@ var require_websocket = __commonJS({
     var { getGlobalDispatcher } = require_global2();
     var { types } = require("util");
     var experimentalWarned = false;
-    var _events, _bufferedAmount, _protocol, _extensions, _onConnectionEstablished, onConnectionEstablished_fn;
-    var _WebSocket = class _WebSocket extends EventTarget {
+    var WebSocket = class _WebSocket extends EventTarget {
+      static {
+        __name(this, "WebSocket");
+      }
+      #events = {
+        open: null,
+        error: null,
+        close: null,
+        message: null
+      };
+      #bufferedAmount = 0;
+      #protocol = "";
+      #extensions = "";
       /**
        * @param {string} url
        * @param {string|string[]} protocols
        */
       constructor(url, protocols = []) {
         super();
-        /**
-         * @see https://websockets.spec.whatwg.org/#feedback-from-the-protocol
-         */
-        __privateAdd(this, _onConnectionEstablished);
-        __privateAdd(this, _events, {
-          open: null,
-          error: null,
-          close: null,
-          message: null
-        });
-        __privateAdd(this, _bufferedAmount, 0);
-        __privateAdd(this, _protocol, "");
-        __privateAdd(this, _extensions, "");
         webidl.argumentLengthCheck(arguments, 1, { header: "WebSocket constructor" });
         if (!experimentalWarned) {
           experimentalWarned = true;
@@ -19968,7 +19995,7 @@ var require_websocket = __commonJS({
           urlRecord,
           protocols,
           this,
-          (response) => __privateMethod(this, _onConnectionEstablished, onConnectionEstablished_fn).call(this, response),
+          (response) => this.#onConnectionEstablished(response),
           options
         );
         this[kReadyState] = _WebSocket.CONNECTING;
@@ -20048,25 +20075,25 @@ var require_websocket = __commonJS({
           const value = Buffer.from(data);
           const frame = new WebsocketFrameSend(value);
           const buffer = frame.createFrame(opcodes.TEXT);
-          __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) + value.byteLength);
+          this.#bufferedAmount += value.byteLength;
           socket.write(buffer, () => {
-            __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) - value.byteLength);
+            this.#bufferedAmount -= value.byteLength;
           });
         } else if (types.isArrayBuffer(data)) {
           const value = Buffer.from(data);
           const frame = new WebsocketFrameSend(value);
           const buffer = frame.createFrame(opcodes.BINARY);
-          __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) + value.byteLength);
+          this.#bufferedAmount += value.byteLength;
           socket.write(buffer, () => {
-            __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) - value.byteLength);
+            this.#bufferedAmount -= value.byteLength;
           });
         } else if (ArrayBuffer.isView(data)) {
           const ab = Buffer.from(data, data.byteOffset, data.byteLength);
           const frame = new WebsocketFrameSend(ab);
           const buffer = frame.createFrame(opcodes.BINARY);
-          __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) + ab.byteLength);
+          this.#bufferedAmount += ab.byteLength;
           socket.write(buffer, () => {
-            __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) - ab.byteLength);
+            this.#bufferedAmount -= ab.byteLength;
           });
         } else if (isBlobLike(data)) {
           const frame = new WebsocketFrameSend();
@@ -20074,9 +20101,9 @@ var require_websocket = __commonJS({
             const value = Buffer.from(ab);
             frame.frameData = value;
             const buffer = frame.createFrame(opcodes.BINARY);
-            __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) + value.byteLength);
+            this.#bufferedAmount += value.byteLength;
             socket.write(buffer, () => {
-              __privateSet(this, _bufferedAmount, __privateGet(this, _bufferedAmount) - value.byteLength);
+              this.#bufferedAmount -= value.byteLength;
             });
           });
         }
@@ -20087,7 +20114,7 @@ var require_websocket = __commonJS({
       }
       get bufferedAmount() {
         webidl.brandCheck(this, _WebSocket);
-        return __privateGet(this, _bufferedAmount);
+        return this.#bufferedAmount;
       }
       get url() {
         webidl.brandCheck(this, _WebSocket);
@@ -20095,74 +20122,74 @@ var require_websocket = __commonJS({
       }
       get extensions() {
         webidl.brandCheck(this, _WebSocket);
-        return __privateGet(this, _extensions);
+        return this.#extensions;
       }
       get protocol() {
         webidl.brandCheck(this, _WebSocket);
-        return __privateGet(this, _protocol);
+        return this.#protocol;
       }
       get onopen() {
         webidl.brandCheck(this, _WebSocket);
-        return __privateGet(this, _events).open;
+        return this.#events.open;
       }
       set onopen(fn) {
         webidl.brandCheck(this, _WebSocket);
-        if (__privateGet(this, _events).open) {
-          this.removeEventListener("open", __privateGet(this, _events).open);
+        if (this.#events.open) {
+          this.removeEventListener("open", this.#events.open);
         }
         if (typeof fn === "function") {
-          __privateGet(this, _events).open = fn;
+          this.#events.open = fn;
           this.addEventListener("open", fn);
         } else {
-          __privateGet(this, _events).open = null;
+          this.#events.open = null;
         }
       }
       get onerror() {
         webidl.brandCheck(this, _WebSocket);
-        return __privateGet(this, _events).error;
+        return this.#events.error;
       }
       set onerror(fn) {
         webidl.brandCheck(this, _WebSocket);
-        if (__privateGet(this, _events).error) {
-          this.removeEventListener("error", __privateGet(this, _events).error);
+        if (this.#events.error) {
+          this.removeEventListener("error", this.#events.error);
         }
         if (typeof fn === "function") {
-          __privateGet(this, _events).error = fn;
+          this.#events.error = fn;
           this.addEventListener("error", fn);
         } else {
-          __privateGet(this, _events).error = null;
+          this.#events.error = null;
         }
       }
       get onclose() {
         webidl.brandCheck(this, _WebSocket);
-        return __privateGet(this, _events).close;
+        return this.#events.close;
       }
       set onclose(fn) {
         webidl.brandCheck(this, _WebSocket);
-        if (__privateGet(this, _events).close) {
-          this.removeEventListener("close", __privateGet(this, _events).close);
+        if (this.#events.close) {
+          this.removeEventListener("close", this.#events.close);
         }
         if (typeof fn === "function") {
-          __privateGet(this, _events).close = fn;
+          this.#events.close = fn;
           this.addEventListener("close", fn);
         } else {
-          __privateGet(this, _events).close = null;
+          this.#events.close = null;
         }
       }
       get onmessage() {
         webidl.brandCheck(this, _WebSocket);
-        return __privateGet(this, _events).message;
+        return this.#events.message;
       }
       set onmessage(fn) {
         webidl.brandCheck(this, _WebSocket);
-        if (__privateGet(this, _events).message) {
-          this.removeEventListener("message", __privateGet(this, _events).message);
+        if (this.#events.message) {
+          this.removeEventListener("message", this.#events.message);
         }
         if (typeof fn === "function") {
-          __privateGet(this, _events).message = fn;
+          this.#events.message = fn;
           this.addEventListener("message", fn);
         } else {
-          __privateGet(this, _events).message = null;
+          this.#events.message = null;
         }
       }
       get binaryType() {
@@ -20177,33 +20204,29 @@ var require_websocket = __commonJS({
           this[kBinaryType] = type;
         }
       }
+      /**
+       * @see https://websockets.spec.whatwg.org/#feedback-from-the-protocol
+       */
+      #onConnectionEstablished(response) {
+        this[kResponse] = response;
+        const parser = new ByteParser(this);
+        parser.on("drain", /* @__PURE__ */ __name(function onParserDrain() {
+          this.ws[kResponse].socket.resume();
+        }, "onParserDrain"));
+        response.socket.ws = this;
+        this[kByteParser] = parser;
+        this[kReadyState] = states.OPEN;
+        const extensions = response.headersList.get("sec-websocket-extensions");
+        if (extensions !== null) {
+          this.#extensions = extensions;
+        }
+        const protocol = response.headersList.get("sec-websocket-protocol");
+        if (protocol !== null) {
+          this.#protocol = protocol;
+        }
+        fireEvent("open", this);
+      }
     };
-    _events = new WeakMap();
-    _bufferedAmount = new WeakMap();
-    _protocol = new WeakMap();
-    _extensions = new WeakMap();
-    _onConnectionEstablished = new WeakSet();
-    onConnectionEstablished_fn = /* @__PURE__ */ __name(function(response) {
-      this[kResponse] = response;
-      const parser = new ByteParser(this);
-      parser.on("drain", /* @__PURE__ */ __name(function onParserDrain() {
-        this.ws[kResponse].socket.resume();
-      }, "onParserDrain"));
-      response.socket.ws = this;
-      this[kByteParser] = parser;
-      this[kReadyState] = states.OPEN;
-      const extensions = response.headersList.get("sec-websocket-extensions");
-      if (extensions !== null) {
-        __privateSet(this, _extensions, extensions);
-      }
-      const protocol = response.headersList.get("sec-websocket-protocol");
-      if (protocol !== null) {
-        __privateSet(this, _protocol, protocol);
-      }
-      fireEvent("open", this);
-    }, "#onConnectionEstablished");
-    __name(_WebSocket, "WebSocket");
-    var WebSocket = _WebSocket;
     WebSocket.CONNECTING = WebSocket.prototype.CONNECTING = states.CONNECTING;
     WebSocket.OPEN = WebSocket.prototype.OPEN = states.OPEN;
     WebSocket.CLOSING = WebSocket.prototype.CLOSING = states.CLOSING;
@@ -20564,7 +20587,10 @@ var require_lib = __commonJS({
     var RetryableHttpVerbs = ["OPTIONS", "GET", "DELETE", "HEAD"];
     var ExponentialBackoffCeiling = 10;
     var ExponentialBackoffTimeSlice = 5;
-    var _HttpClientError = class _HttpClientError extends Error {
+    var HttpClientError = class _HttpClientError extends Error {
+      static {
+        __name(this, "HttpClientError");
+      }
       constructor(message, statusCode) {
         super(message);
         this.name = "HttpClientError";
@@ -20572,10 +20598,11 @@ var require_lib = __commonJS({
         Object.setPrototypeOf(this, _HttpClientError.prototype);
       }
     };
-    __name(_HttpClientError, "HttpClientError");
-    var HttpClientError = _HttpClientError;
     exports2.HttpClientError = HttpClientError;
-    var _HttpClientResponse = class _HttpClientResponse {
+    var HttpClientResponse = class {
+      static {
+        __name(this, "HttpClientResponse");
+      }
       constructor(message) {
         this.message = message;
       }
@@ -20606,8 +20633,6 @@ var require_lib = __commonJS({
         });
       }
     };
-    __name(_HttpClientResponse, "HttpClientResponse");
-    var HttpClientResponse = _HttpClientResponse;
     exports2.HttpClientResponse = HttpClientResponse;
     function isHttps(requestUrl) {
       const parsedUrl = new URL(requestUrl);
@@ -20615,7 +20640,10 @@ var require_lib = __commonJS({
     }
     __name(isHttps, "isHttps");
     exports2.isHttps = isHttps;
-    var _HttpClient = class _HttpClient {
+    var HttpClient = class {
+      static {
+        __name(this, "HttpClient");
+      }
       constructor(userAgent, handlers, requestOptions) {
         this._ignoreSslError = false;
         this._allowRedirects = true;
@@ -21065,8 +21093,6 @@ var require_lib = __commonJS({
         });
       }
     };
-    __name(_HttpClient, "HttpClient");
-    var HttpClient = _HttpClient;
     exports2.HttpClient = HttpClient;
     var lowercaseKeys = /* @__PURE__ */ __name((obj) => Object.keys(obj).reduce((c, k) => (c[k.toLowerCase()] = obj[k], c), {}), "lowercaseKeys");
   }
@@ -21109,7 +21135,10 @@ var require_auth = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.PersonalAccessTokenCredentialHandler = exports2.BearerCredentialHandler = exports2.BasicCredentialHandler = void 0;
-    var _BasicCredentialHandler = class _BasicCredentialHandler {
+    var BasicCredentialHandler = class {
+      static {
+        __name(this, "BasicCredentialHandler");
+      }
       constructor(username, password) {
         this.username = username;
         this.password = password;
@@ -21130,10 +21159,11 @@ var require_auth = __commonJS({
         });
       }
     };
-    __name(_BasicCredentialHandler, "BasicCredentialHandler");
-    var BasicCredentialHandler = _BasicCredentialHandler;
     exports2.BasicCredentialHandler = BasicCredentialHandler;
-    var _BearerCredentialHandler = class _BearerCredentialHandler {
+    var BearerCredentialHandler = class {
+      static {
+        __name(this, "BearerCredentialHandler");
+      }
       constructor(token) {
         this.token = token;
       }
@@ -21155,10 +21185,11 @@ var require_auth = __commonJS({
         });
       }
     };
-    __name(_BearerCredentialHandler, "BearerCredentialHandler");
-    var BearerCredentialHandler = _BearerCredentialHandler;
     exports2.BearerCredentialHandler = BearerCredentialHandler;
-    var _PersonalAccessTokenCredentialHandler = class _PersonalAccessTokenCredentialHandler {
+    var PersonalAccessTokenCredentialHandler = class {
+      static {
+        __name(this, "PersonalAccessTokenCredentialHandler");
+      }
       constructor(token) {
         this.token = token;
       }
@@ -21180,8 +21211,6 @@ var require_auth = __commonJS({
         });
       }
     };
-    __name(_PersonalAccessTokenCredentialHandler, "PersonalAccessTokenCredentialHandler");
-    var PersonalAccessTokenCredentialHandler = _PersonalAccessTokenCredentialHandler;
     exports2.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
   }
 });
@@ -21226,7 +21255,10 @@ var require_oidc_utils = __commonJS({
     var http_client_1 = require_lib();
     var auth_1 = require_auth();
     var core_1 = require_core();
-    var _OidcClient = class _OidcClient {
+    var OidcClient = class _OidcClient {
+      static {
+        __name(this, "OidcClient");
+      }
       static createHttpClient(allowRetry = true, maxRetry = 10) {
         const requestOptions = {
           allowRetries: allowRetry,
@@ -21284,8 +21316,6 @@ var require_oidc_utils = __commonJS({
         });
       }
     };
-    __name(_OidcClient, "OidcClient");
-    var OidcClient = _OidcClient;
     exports2.OidcClient = OidcClient;
   }
 });
@@ -21332,7 +21362,10 @@ var require_summary = __commonJS({
     var { access, appendFile, writeFile } = fs_1.promises;
     exports2.SUMMARY_ENV_VAR = "GITHUB_STEP_SUMMARY";
     exports2.SUMMARY_DOCS_URL = "https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary";
-    var _Summary = class _Summary {
+    var Summary = class {
+      static {
+        __name(this, "Summary");
+      }
       constructor() {
         this._buffer = "";
       }
@@ -21582,8 +21615,6 @@ var require_summary = __commonJS({
         return this.addRaw(element).addEOL();
       }
     };
-    __name(_Summary, "Summary");
-    var Summary = _Summary;
     var _summary = new Summary();
     exports2.markdownSummary = _summary;
     exports2.summary = _summary;
@@ -22425,7 +22456,10 @@ var require_toolrunner = __commonJS({
     var ioUtil = __importStar2(require_io_util());
     var timers_1 = require("timers");
     var IS_WINDOWS = process.platform === "win32";
-    var _ToolRunner = class _ToolRunner extends events.EventEmitter {
+    var ToolRunner = class extends events.EventEmitter {
+      static {
+        __name(this, "ToolRunner");
+      }
       constructor(toolPath, args, options) {
         super();
         if (!toolPath) {
@@ -22734,8 +22768,6 @@ var require_toolrunner = __commonJS({
         });
       }
     };
-    __name(_ToolRunner, "ToolRunner");
-    var ToolRunner = _ToolRunner;
     exports2.ToolRunner = ToolRunner;
     function argStringToArray(argString) {
       const args = [];
@@ -22784,7 +22816,10 @@ var require_toolrunner = __commonJS({
     }
     __name(argStringToArray, "argStringToArray");
     exports2.argStringToArray = argStringToArray;
-    var _ExecState = class _ExecState extends events.EventEmitter {
+    var ExecState = class _ExecState extends events.EventEmitter {
+      static {
+        __name(this, "ExecState");
+      }
       constructor(options, toolPath) {
         super();
         this.processClosed = false;
@@ -22846,8 +22881,6 @@ var require_toolrunner = __commonJS({
         state._setResult();
       }
     };
-    __name(_ExecState, "ExecState");
-    var ExecState = _ExecState;
   }
 });
 
@@ -24162,7 +24195,10 @@ var require_internal_path = __commonJS({
     var pathHelper = __importStar2(require_internal_path_helper());
     var assert_1 = __importDefault2(require("assert"));
     var IS_WINDOWS = process.platform === "win32";
-    var _Path = class _Path {
+    var Path = class {
+      static {
+        __name(this, "Path");
+      }
       /**
        * Constructs a Path
        * @param itemPath Path or array of segments
@@ -24219,8 +24255,6 @@ var require_internal_path = __commonJS({
         return result;
       }
     };
-    __name(_Path, "Path");
-    var Path = _Path;
     exports2.Path = Path;
   }
 });
@@ -24270,7 +24304,10 @@ var require_internal_pattern = __commonJS({
     var internal_match_kind_1 = require_internal_match_kind();
     var internal_path_1 = require_internal_path();
     var IS_WINDOWS = process.platform === "win32";
-    var _Pattern = class _Pattern {
+    var Pattern = class _Pattern {
+      static {
+        __name(this, "Pattern");
+      }
       constructor(patternOrNegate, isImplicitPattern = false, segments, homedir) {
         this.negate = false;
         let pattern;
@@ -24427,8 +24464,6 @@ var require_internal_pattern = __commonJS({
         return s.replace(/[[\\^$.|?*+()]/g, "\\$&");
       }
     };
-    __name(_Pattern, "Pattern");
-    var Pattern = _Pattern;
     exports2.Pattern = Pattern;
   }
 });
@@ -24439,14 +24474,15 @@ var require_internal_search_state = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.SearchState = void 0;
-    var _SearchState = class _SearchState {
+    var SearchState = class {
+      static {
+        __name(this, "SearchState");
+      }
       constructor(path2, level) {
         this.path = path2;
         this.level = level;
       }
     };
-    __name(_SearchState, "SearchState");
-    var SearchState = _SearchState;
     exports2.SearchState = SearchState;
   }
 });
@@ -24592,7 +24628,10 @@ var require_internal_globber = __commonJS({
     var internal_pattern_1 = require_internal_pattern();
     var internal_search_state_1 = require_internal_search_state();
     var IS_WINDOWS = process.platform === "win32";
-    var _DefaultGlobber = class _DefaultGlobber {
+    var DefaultGlobber = class _DefaultGlobber {
+      static {
+        __name(this, "DefaultGlobber");
+      }
       constructor(options) {
         this.patterns = [];
         this.searchPaths = [];
@@ -24733,8 +24772,6 @@ var require_internal_globber = __commonJS({
         });
       }
     };
-    __name(_DefaultGlobber, "DefaultGlobber");
-    var DefaultGlobber = _DefaultGlobber;
     exports2.DefaultGlobber = DefaultGlobber;
   }
 });
@@ -33379,7 +33416,10 @@ var require_dist = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     var listenersMap = /* @__PURE__ */ new WeakMap();
     var abortedMap = /* @__PURE__ */ new WeakMap();
-    var _AbortSignal = class _AbortSignal {
+    var AbortSignal2 = class _AbortSignal {
+      static {
+        __name(this, "AbortSignal");
+      }
       constructor() {
         this.onabort = null;
         listenersMap.set(this, []);
@@ -33440,8 +33480,6 @@ var require_dist = __commonJS({
         throw new Error("This is a stub dispatchEvent implementation that should not be used.  It only exists for type-checking purposes.");
       }
     };
-    __name(_AbortSignal, "AbortSignal");
-    var AbortSignal2 = _AbortSignal;
     function abortSignal(signal) {
       if (signal.aborted) {
         return;
@@ -33458,15 +33496,19 @@ var require_dist = __commonJS({
       abortedMap.set(signal, true);
     }
     __name(abortSignal, "abortSignal");
-    var _AbortError = class _AbortError extends Error {
+    var AbortError = class extends Error {
+      static {
+        __name(this, "AbortError");
+      }
       constructor(message) {
         super(message);
         this.name = "AbortError";
       }
     };
-    __name(_AbortError, "AbortError");
-    var AbortError = _AbortError;
-    var _AbortController = class _AbortController {
+    var AbortController2 = class {
+      static {
+        __name(this, "AbortController");
+      }
       // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
       constructor(parentSignals) {
         this._signal = new AbortSignal2();
@@ -33515,17 +33557,15 @@ var require_dist = __commonJS({
         return signal;
       }
     };
-    __name(_AbortController, "AbortController");
-    var AbortController2 = _AbortController;
     exports2.AbortController = AbortController2;
     exports2.AbortError = AbortError;
     exports2.AbortSignal = AbortSignal2;
   }
 });
 
-// node_modules/@azure/core-util/dist/index.js
+// node_modules/@azure/core-http/node_modules/@azure/core-util/dist/index.js
 var require_dist2 = __commonJS({
-  "node_modules/@azure/core-util/dist/index.js"(exports2) {
+  "node_modules/@azure/core-http/node_modules/@azure/core-util/dist/index.js"(exports2) {
     "use strict";
     var abortController = require_dist();
     var crypto7 = require("crypto");
@@ -33925,13 +33965,16 @@ var require_dist3 = __commonJS({
   }
 });
 
-// node_modules/@azure/core-auth/dist/index.js
+// node_modules/@azure/core-http/node_modules/@azure/core-auth/dist/index.js
 var require_dist4 = __commonJS({
-  "node_modules/@azure/core-auth/dist/index.js"(exports2) {
+  "node_modules/@azure/core-http/node_modules/@azure/core-auth/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var coreUtil = require_dist2();
-    var _AzureKeyCredential = class _AzureKeyCredential {
+    var AzureKeyCredential = class {
+      static {
+        __name(this, "AzureKeyCredential");
+      }
       /**
        * The value of the key to be used in authentication
        */
@@ -33962,9 +34005,10 @@ var require_dist4 = __commonJS({
         this._key = newKey;
       }
     };
-    __name(_AzureKeyCredential, "AzureKeyCredential");
-    var AzureKeyCredential = _AzureKeyCredential;
-    var _AzureNamedKeyCredential = class _AzureNamedKeyCredential {
+    var AzureNamedKeyCredential = class {
+      static {
+        __name(this, "AzureNamedKeyCredential");
+      }
       /**
        * The value of the key to be used in authentication.
        */
@@ -34008,13 +34052,14 @@ var require_dist4 = __commonJS({
         this._key = newKey;
       }
     };
-    __name(_AzureNamedKeyCredential, "AzureNamedKeyCredential");
-    var AzureNamedKeyCredential = _AzureNamedKeyCredential;
     function isNamedKeyCredential(credential) {
       return coreUtil.isObjectWithProperties(credential, ["name", "key"]) && typeof credential.key === "string" && typeof credential.name === "string";
     }
     __name(isNamedKeyCredential, "isNamedKeyCredential");
-    var _AzureSASCredential = class _AzureSASCredential {
+    var AzureSASCredential = class {
+      static {
+        __name(this, "AzureSASCredential");
+      }
       /**
        * The value of the shared access signature to be used in authentication
        */
@@ -34048,8 +34093,6 @@ var require_dist4 = __commonJS({
         this._signature = newSignature;
       }
     };
-    __name(_AzureSASCredential, "AzureSASCredential");
-    var AzureSASCredential = _AzureSASCredential;
     function isSASCredential(credential) {
       return coreUtil.isObjectWithProperties(credential, ["signature"]) && typeof credential.signature === "string";
     }
@@ -44984,8 +45027,10 @@ var require_URL_impl = __commonJS({
   "node_modules/whatwg-url/lib/URL-impl.js"(exports2) {
     "use strict";
     var usm = require_url_state_machine();
-    var _a;
-    exports2.implementation = (_a = class {
+    exports2.implementation = class URLImpl {
+      static {
+        __name(this, "URLImpl");
+      }
       constructor(constructorArgs) {
         const url = constructorArgs[0];
         const base = constructorArgs[1];
@@ -45133,7 +45178,7 @@ var require_URL_impl = __commonJS({
       toJSON() {
         return this.href;
       }
-    }, __name(_a, "URLImpl"), _a);
+    };
   }
 });
 
@@ -45355,7 +45400,10 @@ var require_lib4 = __commonJS({
     var Readable = Stream.Readable;
     var BUFFER = Symbol("buffer");
     var TYPE = Symbol("type");
-    var _Blob = class _Blob {
+    var Blob2 = class _Blob {
+      static {
+        __name(this, "Blob");
+      }
       constructor() {
         this[TYPE] = "";
         const blobParts = arguments[0];
@@ -45441,8 +45489,6 @@ var require_lib4 = __commonJS({
         return blob;
       }
     };
-    __name(_Blob, "Blob");
-    var Blob2 = _Blob;
     Object.defineProperties(Blob2.prototype, {
       size: { enumerable: true },
       type: { enumerable: true },
@@ -45828,7 +45874,10 @@ var require_lib4 = __commonJS({
     }
     __name(find, "find");
     var MAP = Symbol("map");
-    var _Headers = class _Headers {
+    var Headers = class _Headers {
+      static {
+        __name(this, "Headers");
+      }
       /**
        * Headers class
        *
@@ -46007,8 +46056,6 @@ var require_lib4 = __commonJS({
         return createHeadersIterator(this, "key+value");
       }
     };
-    __name(_Headers, "Headers");
-    var Headers = _Headers;
     Headers.prototype.entries = Headers.prototype[Symbol.iterator];
     Object.defineProperty(Headers.prototype, Symbol.toStringTag, {
       value: "Headers",
@@ -46113,7 +46160,10 @@ var require_lib4 = __commonJS({
     __name(createHeadersLenient, "createHeadersLenient");
     var INTERNALS$1 = Symbol("Response internals");
     var STATUS_CODES = http.STATUS_CODES;
-    var _Response = class _Response {
+    var Response = class _Response {
+      static {
+        __name(this, "Response");
+      }
       constructor() {
         let body = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : null;
         let opts = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
@@ -46171,8 +46221,6 @@ var require_lib4 = __commonJS({
         });
       }
     };
-    __name(_Response, "Response");
-    var Response = _Response;
     Body.mixIn(Response.prototype);
     Object.defineProperties(Response.prototype, {
       url: { enumerable: true },
@@ -46210,7 +46258,10 @@ var require_lib4 = __commonJS({
       return !!(proto && proto.constructor.name === "AbortSignal");
     }
     __name(isAbortSignal, "isAbortSignal");
-    var _Request = class _Request {
+    var Request = class _Request {
+      static {
+        __name(this, "Request");
+      }
       constructor(input) {
         let init = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
         let parsedURL;
@@ -46283,8 +46334,6 @@ var require_lib4 = __commonJS({
         return new _Request(this);
       }
     };
-    __name(_Request, "Request");
-    var Request = _Request;
     Body.mixIn(Request.prototype);
     Object.defineProperty(Request.prototype, Symbol.toStringTag, {
       value: "Request",
@@ -46828,7 +46877,10 @@ var require_ComponentLogger = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.DiagComponentLogger = void 0;
     var global_utils_1 = require_global_utils();
-    var _DiagComponentLogger = class _DiagComponentLogger {
+    var DiagComponentLogger = class {
+      static {
+        __name(this, "DiagComponentLogger");
+      }
       constructor(props) {
         this._namespace = props.namespace || "DiagComponentLogger";
       }
@@ -46848,8 +46900,6 @@ var require_ComponentLogger = __commonJS({
         return logProxy("verbose", this._namespace, args);
       }
     };
-    __name(_DiagComponentLogger, "DiagComponentLogger");
-    var DiagComponentLogger = _DiagComponentLogger;
     exports2.DiagComponentLogger = DiagComponentLogger;
     function logProxy(funcName, namespace, args) {
       const logger = (0, global_utils_1.getGlobal)("diag");
@@ -46929,7 +46979,10 @@ var require_diag = __commonJS({
     var types_1 = require_types();
     var global_utils_1 = require_global_utils();
     var API_NAME = "diag";
-    var _DiagAPI = class _DiagAPI {
+    var DiagAPI = class _DiagAPI {
+      static {
+        __name(this, "DiagAPI");
+      }
       /**
        * Private internal constructor
        * @private
@@ -46987,8 +47040,6 @@ var require_diag = __commonJS({
         return this._instance;
       }
     };
-    __name(_DiagAPI, "DiagAPI");
-    var DiagAPI = _DiagAPI;
     exports2.DiagAPI = DiagAPI;
   }
 });
@@ -46999,7 +47050,10 @@ var require_baggage_impl = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.BaggageImpl = void 0;
-    var _BaggageImpl = class _BaggageImpl {
+    var BaggageImpl = class _BaggageImpl {
+      static {
+        __name(this, "BaggageImpl");
+      }
       constructor(entries) {
         this._entries = entries ? new Map(entries) : /* @__PURE__ */ new Map();
       }
@@ -47034,8 +47088,6 @@ var require_baggage_impl = __commonJS({
         return new _BaggageImpl();
       }
     };
-    __name(_BaggageImpl, "BaggageImpl");
-    var BaggageImpl = _BaggageImpl;
     exports2.BaggageImpl = BaggageImpl;
   }
 });
@@ -47093,7 +47145,10 @@ var require_context = __commonJS({
     }
     __name(createContextKey, "createContextKey");
     exports2.createContextKey = createContextKey;
-    var _BaseContext = class _BaseContext {
+    var BaseContext = class _BaseContext {
+      static {
+        __name(this, "BaseContext");
+      }
       /**
        * Construct a new context which inherits values from an optional parent context.
        *
@@ -47115,8 +47170,6 @@ var require_context = __commonJS({
         };
       }
     };
-    __name(_BaseContext, "BaseContext");
-    var BaseContext = _BaseContext;
     exports2.ROOT_CONTEXT = new BaseContext();
   }
 });
@@ -47134,7 +47187,10 @@ var require_consoleLogger = __commonJS({
       { n: "debug", c: "debug" },
       { n: "verbose", c: "trace" }
     ];
-    var _DiagConsoleLogger = class _DiagConsoleLogger {
+    var DiagConsoleLogger = class {
+      static {
+        __name(this, "DiagConsoleLogger");
+      }
       constructor() {
         function _consoleFunc(funcName) {
           return function(...args) {
@@ -47155,8 +47211,6 @@ var require_consoleLogger = __commonJS({
         }
       }
     };
-    __name(_DiagConsoleLogger, "DiagConsoleLogger");
-    var DiagConsoleLogger = _DiagConsoleLogger;
     exports2.DiagConsoleLogger = DiagConsoleLogger;
   }
 });
@@ -47167,7 +47221,10 @@ var require_NoopMeter = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.createNoopMeter = exports2.NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC = exports2.NOOP_OBSERVABLE_GAUGE_METRIC = exports2.NOOP_OBSERVABLE_COUNTER_METRIC = exports2.NOOP_UP_DOWN_COUNTER_METRIC = exports2.NOOP_HISTOGRAM_METRIC = exports2.NOOP_COUNTER_METRIC = exports2.NOOP_METER = exports2.NoopObservableUpDownCounterMetric = exports2.NoopObservableGaugeMetric = exports2.NoopObservableCounterMetric = exports2.NoopObservableMetric = exports2.NoopHistogramMetric = exports2.NoopUpDownCounterMetric = exports2.NoopCounterMetric = exports2.NoopMetric = exports2.NoopMeter = void 0;
-    var _NoopMeter = class _NoopMeter {
+    var NoopMeter = class {
+      static {
+        __name(this, "NoopMeter");
+      }
       constructor() {
       }
       /**
@@ -47217,58 +47274,64 @@ var require_NoopMeter = __commonJS({
       removeBatchObservableCallback(_callback) {
       }
     };
-    __name(_NoopMeter, "NoopMeter");
-    var NoopMeter = _NoopMeter;
     exports2.NoopMeter = NoopMeter;
-    var _NoopMetric = class _NoopMetric {
+    var NoopMetric = class {
+      static {
+        __name(this, "NoopMetric");
+      }
     };
-    __name(_NoopMetric, "NoopMetric");
-    var NoopMetric = _NoopMetric;
     exports2.NoopMetric = NoopMetric;
-    var _NoopCounterMetric = class _NoopCounterMetric extends NoopMetric {
+    var NoopCounterMetric = class extends NoopMetric {
+      static {
+        __name(this, "NoopCounterMetric");
+      }
       add(_value, _attributes) {
       }
     };
-    __name(_NoopCounterMetric, "NoopCounterMetric");
-    var NoopCounterMetric = _NoopCounterMetric;
     exports2.NoopCounterMetric = NoopCounterMetric;
-    var _NoopUpDownCounterMetric = class _NoopUpDownCounterMetric extends NoopMetric {
+    var NoopUpDownCounterMetric = class extends NoopMetric {
+      static {
+        __name(this, "NoopUpDownCounterMetric");
+      }
       add(_value, _attributes) {
       }
     };
-    __name(_NoopUpDownCounterMetric, "NoopUpDownCounterMetric");
-    var NoopUpDownCounterMetric = _NoopUpDownCounterMetric;
     exports2.NoopUpDownCounterMetric = NoopUpDownCounterMetric;
-    var _NoopHistogramMetric = class _NoopHistogramMetric extends NoopMetric {
+    var NoopHistogramMetric = class extends NoopMetric {
+      static {
+        __name(this, "NoopHistogramMetric");
+      }
       record(_value, _attributes) {
       }
     };
-    __name(_NoopHistogramMetric, "NoopHistogramMetric");
-    var NoopHistogramMetric = _NoopHistogramMetric;
     exports2.NoopHistogramMetric = NoopHistogramMetric;
-    var _NoopObservableMetric = class _NoopObservableMetric {
+    var NoopObservableMetric = class {
+      static {
+        __name(this, "NoopObservableMetric");
+      }
       addCallback(_callback) {
       }
       removeCallback(_callback) {
       }
     };
-    __name(_NoopObservableMetric, "NoopObservableMetric");
-    var NoopObservableMetric = _NoopObservableMetric;
     exports2.NoopObservableMetric = NoopObservableMetric;
-    var _NoopObservableCounterMetric = class _NoopObservableCounterMetric extends NoopObservableMetric {
+    var NoopObservableCounterMetric = class extends NoopObservableMetric {
+      static {
+        __name(this, "NoopObservableCounterMetric");
+      }
     };
-    __name(_NoopObservableCounterMetric, "NoopObservableCounterMetric");
-    var NoopObservableCounterMetric = _NoopObservableCounterMetric;
     exports2.NoopObservableCounterMetric = NoopObservableCounterMetric;
-    var _NoopObservableGaugeMetric = class _NoopObservableGaugeMetric extends NoopObservableMetric {
+    var NoopObservableGaugeMetric = class extends NoopObservableMetric {
+      static {
+        __name(this, "NoopObservableGaugeMetric");
+      }
     };
-    __name(_NoopObservableGaugeMetric, "NoopObservableGaugeMetric");
-    var NoopObservableGaugeMetric = _NoopObservableGaugeMetric;
     exports2.NoopObservableGaugeMetric = NoopObservableGaugeMetric;
-    var _NoopObservableUpDownCounterMetric = class _NoopObservableUpDownCounterMetric extends NoopObservableMetric {
+    var NoopObservableUpDownCounterMetric = class extends NoopObservableMetric {
+      static {
+        __name(this, "NoopObservableUpDownCounterMetric");
+      }
     };
-    __name(_NoopObservableUpDownCounterMetric, "NoopObservableUpDownCounterMetric");
-    var NoopObservableUpDownCounterMetric = _NoopObservableUpDownCounterMetric;
     exports2.NoopObservableUpDownCounterMetric = NoopObservableUpDownCounterMetric;
     exports2.NOOP_METER = new NoopMeter();
     exports2.NOOP_COUNTER_METRIC = new NoopCounterMetric();
@@ -47337,7 +47400,10 @@ var require_NoopContextManager = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.NoopContextManager = void 0;
     var context_1 = require_context();
-    var _NoopContextManager = class _NoopContextManager {
+    var NoopContextManager = class {
+      static {
+        __name(this, "NoopContextManager");
+      }
       active() {
         return context_1.ROOT_CONTEXT;
       }
@@ -47354,8 +47420,6 @@ var require_NoopContextManager = __commonJS({
         return this;
       }
     };
-    __name(_NoopContextManager, "NoopContextManager");
-    var NoopContextManager = _NoopContextManager;
     exports2.NoopContextManager = NoopContextManager;
   }
 });
@@ -47371,7 +47435,10 @@ var require_context2 = __commonJS({
     var diag_1 = require_diag();
     var API_NAME = "context";
     var NOOP_CONTEXT_MANAGER = new NoopContextManager_1.NoopContextManager();
-    var _ContextAPI = class _ContextAPI {
+    var ContextAPI = class _ContextAPI {
+      static {
+        __name(this, "ContextAPI");
+      }
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
       }
@@ -47425,8 +47492,6 @@ var require_context2 = __commonJS({
         (0, global_utils_1.unregisterGlobal)(API_NAME, diag_1.DiagAPI.instance());
       }
     };
-    __name(_ContextAPI, "ContextAPI");
-    var ContextAPI = _ContextAPI;
     exports2.ContextAPI = ContextAPI;
   }
 });
@@ -47469,7 +47534,10 @@ var require_NonRecordingSpan = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.NonRecordingSpan = void 0;
     var invalid_span_constants_1 = require_invalid_span_constants();
-    var _NonRecordingSpan = class _NonRecordingSpan {
+    var NonRecordingSpan = class {
+      static {
+        __name(this, "NonRecordingSpan");
+      }
       constructor(_spanContext = invalid_span_constants_1.INVALID_SPAN_CONTEXT) {
         this._spanContext = _spanContext;
       }
@@ -47508,8 +47576,6 @@ var require_NonRecordingSpan = __commonJS({
       recordException(_exception, _time) {
       }
     };
-    __name(_NonRecordingSpan, "NonRecordingSpan");
-    var NonRecordingSpan = _NonRecordingSpan;
     exports2.NonRecordingSpan = NonRecordingSpan;
   }
 });
@@ -47602,7 +47668,10 @@ var require_NoopTracer = __commonJS({
     var NonRecordingSpan_1 = require_NonRecordingSpan();
     var spancontext_utils_1 = require_spancontext_utils();
     var contextApi = context_1.ContextAPI.getInstance();
-    var _NoopTracer = class _NoopTracer {
+    var NoopTracer = class {
+      static {
+        __name(this, "NoopTracer");
+      }
       // startSpan starts a noop span.
       startSpan(name, options, context = contextApi.active()) {
         const root = Boolean(options === null || options === void 0 ? void 0 : options.root);
@@ -47638,8 +47707,6 @@ var require_NoopTracer = __commonJS({
         return contextApi.with(contextWithSpanSet, fn, void 0, span);
       }
     };
-    __name(_NoopTracer, "NoopTracer");
-    var NoopTracer = _NoopTracer;
     exports2.NoopTracer = NoopTracer;
     function isSpanContext(spanContext) {
       return typeof spanContext === "object" && typeof spanContext["spanId"] === "string" && typeof spanContext["traceId"] === "string" && typeof spanContext["traceFlags"] === "number";
@@ -47656,7 +47723,10 @@ var require_ProxyTracer = __commonJS({
     exports2.ProxyTracer = void 0;
     var NoopTracer_1 = require_NoopTracer();
     var NOOP_TRACER = new NoopTracer_1.NoopTracer();
-    var _ProxyTracer = class _ProxyTracer {
+    var ProxyTracer = class {
+      static {
+        __name(this, "ProxyTracer");
+      }
       constructor(_provider, name, version3, options) {
         this._provider = _provider;
         this.name = name;
@@ -47686,8 +47756,6 @@ var require_ProxyTracer = __commonJS({
         return this._delegate;
       }
     };
-    __name(_ProxyTracer, "ProxyTracer");
-    var ProxyTracer = _ProxyTracer;
     exports2.ProxyTracer = ProxyTracer;
   }
 });
@@ -47699,13 +47767,14 @@ var require_NoopTracerProvider = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.NoopTracerProvider = void 0;
     var NoopTracer_1 = require_NoopTracer();
-    var _NoopTracerProvider = class _NoopTracerProvider {
+    var NoopTracerProvider = class {
+      static {
+        __name(this, "NoopTracerProvider");
+      }
       getTracer(_name, _version, _options) {
         return new NoopTracer_1.NoopTracer();
       }
     };
-    __name(_NoopTracerProvider, "NoopTracerProvider");
-    var NoopTracerProvider = _NoopTracerProvider;
     exports2.NoopTracerProvider = NoopTracerProvider;
   }
 });
@@ -47719,7 +47788,10 @@ var require_ProxyTracerProvider = __commonJS({
     var ProxyTracer_1 = require_ProxyTracer();
     var NoopTracerProvider_1 = require_NoopTracerProvider();
     var NOOP_TRACER_PROVIDER = new NoopTracerProvider_1.NoopTracerProvider();
-    var _ProxyTracerProvider = class _ProxyTracerProvider {
+    var ProxyTracerProvider = class {
+      static {
+        __name(this, "ProxyTracerProvider");
+      }
       /**
        * Get a {@link ProxyTracer}
        */
@@ -47742,8 +47814,6 @@ var require_ProxyTracerProvider = __commonJS({
         return (_a = this._delegate) === null || _a === void 0 ? void 0 : _a.getTracer(name, version3, options);
       }
     };
-    __name(_ProxyTracerProvider, "ProxyTracerProvider");
-    var ProxyTracerProvider = _ProxyTracerProvider;
     exports2.ProxyTracerProvider = ProxyTracerProvider;
   }
 });
@@ -47831,7 +47901,10 @@ var require_tracestate_impl = __commonJS({
     var MAX_TRACE_STATE_LEN = 512;
     var LIST_MEMBERS_SEPARATOR = ",";
     var LIST_MEMBER_KEY_VALUE_SPLITTER = "=";
-    var _TraceStateImpl = class _TraceStateImpl {
+    var TraceStateImpl = class _TraceStateImpl {
+      static {
+        __name(this, "TraceStateImpl");
+      }
       constructor(rawTraceState) {
         this._internalState = /* @__PURE__ */ new Map();
         if (rawTraceState)
@@ -47888,8 +47961,6 @@ var require_tracestate_impl = __commonJS({
         return traceState;
       }
     };
-    __name(_TraceStateImpl, "TraceStateImpl");
-    var TraceStateImpl = _TraceStateImpl;
     exports2.TraceStateImpl = TraceStateImpl;
   }
 });
@@ -47938,13 +48009,14 @@ var require_NoopMeterProvider = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.NOOP_METER_PROVIDER = exports2.NoopMeterProvider = void 0;
     var NoopMeter_1 = require_NoopMeter();
-    var _NoopMeterProvider = class _NoopMeterProvider {
+    var NoopMeterProvider = class {
+      static {
+        __name(this, "NoopMeterProvider");
+      }
       getMeter(_name, _version, _options) {
         return NoopMeter_1.NOOP_METER;
       }
     };
-    __name(_NoopMeterProvider, "NoopMeterProvider");
-    var NoopMeterProvider = _NoopMeterProvider;
     exports2.NoopMeterProvider = NoopMeterProvider;
     exports2.NOOP_METER_PROVIDER = new NoopMeterProvider();
   }
@@ -47960,7 +48032,10 @@ var require_metrics = __commonJS({
     var global_utils_1 = require_global_utils();
     var diag_1 = require_diag();
     var API_NAME = "metrics";
-    var _MetricsAPI = class _MetricsAPI {
+    var MetricsAPI = class _MetricsAPI {
+      static {
+        __name(this, "MetricsAPI");
+      }
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
       }
@@ -47995,8 +48070,6 @@ var require_metrics = __commonJS({
         (0, global_utils_1.unregisterGlobal)(API_NAME, diag_1.DiagAPI.instance());
       }
     };
-    __name(_MetricsAPI, "MetricsAPI");
-    var MetricsAPI = _MetricsAPI;
     exports2.MetricsAPI = MetricsAPI;
   }
 });
@@ -48018,7 +48091,10 @@ var require_NoopTextMapPropagator = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.NoopTextMapPropagator = void 0;
-    var _NoopTextMapPropagator = class _NoopTextMapPropagator {
+    var NoopTextMapPropagator = class {
+      static {
+        __name(this, "NoopTextMapPropagator");
+      }
       /** Noop inject function does nothing */
       inject(_context, _carrier) {
       }
@@ -48030,8 +48106,6 @@ var require_NoopTextMapPropagator = __commonJS({
         return [];
       }
     };
-    __name(_NoopTextMapPropagator, "NoopTextMapPropagator");
-    var NoopTextMapPropagator = _NoopTextMapPropagator;
     exports2.NoopTextMapPropagator = NoopTextMapPropagator;
   }
 });
@@ -48082,7 +48156,10 @@ var require_propagation = __commonJS({
     var diag_1 = require_diag();
     var API_NAME = "propagation";
     var NOOP_TEXT_MAP_PROPAGATOR = new NoopTextMapPropagator_1.NoopTextMapPropagator();
-    var _PropagationAPI = class _PropagationAPI {
+    var PropagationAPI = class _PropagationAPI {
+      static {
+        __name(this, "PropagationAPI");
+      }
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
         this.createBaggage = utils_1.createBaggage;
@@ -48140,8 +48217,6 @@ var require_propagation = __commonJS({
         return (0, global_utils_1.getGlobal)(API_NAME) || NOOP_TEXT_MAP_PROPAGATOR;
       }
     };
-    __name(_PropagationAPI, "PropagationAPI");
-    var PropagationAPI = _PropagationAPI;
     exports2.PropagationAPI = PropagationAPI;
   }
 });
@@ -48169,7 +48244,10 @@ var require_trace = __commonJS({
     var context_utils_1 = require_context_utils();
     var diag_1 = require_diag();
     var API_NAME = "trace";
-    var _TraceAPI = class _TraceAPI {
+    var TraceAPI = class _TraceAPI {
+      static {
+        __name(this, "TraceAPI");
+      }
       /** Empty private constructor prevents end users from constructing a new instance of the API */
       constructor() {
         this._proxyTracerProvider = new ProxyTracerProvider_1.ProxyTracerProvider();
@@ -48219,8 +48297,6 @@ var require_trace = __commonJS({
         this._proxyTracerProvider = new ProxyTracerProvider_1.ProxyTracerProvider();
       }
     };
-    __name(_TraceAPI, "TraceAPI");
-    var TraceAPI = _TraceAPI;
     exports2.TraceAPI = TraceAPI;
   }
 });
@@ -48553,7 +48629,10 @@ var require_dist6 = __commonJS({
       return false;
     }
     __name(isHttpHeadersLike, "isHttpHeadersLike");
-    var _HttpHeaders = class _HttpHeaders {
+    var HttpHeaders = class _HttpHeaders {
+      static {
+        __name(this, "HttpHeaders");
+      }
       constructor(rawHeaders) {
         this._headersMap = {};
         if (rawHeaders) {
@@ -48673,8 +48752,6 @@ var require_dist6 = __commonJS({
         return new _HttpHeaders(resultPreservingCasing);
       }
     };
-    __name(_HttpHeaders, "HttpHeaders");
-    var HttpHeaders = _HttpHeaders;
     function encodeString(value) {
       return Buffer.from(value).toString("base64");
     }
@@ -48868,7 +48945,10 @@ var require_dist6 = __commonJS({
       return typeof input === "object" && input !== null && !Array.isArray(input) && !(input instanceof RegExp) && !(input instanceof Date);
     }
     __name(isObject, "isObject");
-    var _Serializer = class _Serializer {
+    var Serializer = class {
+      static {
+        __name(this, "Serializer");
+      }
       constructor(modelMappers = {}, isXML) {
         this.modelMappers = modelMappers;
         this.isXML = isXML;
@@ -49064,8 +49144,6 @@ var require_dist6 = __commonJS({
         return payload;
       }
     };
-    __name(_Serializer, "Serializer");
-    var Serializer = _Serializer;
     function trimEnd(str, ch) {
       let len = str.length;
       while (len - 1 >= 0 && str[len - 1] === ch) {
@@ -49632,7 +49710,10 @@ var require_dist6 = __commonJS({
       return false;
     }
     __name(isWebResourceLike, "isWebResourceLike");
-    var _WebResource = class _WebResource {
+    var WebResource = class _WebResource {
+      static {
+        __name(this, "WebResource");
+      }
       constructor(url, method, body, query, headers, streamResponseBody, withCredentials, abortSignal, timeout, onUploadProgress, onDownloadProgress, proxySettings, keepAlive, decompressResponse, streamResponseStatusCodes) {
         this.streamResponseBody = streamResponseBody;
         this.streamResponseStatusCodes = streamResponseStatusCodes;
@@ -49832,9 +49913,10 @@ var require_dist6 = __commonJS({
         return result;
       }
     };
-    __name(_WebResource, "WebResource");
-    var WebResource = _WebResource;
-    var _URLQuery = class _URLQuery {
+    var URLQuery = class _URLQuery {
+      static {
+        __name(this, "URLQuery");
+      }
       constructor() {
         this._rawQuery = {};
       }
@@ -49948,9 +50030,10 @@ var require_dist6 = __commonJS({
         return result;
       }
     };
-    __name(_URLQuery, "URLQuery");
-    var URLQuery = _URLQuery;
-    var _URLBuilder = class _URLBuilder {
+    var URLBuilder = class _URLBuilder {
+      static {
+        __name(this, "URLBuilder");
+      }
       /**
        * Set the scheme/protocol for this URL. If the provided scheme contains other parts of a URL
        * (such as a host, port, path, or query), those parts will be added to this URL as well.
@@ -50162,9 +50245,10 @@ var require_dist6 = __commonJS({
         return result;
       }
     };
-    __name(_URLBuilder, "URLBuilder");
-    var URLBuilder = _URLBuilder;
-    var _URLToken = class _URLToken {
+    var URLToken = class _URLToken {
+      static {
+        __name(this, "URLToken");
+      }
       constructor(text, type) {
         this.text = text;
         this.type = type;
@@ -50185,14 +50269,15 @@ var require_dist6 = __commonJS({
         return new _URLToken(text, "QUERY");
       }
     };
-    __name(_URLToken, "URLToken");
-    var URLToken = _URLToken;
     function isAlphaNumericCharacter(character) {
       const characterCode = character.charCodeAt(0);
       return 48 <= characterCode && characterCode <= 57 || 65 <= characterCode && characterCode <= 90 || 97 <= characterCode && characterCode <= 122;
     }
     __name(isAlphaNumericCharacter, "isAlphaNumericCharacter");
-    var _URLTokenizer = class _URLTokenizer {
+    var URLTokenizer = class {
+      static {
+        __name(this, "URLTokenizer");
+      }
       constructor(_text, state) {
         this._text = _text;
         this._textLength = _text ? _text.length : 0;
@@ -50239,8 +50324,6 @@ var require_dist6 = __commonJS({
         return !!this._currentToken;
       }
     };
-    __name(_URLTokenizer, "URLTokenizer");
-    var URLTokenizer = _URLTokenizer;
     function readRemaining(tokenizer) {
       let result = "";
       if (tokenizer._currentIndex < tokenizer._textLength) {
@@ -50474,7 +50557,10 @@ var require_dist6 = __commonJS({
       "WWW-Authenticate"
     ];
     var defaultAllowedQueryParameters = ["api-version"];
-    var _Sanitizer = class _Sanitizer {
+    var Sanitizer = class {
+      static {
+        __name(this, "Sanitizer");
+      }
       constructor({ allowedHeaderNames = [], allowedQueryParameters = [] } = {}) {
         allowedHeaderNames = Array.isArray(allowedHeaderNames) ? defaultAllowedHeaderNames.concat(allowedHeaderNames) : defaultAllowedHeaderNames;
         allowedQueryParameters = Array.isArray(allowedQueryParameters) ? defaultAllowedQueryParameters.concat(allowedQueryParameters) : defaultAllowedQueryParameters;
@@ -50547,11 +50633,12 @@ var require_dist6 = __commonJS({
         return urlBuilder.toString();
       }
     };
-    __name(_Sanitizer, "Sanitizer");
-    var Sanitizer = _Sanitizer;
     var custom = util.inspect.custom;
     var errorSanitizer = new Sanitizer();
-    var _RestError = class _RestError extends Error {
+    var RestError = class _RestError extends Error {
+      static {
+        __name(this, "RestError");
+      }
       constructor(message, code, statusCode, request, response) {
         super(message);
         this.name = "RestError";
@@ -50569,8 +50656,6 @@ var require_dist6 = __commonJS({
  ${errorSanitizer.sanitize(this)}`;
       }
     };
-    __name(_RestError, "RestError");
-    var RestError = _RestError;
     RestError.REQUEST_SEND_ERROR = "REQUEST_SEND_ERROR";
     RestError.PARSE_ERROR = "PARSE_ERROR";
     var logger = logger$1.createClientLogger("core-http");
@@ -50578,7 +50663,10 @@ var require_dist6 = __commonJS({
       return isHttps ? agentCache.httpsAgent : agentCache.httpAgent;
     }
     __name(getCachedAgent, "getCachedAgent");
-    var _ReportTransform = class _ReportTransform extends stream.Transform {
+    var ReportTransform = class extends stream.Transform {
+      static {
+        __name(this, "ReportTransform");
+      }
       constructor(progressCallback) {
         super();
         this.progressCallback = progressCallback;
@@ -50591,8 +50679,6 @@ var require_dist6 = __commonJS({
         callback(void 0);
       }
     };
-    __name(_ReportTransform, "ReportTransform");
-    var ReportTransform = _ReportTransform;
     function isReadableStream(body) {
       return body && typeof body.pipe === "function";
     }
@@ -50616,7 +50702,10 @@ var require_dist6 = __commonJS({
       return httpHeaders;
     }
     __name(parseHeaders, "parseHeaders");
-    var _NodeFetchHttpClient = class _NodeFetchHttpClient {
+    var NodeFetchHttpClient = class {
+      static {
+        __name(this, "NodeFetchHttpClient");
+      }
       constructor() {
         this.proxyAgentMap = /* @__PURE__ */ new Map();
         this.keepAliveAgents = {};
@@ -50821,8 +50910,6 @@ var require_dist6 = __commonJS({
       async processRequest(_operationResponse) {
       }
     };
-    __name(_NodeFetchHttpClient, "NodeFetchHttpClient");
-    var NodeFetchHttpClient = _NodeFetchHttpClient;
     exports2.HttpPipelineLogLevel = void 0;
     (function(HttpPipelineLogLevel) {
       HttpPipelineLogLevel[HttpPipelineLogLevel["OFF"] = 0] = "OFF";
@@ -50843,7 +50930,10 @@ var require_dist6 = __commonJS({
       return result;
     }
     __name(operationOptionsToRequestOptionsBase, "operationOptionsToRequestOptionsBase");
-    var _BaseRequestPolicy = class _BaseRequestPolicy {
+    var BaseRequestPolicy = class {
+      static {
+        __name(this, "BaseRequestPolicy");
+      }
       /**
        * The main method to implement that manipulates a request/response.
        */
@@ -50869,9 +50959,10 @@ var require_dist6 = __commonJS({
         this._options.log(logLevel, message);
       }
     };
-    __name(_BaseRequestPolicy, "BaseRequestPolicy");
-    var BaseRequestPolicy = _BaseRequestPolicy;
-    var _RequestPolicyOptions = class _RequestPolicyOptions {
+    var RequestPolicyOptions = class {
+      static {
+        __name(this, "RequestPolicyOptions");
+      }
       constructor(_logger) {
         this._logger = _logger;
       }
@@ -50895,8 +50986,6 @@ var require_dist6 = __commonJS({
         }
       }
     };
-    __name(_RequestPolicyOptions, "RequestPolicyOptions");
-    var RequestPolicyOptions = _RequestPolicyOptions;
     var xml2jsDefaultOptionsV2 = {
       explicitCharkey: false,
       trim: false,
@@ -50988,7 +51077,10 @@ var require_dist6 = __commonJS({
         xml: defaultXmlContentTypes
       }
     };
-    var _DeserializationPolicy = class _DeserializationPolicy extends BaseRequestPolicy {
+    var DeserializationPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "DeserializationPolicy");
+      }
       constructor(nextPolicy, requestPolicyOptions, deserializationContentTypes, parsingOptions = {}) {
         var _a;
         super(nextPolicy, requestPolicyOptions);
@@ -51002,8 +51094,6 @@ var require_dist6 = __commonJS({
         }));
       }
     };
-    __name(_DeserializationPolicy, "DeserializationPolicy");
-    var DeserializationPolicy = _DeserializationPolicy;
     function getOperationResponse(parsedResponse) {
       let result;
       const request = parsedResponse.request;
@@ -51172,7 +51262,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(keepAlivePolicy, "keepAlivePolicy");
-    var _KeepAlivePolicy = class _KeepAlivePolicy extends BaseRequestPolicy {
+    var KeepAlivePolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "KeepAlivePolicy");
+      }
       /**
        * Creates an instance of KeepAlivePolicy.
        *
@@ -51195,8 +51288,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_KeepAlivePolicy, "KeepAlivePolicy");
-    var KeepAlivePolicy = _KeepAlivePolicy;
     var allowedRedirect = ["GET", "HEAD"];
     var DefaultRedirectOptions = {
       handleRedirects: true,
@@ -51210,7 +51301,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(redirectPolicy, "redirectPolicy");
-    var _RedirectPolicy = class _RedirectPolicy extends BaseRequestPolicy {
+    var RedirectPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "RedirectPolicy");
+      }
       constructor(nextPolicy, options, maxRetries = 20) {
         super(nextPolicy, options);
         this.maxRetries = maxRetries;
@@ -51219,8 +51313,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request).then((response) => handleRedirect(this, response, 0));
       }
     };
-    __name(_RedirectPolicy, "RedirectPolicy");
-    var RedirectPolicy = _RedirectPolicy;
     function handleRedirect(policy, response, currentRetries) {
       const { request, status } = response;
       const locationHeader = response.headers.get("location");
@@ -51284,7 +51376,10 @@ var require_dist6 = __commonJS({
       retryDelayInMs: DEFAULT_CLIENT_RETRY_INTERVAL,
       maxRetryDelayInMs: DEFAULT_CLIENT_MAX_RETRY_INTERVAL
     };
-    var _ExponentialRetryPolicy = class _ExponentialRetryPolicy extends BaseRequestPolicy {
+    var ExponentialRetryPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "ExponentialRetryPolicy");
+      }
       /**
        * @param nextPolicy - The next RequestPolicy in the pipeline chain.
        * @param options - The options for this RequestPolicy.
@@ -51303,8 +51398,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request.clone()).then((response) => retry$1(this, request, response)).catch((error) => retry$1(this, request, error.response, void 0, error));
       }
     };
-    __name(_ExponentialRetryPolicy, "ExponentialRetryPolicy");
-    var ExponentialRetryPolicy = _ExponentialRetryPolicy;
     async function retry$1(policy, request, response, retryData, requestError) {
       function shouldPolicyRetry(responseParam) {
         const statusCode = responseParam === null || responseParam === void 0 ? void 0 : responseParam.status;
@@ -51348,7 +51441,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(logPolicy, "logPolicy");
-    var _LogPolicy = class _LogPolicy extends BaseRequestPolicy {
+    var LogPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "LogPolicy");
+      }
       constructor(nextPolicy, options, { logger: logger$12 = logger.info, allowedHeaderNames = [], allowedQueryParameters = [] } = {}) {
         super(nextPolicy, options);
         this.logger = logger$12;
@@ -51405,8 +51501,6 @@ var require_dist6 = __commonJS({
         return response;
       }
     };
-    __name(_LogPolicy, "LogPolicy");
-    var LogPolicy = _LogPolicy;
     function getPathStringFromParameter(parameter) {
       return getPathStringFromParameterPath(parameter.parameterPath, parameter.mapper);
     }
@@ -51483,7 +51577,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(userAgentPolicy, "userAgentPolicy");
-    var _UserAgentPolicy = class _UserAgentPolicy extends BaseRequestPolicy {
+    var UserAgentPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "UserAgentPolicy");
+      }
       constructor(_nextPolicy, _options, headerKey, headerValue) {
         super(_nextPolicy, _options);
         this._nextPolicy = _nextPolicy;
@@ -51507,8 +51604,6 @@ var require_dist6 = __commonJS({
         }
       }
     };
-    __name(_UserAgentPolicy, "UserAgentPolicy");
-    var UserAgentPolicy = _UserAgentPolicy;
     exports2.QueryCollectionFormat = void 0;
     (function(QueryCollectionFormat) {
       QueryCollectionFormat["Csv"] = ",";
@@ -51613,7 +51708,10 @@ var require_dist6 = __commonJS({
         scopes
         /* , options */
       );
-      const _BearerTokenAuthenticationPolicy = class _BearerTokenAuthenticationPolicy extends BaseRequestPolicy {
+      class BearerTokenAuthenticationPolicy extends BaseRequestPolicy {
+        static {
+          __name(this, "BearerTokenAuthenticationPolicy");
+        }
         constructor(nextPolicy, options) {
           super(nextPolicy, options);
         }
@@ -51630,9 +51728,7 @@ var require_dist6 = __commonJS({
           webResource.headers.set(Constants.HeaderConstants.AUTHORIZATION, `Bearer ${token}`);
           return this._nextPolicy.sendRequest(webResource);
         }
-      };
-      __name(_BearerTokenAuthenticationPolicy, "BearerTokenAuthenticationPolicy");
-      let BearerTokenAuthenticationPolicy = _BearerTokenAuthenticationPolicy;
+      }
       return {
         create: (nextPolicy, options) => {
           return new BearerTokenAuthenticationPolicy(nextPolicy, options);
@@ -51648,7 +51744,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(disableResponseDecompressionPolicy, "disableResponseDecompressionPolicy");
-    var _DisableResponseDecompressionPolicy = class _DisableResponseDecompressionPolicy extends BaseRequestPolicy {
+    var DisableResponseDecompressionPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "DisableResponseDecompressionPolicy");
+      }
       /**
        * Creates an instance of DisableResponseDecompressionPolicy.
        *
@@ -51671,8 +51770,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_DisableResponseDecompressionPolicy, "DisableResponseDecompressionPolicy");
-    var DisableResponseDecompressionPolicy = _DisableResponseDecompressionPolicy;
     function generateClientRequestIdPolicy(requestIdHeaderName = "x-ms-client-request-id") {
       return {
         create: (nextPolicy, options) => {
@@ -51681,7 +51778,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(generateClientRequestIdPolicy, "generateClientRequestIdPolicy");
-    var _GenerateClientRequestIdPolicy = class _GenerateClientRequestIdPolicy extends BaseRequestPolicy {
+    var GenerateClientRequestIdPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "GenerateClientRequestIdPolicy");
+      }
       constructor(nextPolicy, options, _requestIdHeaderName) {
         super(nextPolicy, options);
         this._requestIdHeaderName = _requestIdHeaderName;
@@ -51693,8 +51793,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_GenerateClientRequestIdPolicy, "GenerateClientRequestIdPolicy");
-    var GenerateClientRequestIdPolicy = _GenerateClientRequestIdPolicy;
     var cachedHttpClient;
     function getCachedDefaultHttpClient() {
       if (!cachedHttpClient) {
@@ -51711,7 +51809,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(ndJsonPolicy, "ndJsonPolicy");
-    var _NdJsonPolicy = class _NdJsonPolicy extends BaseRequestPolicy {
+    var NdJsonPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "NdJsonPolicy");
+      }
       /**
        * Creates an instance of KeepAlivePolicy.
        */
@@ -51731,8 +51832,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_NdJsonPolicy, "NdJsonPolicy");
-    var NdJsonPolicy = _NdJsonPolicy;
     var globalNoProxyList = [];
     var noProxyListLoaded = false;
     var globalBypassedMap = /* @__PURE__ */ new Map();
@@ -51835,7 +51934,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(extractAuthFromUrl, "extractAuthFromUrl");
-    var _ProxyPolicy = class _ProxyPolicy extends BaseRequestPolicy {
+    var ProxyPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "ProxyPolicy");
+      }
       constructor(nextPolicy, options, proxySettings, customNoProxyList) {
         super(nextPolicy, options);
         this.proxySettings = proxySettings;
@@ -51849,8 +51951,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_ProxyPolicy, "ProxyPolicy");
-    var ProxyPolicy = _ProxyPolicy;
     function rpRegistrationPolicy(retryTimeout = 30) {
       return {
         create: (nextPolicy, options) => {
@@ -51859,7 +51959,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(rpRegistrationPolicy, "rpRegistrationPolicy");
-    var _RPRegistrationPolicy = class _RPRegistrationPolicy extends BaseRequestPolicy {
+    var RPRegistrationPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "RPRegistrationPolicy");
+      }
       constructor(nextPolicy, options, _retryTimeout = 30) {
         super(nextPolicy, options);
         this._retryTimeout = _retryTimeout;
@@ -51868,8 +51971,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request.clone()).then((response) => registerIfNeeded(this, request, response));
       }
     };
-    __name(_RPRegistrationPolicy, "RPRegistrationPolicy");
-    var RPRegistrationPolicy = _RPRegistrationPolicy;
     function registerIfNeeded(policy, request, response) {
       if (response.status === 409) {
         const rpName = checkRPNotRegisteredError(response.bodyAsText);
@@ -51960,7 +52061,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(signingPolicy, "signingPolicy");
-    var _SigningPolicy = class _SigningPolicy extends BaseRequestPolicy {
+    var SigningPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "SigningPolicy");
+      }
       constructor(nextPolicy, options, authenticationProvider) {
         super(nextPolicy, options);
         this.authenticationProvider = authenticationProvider;
@@ -51972,8 +52076,6 @@ var require_dist6 = __commonJS({
         return this.signRequest(request).then((nextRequest) => this._nextPolicy.sendRequest(nextRequest));
       }
     };
-    __name(_SigningPolicy, "SigningPolicy");
-    var SigningPolicy = _SigningPolicy;
     function systemErrorRetryPolicy(retryCount, retryInterval, minRetryInterval, maxRetryInterval) {
       return {
         create: (nextPolicy, options) => {
@@ -51982,7 +52084,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(systemErrorRetryPolicy, "systemErrorRetryPolicy");
-    var _SystemErrorRetryPolicy = class _SystemErrorRetryPolicy extends BaseRequestPolicy {
+    var SystemErrorRetryPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "SystemErrorRetryPolicy");
+      }
       constructor(nextPolicy, options, retryCount, retryInterval, minRetryInterval, maxRetryInterval) {
         super(nextPolicy, options);
         this.retryCount = isNumber(retryCount) ? retryCount : DEFAULT_CLIENT_RETRY_COUNT;
@@ -51994,8 +52099,6 @@ var require_dist6 = __commonJS({
         return this._nextPolicy.sendRequest(request.clone()).catch((error) => retry(this, request, error.response, error));
       }
     };
-    __name(_SystemErrorRetryPolicy, "SystemErrorRetryPolicy");
-    var SystemErrorRetryPolicy = _SystemErrorRetryPolicy;
     async function retry(policy, request, operationResponse, err, retryData) {
       retryData = updateRetryData(policy, retryData, err);
       function shouldPolicyRetry(_response, error) {
@@ -52031,7 +52134,10 @@ var require_dist6 = __commonJS({
     }
     __name(throttlingRetryPolicy, "throttlingRetryPolicy");
     var StandardAbortMessage = "The operation was aborted.";
-    var _ThrottlingRetryPolicy = class _ThrottlingRetryPolicy extends BaseRequestPolicy {
+    var ThrottlingRetryPolicy = class _ThrottlingRetryPolicy extends BaseRequestPolicy {
+      static {
+        __name(this, "ThrottlingRetryPolicy");
+      }
       constructor(nextPolicy, options, _handleResponse) {
         super(nextPolicy, options);
         this.numberOfRetries = 0;
@@ -52087,8 +52193,6 @@ var require_dist6 = __commonJS({
         }
       }
     };
-    __name(_ThrottlingRetryPolicy, "ThrottlingRetryPolicy");
-    var ThrottlingRetryPolicy = _ThrottlingRetryPolicy;
     var createSpan = coreTracing.createSpanFunction({
       packagePrefix: "",
       namespace: ""
@@ -52101,7 +52205,10 @@ var require_dist6 = __commonJS({
       };
     }
     __name(tracingPolicy, "tracingPolicy");
-    var _TracingPolicy = class _TracingPolicy extends BaseRequestPolicy {
+    var TracingPolicy = class extends BaseRequestPolicy {
+      static {
+        __name(this, "TracingPolicy");
+      }
       constructor(nextPolicy, options, tracingOptions) {
         super(nextPolicy, options);
         this.userAgent = tracingOptions.userAgent;
@@ -52193,9 +52300,10 @@ var require_dist6 = __commonJS({
         }
       }
     };
-    __name(_TracingPolicy, "TracingPolicy");
-    var TracingPolicy = _TracingPolicy;
-    var _ServiceClient = class _ServiceClient {
+    var ServiceClient = class {
+      static {
+        __name(this, "ServiceClient");
+      }
       /**
        * The ServiceClient constructor
        * @param credentials - The credentials used for authentication with the service.
@@ -52431,8 +52539,6 @@ var require_dist6 = __commonJS({
         return result;
       }
     };
-    __name(_ServiceClient, "ServiceClient");
-    var ServiceClient = _ServiceClient;
     function serializeRequestBody(serviceClient, httpRequest, operationArguments, operationSpec) {
       var _a, _b, _c, _d, _e, _f;
       const serializerOptions = (_b = (_a = operationArguments.options) === null || _a === void 0 ? void 0 : _a.serializerOptions) !== null && _b !== void 0 ? _b : {};
@@ -52701,7 +52807,10 @@ var require_dist6 = __commonJS({
     }
     __name(createSpanFunction, "createSpanFunction");
     var TokenRefreshBufferMs = 2 * 60 * 1e3;
-    var _ExpiringAccessTokenCache = class _ExpiringAccessTokenCache {
+    var ExpiringAccessTokenCache = class {
+      static {
+        __name(this, "ExpiringAccessTokenCache");
+      }
       /**
        * Constructs an instance of {@link ExpiringAccessTokenCache} with
        * an optional expiration buffer time.
@@ -52727,9 +52836,10 @@ var require_dist6 = __commonJS({
         return this.cachedToken;
       }
     };
-    __name(_ExpiringAccessTokenCache, "ExpiringAccessTokenCache");
-    var ExpiringAccessTokenCache = _ExpiringAccessTokenCache;
-    var _AccessTokenRefresher = class _AccessTokenRefresher {
+    var AccessTokenRefresher = class {
+      static {
+        __name(this, "AccessTokenRefresher");
+      }
       constructor(credential, scopes, requiredMillisecondsBeforeNewRefresh = 3e4) {
         this.credential = credential;
         this.scopes = scopes;
@@ -52766,11 +52876,12 @@ var require_dist6 = __commonJS({
         return this.promise;
       }
     };
-    __name(_AccessTokenRefresher, "AccessTokenRefresher");
-    var AccessTokenRefresher = _AccessTokenRefresher;
     var HeaderConstants = Constants.HeaderConstants;
     var DEFAULT_AUTHORIZATION_SCHEME = "Basic";
-    var _BasicAuthenticationCredentials = class _BasicAuthenticationCredentials {
+    var BasicAuthenticationCredentials = class {
+      static {
+        __name(this, "BasicAuthenticationCredentials");
+      }
       /**
        * Creates a new BasicAuthenticationCredentials object.
        *
@@ -52805,9 +52916,10 @@ var require_dist6 = __commonJS({
         return Promise.resolve(webResource);
       }
     };
-    __name(_BasicAuthenticationCredentials, "BasicAuthenticationCredentials");
-    var BasicAuthenticationCredentials = _BasicAuthenticationCredentials;
-    var _ApiKeyCredentials = class _ApiKeyCredentials {
+    var ApiKeyCredentials = class {
+      static {
+        __name(this, "ApiKeyCredentials");
+      }
       /**
        * @param options - Specifies the options to be provided for auth. Either header or query needs to be provided.
        */
@@ -52853,9 +52965,10 @@ var require_dist6 = __commonJS({
         return Promise.resolve(webResource);
       }
     };
-    __name(_ApiKeyCredentials, "ApiKeyCredentials");
-    var ApiKeyCredentials = _ApiKeyCredentials;
-    var _TopicCredentials = class _TopicCredentials extends ApiKeyCredentials {
+    var TopicCredentials = class extends ApiKeyCredentials {
+      static {
+        __name(this, "TopicCredentials");
+      }
       /**
        * Creates a new EventGrid TopicCredentials object.
        *
@@ -52873,8 +52986,6 @@ var require_dist6 = __commonJS({
         super(options);
       }
     };
-    __name(_TopicCredentials, "TopicCredentials");
-    var TopicCredentials = _TopicCredentials;
     Object.defineProperty(exports2, "delay", {
       enumerable: true,
       get: function() {
@@ -53048,14 +53159,221 @@ var require_dist7 = __commonJS({
   }
 });
 
-// node_modules/@azure/core-lro/dist/index.js
+// node_modules/@azure/core-lro/node_modules/@azure/core-util/dist/index.js
 var require_dist8 = __commonJS({
+  "node_modules/@azure/core-lro/node_modules/@azure/core-util/dist/index.js"(exports2) {
+    "use strict";
+    var abortController = require_dist();
+    var crypto7 = require("crypto");
+    function createAbortablePromise(buildPromise, options) {
+      const { cleanupBeforeAbort, abortSignal, abortErrorMsg } = options !== null && options !== void 0 ? options : {};
+      return new Promise((resolve, reject) => {
+        function rejectOnAbort() {
+          reject(new abortController.AbortError(abortErrorMsg !== null && abortErrorMsg !== void 0 ? abortErrorMsg : "The operation was aborted."));
+        }
+        __name(rejectOnAbort, "rejectOnAbort");
+        function removeListeners() {
+          abortSignal === null || abortSignal === void 0 ? void 0 : abortSignal.removeEventListener("abort", onAbort);
+        }
+        __name(removeListeners, "removeListeners");
+        function onAbort() {
+          cleanupBeforeAbort === null || cleanupBeforeAbort === void 0 ? void 0 : cleanupBeforeAbort();
+          removeListeners();
+          rejectOnAbort();
+        }
+        __name(onAbort, "onAbort");
+        if (abortSignal === null || abortSignal === void 0 ? void 0 : abortSignal.aborted) {
+          return rejectOnAbort();
+        }
+        try {
+          buildPromise((x) => {
+            removeListeners();
+            resolve(x);
+          }, (x) => {
+            removeListeners();
+            reject(x);
+          });
+        } catch (err) {
+          reject(err);
+        }
+        abortSignal === null || abortSignal === void 0 ? void 0 : abortSignal.addEventListener("abort", onAbort);
+      });
+    }
+    __name(createAbortablePromise, "createAbortablePromise");
+    var StandardAbortMessage = "The delay was aborted.";
+    function delay(timeInMs, options) {
+      let token;
+      const { abortSignal, abortErrorMsg } = options !== null && options !== void 0 ? options : {};
+      return createAbortablePromise((resolve) => {
+        token = setTimeout(resolve, timeInMs);
+      }, {
+        cleanupBeforeAbort: () => clearTimeout(token),
+        abortSignal,
+        abortErrorMsg: abortErrorMsg !== null && abortErrorMsg !== void 0 ? abortErrorMsg : StandardAbortMessage
+      });
+    }
+    __name(delay, "delay");
+    async function cancelablePromiseRace(abortablePromiseBuilders, options) {
+      var _a2, _b2;
+      const aborter = new abortController.AbortController();
+      function abortHandler() {
+        aborter.abort();
+      }
+      __name(abortHandler, "abortHandler");
+      (_a2 = options === null || options === void 0 ? void 0 : options.abortSignal) === null || _a2 === void 0 ? void 0 : _a2.addEventListener("abort", abortHandler);
+      try {
+        return await Promise.race(abortablePromiseBuilders.map((p) => p({ abortSignal: aborter.signal })));
+      } finally {
+        aborter.abort();
+        (_b2 = options === null || options === void 0 ? void 0 : options.abortSignal) === null || _b2 === void 0 ? void 0 : _b2.removeEventListener("abort", abortHandler);
+      }
+    }
+    __name(cancelablePromiseRace, "cancelablePromiseRace");
+    function getRandomIntegerInclusive(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      const offset = Math.floor(Math.random() * (max - min + 1));
+      return offset + min;
+    }
+    __name(getRandomIntegerInclusive, "getRandomIntegerInclusive");
+    function isObject(input) {
+      return typeof input === "object" && input !== null && !Array.isArray(input) && !(input instanceof RegExp) && !(input instanceof Date);
+    }
+    __name(isObject, "isObject");
+    function isError(e) {
+      if (isObject(e)) {
+        const hasName = typeof e.name === "string";
+        const hasMessage = typeof e.message === "string";
+        return hasName && hasMessage;
+      }
+      return false;
+    }
+    __name(isError, "isError");
+    function getErrorMessage(e) {
+      if (isError(e)) {
+        return e.message;
+      } else {
+        let stringified;
+        try {
+          if (typeof e === "object" && e) {
+            stringified = JSON.stringify(e);
+          } else {
+            stringified = String(e);
+          }
+        } catch (err) {
+          stringified = "[unable to stringify input]";
+        }
+        return `Unknown error ${stringified}`;
+      }
+    }
+    __name(getErrorMessage, "getErrorMessage");
+    async function computeSha256Hmac(key, stringToSign, encoding) {
+      const decodedKey = Buffer.from(key, "base64");
+      return crypto7.createHmac("sha256", decodedKey).update(stringToSign).digest(encoding);
+    }
+    __name(computeSha256Hmac, "computeSha256Hmac");
+    async function computeSha256Hash(content, encoding) {
+      return crypto7.createHash("sha256").update(content).digest(encoding);
+    }
+    __name(computeSha256Hash, "computeSha256Hash");
+    function isDefined(thing) {
+      return typeof thing !== "undefined" && thing !== null;
+    }
+    __name(isDefined, "isDefined");
+    function isObjectWithProperties(thing, properties) {
+      if (!isDefined(thing) || typeof thing !== "object") {
+        return false;
+      }
+      for (const property of properties) {
+        if (!objectHasProperty(thing, property)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    __name(isObjectWithProperties, "isObjectWithProperties");
+    function objectHasProperty(thing, property) {
+      return isDefined(thing) && typeof thing === "object" && property in thing;
+    }
+    __name(objectHasProperty, "objectHasProperty");
+    function generateUUID() {
+      let uuid = "";
+      for (let i = 0; i < 32; i++) {
+        const randomNumber = Math.floor(Math.random() * 16);
+        if (i === 12) {
+          uuid += "4";
+        } else if (i === 16) {
+          uuid += randomNumber & 3 | 8;
+        } else {
+          uuid += randomNumber.toString(16);
+        }
+        if (i === 7 || i === 11 || i === 15 || i === 19) {
+          uuid += "-";
+        }
+      }
+      return uuid;
+    }
+    __name(generateUUID, "generateUUID");
+    var _a$1;
+    var uuidFunction = typeof ((_a$1 = globalThis === null || globalThis === void 0 ? void 0 : globalThis.crypto) === null || _a$1 === void 0 ? void 0 : _a$1.randomUUID) === "function" ? globalThis.crypto.randomUUID.bind(globalThis.crypto) : crypto7.randomUUID;
+    if (!uuidFunction) {
+      uuidFunction = generateUUID;
+    }
+    function randomUUID() {
+      return uuidFunction();
+    }
+    __name(randomUUID, "randomUUID");
+    var _a;
+    var _b;
+    var _c;
+    var _d;
+    var isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+    var isWebWorker = typeof self === "object" && typeof (self === null || self === void 0 ? void 0 : self.importScripts) === "function" && (((_a = self.constructor) === null || _a === void 0 ? void 0 : _a.name) === "DedicatedWorkerGlobalScope" || ((_b = self.constructor) === null || _b === void 0 ? void 0 : _b.name) === "ServiceWorkerGlobalScope" || ((_c = self.constructor) === null || _c === void 0 ? void 0 : _c.name) === "SharedWorkerGlobalScope");
+    var isDeno = typeof Deno !== "undefined" && typeof Deno.version !== "undefined" && typeof Deno.version.deno !== "undefined";
+    var isNode = typeof process !== "undefined" && Boolean(process.version) && Boolean((_d = process.versions) === null || _d === void 0 ? void 0 : _d.node) && // Deno thought it was a good idea to spoof process.versions.node, see https://deno.land/std@0.177.0/node/process.ts?s=versions
+    !isDeno;
+    var isBun = typeof Bun !== "undefined" && typeof Bun.version !== "undefined";
+    var isReactNative = typeof navigator !== "undefined" && (navigator === null || navigator === void 0 ? void 0 : navigator.product) === "ReactNative";
+    function uint8ArrayToString(bytes, format) {
+      return Buffer.from(bytes).toString(format);
+    }
+    __name(uint8ArrayToString, "uint8ArrayToString");
+    function stringToUint8Array(value, format) {
+      return Buffer.from(value, format);
+    }
+    __name(stringToUint8Array, "stringToUint8Array");
+    exports2.cancelablePromiseRace = cancelablePromiseRace;
+    exports2.computeSha256Hash = computeSha256Hash;
+    exports2.computeSha256Hmac = computeSha256Hmac;
+    exports2.createAbortablePromise = createAbortablePromise;
+    exports2.delay = delay;
+    exports2.getErrorMessage = getErrorMessage;
+    exports2.getRandomIntegerInclusive = getRandomIntegerInclusive;
+    exports2.isBrowser = isBrowser;
+    exports2.isBun = isBun;
+    exports2.isDefined = isDefined;
+    exports2.isDeno = isDeno;
+    exports2.isError = isError;
+    exports2.isNode = isNode;
+    exports2.isObject = isObject;
+    exports2.isObjectWithProperties = isObjectWithProperties;
+    exports2.isReactNative = isReactNative;
+    exports2.isWebWorker = isWebWorker;
+    exports2.objectHasProperty = objectHasProperty;
+    exports2.randomUUID = randomUUID;
+    exports2.stringToUint8Array = stringToUint8Array;
+    exports2.uint8ArrayToString = uint8ArrayToString;
+  }
+});
+
+// node_modules/@azure/core-lro/dist/index.js
+var require_dist9 = __commonJS({
   "node_modules/@azure/core-lro/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     var logger$1 = require_dist3();
     var abortController = require_dist();
-    var coreUtil = require_dist2();
+    var coreUtil = require_dist8();
     var logger = logger$1.createClientLogger("core-lro");
     var POLL_INTERVAL_IN_MS = 2e3;
     var terminalStates = ["succeeded", "canceled", "failed"];
@@ -53691,7 +54009,10 @@ var require_dist8 = __commonJS({
       isRunning: (state) => !!state.isStarted,
       isSucceeded: (state) => Boolean(state.isCompleted && !state.isCancelled && !state.error)
     }), "createStateProxy");
-    var _GenericPollOperation = class _GenericPollOperation {
+    var GenericPollOperation = class {
+      static {
+        __name(this, "GenericPollOperation");
+      }
       constructor(state, lro, setErrorAsResult, lroResourceLocationConfig, processResult, updateState, isDone) {
         this.state = state;
         this.lro = lro;
@@ -53749,27 +54070,30 @@ var require_dist8 = __commonJS({
         });
       }
     };
-    __name(_GenericPollOperation, "GenericPollOperation");
-    var GenericPollOperation = _GenericPollOperation;
-    var _PollerStoppedError = class _PollerStoppedError extends Error {
+    var PollerStoppedError = class _PollerStoppedError extends Error {
+      static {
+        __name(this, "PollerStoppedError");
+      }
       constructor(message) {
         super(message);
         this.name = "PollerStoppedError";
         Object.setPrototypeOf(this, _PollerStoppedError.prototype);
       }
     };
-    __name(_PollerStoppedError, "PollerStoppedError");
-    var PollerStoppedError = _PollerStoppedError;
-    var _PollerCancelledError = class _PollerCancelledError extends Error {
+    var PollerCancelledError = class _PollerCancelledError extends Error {
+      static {
+        __name(this, "PollerCancelledError");
+      }
       constructor(message) {
         super(message);
         this.name = "PollerCancelledError";
         Object.setPrototypeOf(this, _PollerCancelledError.prototype);
       }
     };
-    __name(_PollerCancelledError, "PollerCancelledError");
-    var PollerCancelledError = _PollerCancelledError;
-    var _Poller = class _Poller {
+    var Poller = class {
+      static {
+        __name(this, "Poller");
+      }
       /**
        * A poller needs to be initialized by passing in at least the basic properties of the `PollOperation<TState, TResult>`.
        *
@@ -54066,9 +54390,10 @@ var require_dist8 = __commonJS({
         return this.operation.toString();
       }
     };
-    __name(_Poller, "Poller");
-    var Poller = _Poller;
-    var _LroEngine = class _LroEngine extends Poller {
+    var LroEngine = class extends Poller {
+      static {
+        __name(this, "LroEngine");
+      }
       constructor(lro, options) {
         const { intervalInMs = POLL_INTERVAL_IN_MS, resumeFrom, resolveOnUnsuccessful = false, isDone, lroResourceLocationConfig, processResult, updateState } = options || {};
         const state = resumeFrom ? deserializeState(resumeFrom) : {};
@@ -54085,8 +54410,6 @@ var require_dist8 = __commonJS({
         return new Promise((resolve) => setTimeout(() => resolve(), this.config.intervalInMs));
       }
     };
-    __name(_LroEngine, "LroEngine");
-    var LroEngine = _LroEngine;
     exports2.LroEngine = LroEngine;
     exports2.Poller = Poller;
     exports2.PollerCancelledError = PollerCancelledError;
@@ -54096,7 +54419,7 @@ var require_dist8 = __commonJS({
 });
 
 // node_modules/@azure/storage-blob/dist/index.js
-var require_dist9 = __commonJS({
+var require_dist10 = __commonJS({
   "node_modules/@azure/storage-blob/dist/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -54109,7 +54432,7 @@ var require_dist9 = __commonJS({
     var crypto7 = require("crypto");
     var stream = require("stream");
     require_dist7();
-    var coreLro = require_dist8();
+    var coreLro = require_dist9();
     var events = require("events");
     var fs = require("fs");
     var util = require("util");
@@ -64114,7 +64437,10 @@ var require_dist9 = __commonJS({
         }
       }
     };
-    var _Service = class _Service {
+    var Service = class {
+      static {
+        __name(this, "Service");
+      }
       /**
        * Initialize a new instance of the class Service class.
        * @param client Reference to the service client
@@ -64221,8 +64547,6 @@ var require_dist9 = __commonJS({
         return this.client.sendOperationRequest(operationArguments, filterBlobsOperationSpec$1);
       }
     };
-    __name(_Service, "Service");
-    var Service = _Service;
     var xmlSerializer$5 = new coreHttp__namespace.Serializer(
       Mappers,
       /* isXml */
@@ -64452,7 +64776,10 @@ var require_dist9 = __commonJS({
       isXML: true,
       serializer: xmlSerializer$5
     };
-    var _Container = class _Container {
+    var Container = class {
+      static {
+        __name(this, "Container");
+      }
       /**
        * Initialize a new instance of the class Container class.
        * @param client Reference to the service client
@@ -64676,8 +65003,6 @@ var require_dist9 = __commonJS({
         return this.client.sendOperationRequest(operationArguments, getAccountInfoOperationSpec$1);
       }
     };
-    __name(_Container, "Container");
-    var Container = _Container;
     var xmlSerializer$4 = new coreHttp__namespace.Serializer(
       Mappers,
       /* isXml */
@@ -65214,7 +65539,10 @@ var require_dist9 = __commonJS({
       isXML: true,
       serializer: xmlSerializer$4
     };
-    var _Blob$1 = class _Blob$1 {
+    var Blob$1 = class {
+      static {
+        __name(this, "Blob$1");
+      }
       /**
        * Initialize a new instance of the class Blob class.
        * @param client Reference to the service client
@@ -65518,8 +65846,6 @@ var require_dist9 = __commonJS({
         return this.client.sendOperationRequest(operationArguments, setTagsOperationSpec);
       }
     };
-    __name(_Blob$1, "Blob$1");
-    var Blob$1 = _Blob$1;
     var xmlSerializer$3 = new coreHttp__namespace.Serializer(
       Mappers,
       /* isXml */
@@ -66286,7 +66612,10 @@ var require_dist9 = __commonJS({
       mediaType: "xml",
       serializer: xmlSerializer$3
     };
-    var _PageBlob = class _PageBlob {
+    var PageBlob = class {
+      static {
+        __name(this, "PageBlob");
+      }
       /**
        * Initialize a new instance of the class PageBlob class.
        * @param client Reference to the service client
@@ -66425,8 +66754,6 @@ var require_dist9 = __commonJS({
         return this.client.sendOperationRequest(operationArguments, copyIncrementalOperationSpec);
       }
     };
-    __name(_PageBlob, "PageBlob");
-    var PageBlob = _PageBlob;
     var xmlSerializer$2 = new coreHttp__namespace.Serializer(
       Mappers,
       /* isXml */
@@ -66777,7 +67104,10 @@ var require_dist9 = __commonJS({
       isXML: true,
       serializer: xmlSerializer$2
     };
-    var _AppendBlob = class _AppendBlob {
+    var AppendBlob = class {
+      static {
+        __name(this, "AppendBlob");
+      }
       /**
        * Initialize a new instance of the class AppendBlob class.
        * @param client Reference to the service client
@@ -66842,8 +67172,6 @@ var require_dist9 = __commonJS({
         return this.client.sendOperationRequest(operationArguments, sealOperationSpec);
       }
     };
-    __name(_AppendBlob, "AppendBlob");
-    var AppendBlob = _AppendBlob;
     var xmlSerializer$1 = new coreHttp__namespace.Serializer(
       Mappers,
       /* isXml */
@@ -67011,7 +67339,10 @@ var require_dist9 = __commonJS({
       isXML: true,
       serializer: xmlSerializer$1
     };
-    var _BlockBlob = class _BlockBlob {
+    var BlockBlob = class {
+      static {
+        __name(this, "BlockBlob");
+      }
       /**
        * Initialize a new instance of the class BlockBlob class.
        * @param client Reference to the service client
@@ -67127,8 +67458,6 @@ var require_dist9 = __commonJS({
         return this.client.sendOperationRequest(operationArguments, getBlockListOperationSpec);
       }
     };
-    __name(_BlockBlob, "BlockBlob");
-    var BlockBlob = _BlockBlob;
     var xmlSerializer = new coreHttp__namespace.Serializer(
       Mappers,
       /* isXml */
@@ -68090,7 +68419,10 @@ var require_dist9 = __commonJS({
       return split.join("/");
     }
     __name(EscapePath, "EscapePath");
-    var _StorageBrowserPolicy = class _StorageBrowserPolicy extends coreHttp.BaseRequestPolicy {
+    var StorageBrowserPolicy = class extends coreHttp.BaseRequestPolicy {
+      static {
+        __name(this, "StorageBrowserPolicy");
+      }
       /**
        * Creates an instance of StorageBrowserPolicy.
        * @param nextPolicy -
@@ -68118,9 +68450,10 @@ var require_dist9 = __commonJS({
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_StorageBrowserPolicy, "StorageBrowserPolicy");
-    var StorageBrowserPolicy = _StorageBrowserPolicy;
-    var _StorageBrowserPolicyFactory = class _StorageBrowserPolicyFactory {
+    var StorageBrowserPolicyFactory = class {
+      static {
+        __name(this, "StorageBrowserPolicyFactory");
+      }
       /**
        * Creates a StorageBrowserPolicyFactory object.
        *
@@ -68131,8 +68464,6 @@ var require_dist9 = __commonJS({
         return new StorageBrowserPolicy(nextPolicy, options);
       }
     };
-    __name(_StorageBrowserPolicyFactory, "StorageBrowserPolicyFactory");
-    var StorageBrowserPolicyFactory = _StorageBrowserPolicyFactory;
     exports2.StorageRetryPolicyType = void 0;
     (function(StorageRetryPolicyType) {
       StorageRetryPolicyType[StorageRetryPolicyType["EXPONENTIAL"] = 0] = "EXPONENTIAL";
@@ -68148,7 +68479,10 @@ var require_dist9 = __commonJS({
       // Use server side default timeout strategy
     };
     var RETRY_ABORT_ERROR = new abortController.AbortError("The operation was aborted.");
-    var _StorageRetryPolicy = class _StorageRetryPolicy extends coreHttp.BaseRequestPolicy {
+    var StorageRetryPolicy = class extends coreHttp.BaseRequestPolicy {
+      static {
+        __name(this, "StorageRetryPolicy");
+      }
       /**
        * Creates an instance of RetryPolicy.
        *
@@ -68286,9 +68620,10 @@ var require_dist9 = __commonJS({
         return delay(delayTimeInMs, abortSignal, RETRY_ABORT_ERROR);
       }
     };
-    __name(_StorageRetryPolicy, "StorageRetryPolicy");
-    var StorageRetryPolicy = _StorageRetryPolicy;
-    var _StorageRetryPolicyFactory = class _StorageRetryPolicyFactory {
+    var StorageRetryPolicyFactory = class {
+      static {
+        __name(this, "StorageRetryPolicyFactory");
+      }
       /**
        * Creates an instance of StorageRetryPolicyFactory.
        * @param retryOptions -
@@ -68306,9 +68641,10 @@ var require_dist9 = __commonJS({
         return new StorageRetryPolicy(nextPolicy, options, this.retryOptions);
       }
     };
-    __name(_StorageRetryPolicyFactory, "StorageRetryPolicyFactory");
-    var StorageRetryPolicyFactory = _StorageRetryPolicyFactory;
-    var _CredentialPolicy = class _CredentialPolicy extends coreHttp.BaseRequestPolicy {
+    var CredentialPolicy = class extends coreHttp.BaseRequestPolicy {
+      static {
+        __name(this, "CredentialPolicy");
+      }
       /**
        * Sends out request.
        *
@@ -68327,9 +68663,10 @@ var require_dist9 = __commonJS({
         return request;
       }
     };
-    __name(_CredentialPolicy, "CredentialPolicy");
-    var CredentialPolicy = _CredentialPolicy;
-    var _AnonymousCredentialPolicy = class _AnonymousCredentialPolicy extends CredentialPolicy {
+    var AnonymousCredentialPolicy = class extends CredentialPolicy {
+      static {
+        __name(this, "AnonymousCredentialPolicy");
+      }
       /**
        * Creates an instance of AnonymousCredentialPolicy.
        * @param nextPolicy -
@@ -68341,9 +68678,10 @@ var require_dist9 = __commonJS({
         super(nextPolicy, options);
       }
     };
-    __name(_AnonymousCredentialPolicy, "AnonymousCredentialPolicy");
-    var AnonymousCredentialPolicy = _AnonymousCredentialPolicy;
-    var _Credential = class _Credential {
+    var Credential = class {
+      static {
+        __name(this, "Credential");
+      }
       /**
        * Creates a RequestPolicy object.
        *
@@ -68354,9 +68692,10 @@ var require_dist9 = __commonJS({
         throw new Error("Method should be implemented in children classes.");
       }
     };
-    __name(_Credential, "Credential");
-    var Credential = _Credential;
-    var _AnonymousCredential = class _AnonymousCredential extends Credential {
+    var AnonymousCredential = class extends Credential {
+      static {
+        __name(this, "AnonymousCredential");
+      }
       /**
        * Creates an {@link AnonymousCredentialPolicy} object.
        *
@@ -68367,9 +68706,10 @@ var require_dist9 = __commonJS({
         return new AnonymousCredentialPolicy(nextPolicy, options);
       }
     };
-    __name(_AnonymousCredential, "AnonymousCredential");
-    var AnonymousCredential = _AnonymousCredential;
-    var _TelemetryPolicy = class _TelemetryPolicy extends coreHttp.BaseRequestPolicy {
+    var TelemetryPolicy = class extends coreHttp.BaseRequestPolicy {
+      static {
+        __name(this, "TelemetryPolicy");
+      }
       /**
        * Creates an instance of TelemetryPolicy.
        * @param nextPolicy -
@@ -68397,9 +68737,10 @@ var require_dist9 = __commonJS({
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_TelemetryPolicy, "TelemetryPolicy");
-    var TelemetryPolicy = _TelemetryPolicy;
-    var _TelemetryPolicyFactory = class _TelemetryPolicyFactory {
+    var TelemetryPolicyFactory = class {
+      static {
+        __name(this, "TelemetryPolicyFactory");
+      }
       /**
        * Creates an instance of TelemetryPolicyFactory.
        * @param telemetry -
@@ -68437,8 +68778,6 @@ var require_dist9 = __commonJS({
         return new TelemetryPolicy(nextPolicy, options, this.telemetryString);
       }
     };
-    __name(_TelemetryPolicyFactory, "TelemetryPolicyFactory");
-    var TelemetryPolicyFactory = _TelemetryPolicyFactory;
     var _defaultHttpClient = new coreHttp.DefaultHttpClient();
     function getCachedDefaultHttpClient() {
       return _defaultHttpClient;
@@ -68563,7 +68902,10 @@ var require_dist9 = __commonJS({
     __name(parseChallenge, "parseChallenge");
     function storageBearerTokenChallengeAuthenticationPolicy(credential, scopes) {
       let getToken = createTokenCycler(credential, scopes);
-      const _StorageBearerTokenChallengeAuthenticationPolicy = class _StorageBearerTokenChallengeAuthenticationPolicy extends coreHttp.BaseRequestPolicy {
+      class StorageBearerTokenChallengeAuthenticationPolicy extends coreHttp.BaseRequestPolicy {
+        static {
+          __name(this, "StorageBearerTokenChallengeAuthenticationPolicy");
+        }
         constructor(nextPolicy, options) {
           super(nextPolicy, options);
         }
@@ -68603,9 +68945,7 @@ var require_dist9 = __commonJS({
           }
           return response;
         }
-      };
-      __name(_StorageBearerTokenChallengeAuthenticationPolicy, "StorageBearerTokenChallengeAuthenticationPolicy");
-      let StorageBearerTokenChallengeAuthenticationPolicy = _StorageBearerTokenChallengeAuthenticationPolicy;
+      }
       return {
         create: (nextPolicy, options) => {
           return new StorageBearerTokenChallengeAuthenticationPolicy(nextPolicy, options);
@@ -68621,7 +68961,10 @@ var require_dist9 = __commonJS({
       return Array.isArray(castPipeline.factories) && typeof castPipeline.options === "object" && typeof castPipeline.toServiceClientOptions === "function";
     }
     __name(isPipelineLike, "isPipelineLike");
-    var _Pipeline = class _Pipeline {
+    var Pipeline = class {
+      static {
+        __name(this, "Pipeline");
+      }
       /**
        * Creates an instance of Pipeline. Customize HTTPClient by implementing IHttpClient interface.
        *
@@ -68645,8 +68988,6 @@ var require_dist9 = __commonJS({
         };
       }
     };
-    __name(_Pipeline, "Pipeline");
-    var Pipeline = _Pipeline;
     function newPipeline(credential, pipelineOptions = {}) {
       var _a;
       if (credential === void 0) {
@@ -68678,7 +69019,10 @@ var require_dist9 = __commonJS({
       return new Pipeline(factories, pipelineOptions);
     }
     __name(newPipeline, "newPipeline");
-    var _StorageSharedKeyCredentialPolicy = class _StorageSharedKeyCredentialPolicy extends CredentialPolicy {
+    var StorageSharedKeyCredentialPolicy = class extends CredentialPolicy {
+      static {
+        __name(this, "StorageSharedKeyCredentialPolicy");
+      }
       /**
        * Creates an instance of StorageSharedKeyCredentialPolicy.
        * @param nextPolicy -
@@ -68796,9 +69140,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return canonicalizedResourceString;
       }
     };
-    __name(_StorageSharedKeyCredentialPolicy, "StorageSharedKeyCredentialPolicy");
-    var StorageSharedKeyCredentialPolicy = _StorageSharedKeyCredentialPolicy;
-    var _StorageSharedKeyCredential = class _StorageSharedKeyCredential extends Credential {
+    var StorageSharedKeyCredential = class extends Credential {
+      static {
+        __name(this, "StorageSharedKeyCredential");
+      }
       /**
        * Creates an instance of StorageSharedKeyCredential.
        * @param accountName -
@@ -68827,11 +69172,12 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return crypto7.createHmac("sha256", this.accountKey).update(stringToSign, "utf8").digest("base64");
       }
     };
-    __name(_StorageSharedKeyCredential, "StorageSharedKeyCredential");
-    var StorageSharedKeyCredential = _StorageSharedKeyCredential;
     var packageName = "azure-storage-blob";
     var packageVersion = "12.17.0";
-    var _StorageClientContext = class _StorageClientContext extends coreHttp__namespace.ServiceClient {
+    var StorageClientContext = class extends coreHttp__namespace.ServiceClient {
+      static {
+        __name(this, "StorageClientContext");
+      }
       /**
        * Initializes a new instance of the StorageClientContext class.
        * @param url The URL of the service account, container, or blob that is the target of the desired
@@ -68856,9 +69202,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         this.version = options.version || "2023-11-03";
       }
     };
-    __name(_StorageClientContext, "StorageClientContext");
-    var StorageClientContext = _StorageClientContext;
-    var _StorageClient = class _StorageClient {
+    var StorageClient = class {
+      static {
+        __name(this, "StorageClient");
+      }
       /**
        * Creates an instance of StorageClient.
        * @param url - url to resource
@@ -68882,8 +69229,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         storageClientContext.requestContentType = void 0;
       }
     };
-    __name(_StorageClient, "StorageClient");
-    var StorageClient = _StorageClient;
     var createSpan = coreTracing.createSpanFunction({
       packagePrefix: "Azure.Storage.Blob",
       namespace: "Microsoft.Storage"
@@ -68897,7 +69242,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       };
     }
     __name(convertTracingToRequestOptionsBase, "convertTracingToRequestOptionsBase");
-    var _BlobSASPermissions = class _BlobSASPermissions {
+    var BlobSASPermissions = class _BlobSASPermissions {
+      static {
+        __name(this, "BlobSASPermissions");
+      }
       constructor() {
         this.read = false;
         this.add = false;
@@ -69047,9 +69395,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return permissions.join("");
       }
     };
-    __name(_BlobSASPermissions, "BlobSASPermissions");
-    var BlobSASPermissions = _BlobSASPermissions;
-    var _ContainerSASPermissions = class _ContainerSASPermissions {
+    var ContainerSASPermissions = class _ContainerSASPermissions {
+      static {
+        __name(this, "ContainerSASPermissions");
+      }
       constructor() {
         this.read = false;
         this.add = false;
@@ -69221,9 +69570,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return permissions.join("");
       }
     };
-    __name(_ContainerSASPermissions, "ContainerSASPermissions");
-    var ContainerSASPermissions = _ContainerSASPermissions;
-    var _UserDelegationKeyCredential = class _UserDelegationKeyCredential {
+    var UserDelegationKeyCredential = class {
+      static {
+        __name(this, "UserDelegationKeyCredential");
+      }
       /**
        * Creates an instance of UserDelegationKeyCredential.
        * @param accountName -
@@ -69243,8 +69593,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return crypto7.createHmac("sha256", this.key).update(stringToSign, "utf8").digest("base64");
       }
     };
-    __name(_UserDelegationKeyCredential, "UserDelegationKeyCredential");
-    var UserDelegationKeyCredential = _UserDelegationKeyCredential;
     function ipRangeToString(ipRange) {
       return ipRange.end ? `${ipRange.start}-${ipRange.end}` : ipRange.start;
     }
@@ -69254,7 +69602,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       SASProtocol["Https"] = "https";
       SASProtocol["HttpsAndHttp"] = "https,http";
     })(exports2.SASProtocol || (exports2.SASProtocol = {}));
-    var _SASQueryParameters = class _SASQueryParameters {
+    var SASQueryParameters = class {
+      static {
+        __name(this, "SASQueryParameters");
+      }
       constructor(version4, signature, permissionsOrOptions, services, resourceTypes, protocol, startsOn, expiresOn2, ipRange, identifier, resource, cacheControl, contentDisposition, contentEncoding, contentLanguage, contentType2, userDelegationKey, preauthorizedAgentObjectId, correlationId, encryptionScope2) {
         this.version = version4;
         this.signature = signature;
@@ -69458,8 +69809,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_SASQueryParameters, "SASQueryParameters");
-    var SASQueryParameters = _SASQueryParameters;
     function generateBlobSASQueryParameters(blobSASSignatureValues, sharedKeyCredentialOrUserDelegationKey, accountName) {
       const version4 = blobSASSignatureValues.version ? blobSASSignatureValues.version : SERVICE_VERSION;
       const sharedKeyCredential = sharedKeyCredentialOrUserDelegationKey instanceof StorageSharedKeyCredential ? sharedKeyCredentialOrUserDelegationKey : void 0;
@@ -69832,7 +70181,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       return blobSASSignatureValues;
     }
     __name(SASSignatureValuesSanityCheckAndAutofill, "SASSignatureValuesSanityCheckAndAutofill");
-    var _BlobLeaseClient = class _BlobLeaseClient {
+    var BlobLeaseClient = class {
+      static {
+        __name(this, "BlobLeaseClient");
+      }
       /**
        * Creates an instance of BlobLeaseClient.
        * @param client - The client to make the lease operation requests.
@@ -70015,9 +70367,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_BlobLeaseClient, "BlobLeaseClient");
-    var BlobLeaseClient = _BlobLeaseClient;
-    var _RetriableReadableStream = class _RetriableReadableStream extends stream.Readable {
+    var RetriableReadableStream = class extends stream.Readable {
+      static {
+        __name(this, "RetriableReadableStream");
+      }
       /**
        * Creates an instance of RetriableReadableStream.
        *
@@ -70101,9 +70454,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         callback(error === null ? void 0 : error);
       }
     };
-    __name(_RetriableReadableStream, "RetriableReadableStream");
-    var RetriableReadableStream = _RetriableReadableStream;
-    var _BlobDownloadResponse = class _BlobDownloadResponse {
+    var BlobDownloadResponse = class {
+      static {
+        __name(this, "BlobDownloadResponse");
+      }
       /**
        * Creates an instance of BlobDownloadResponse.
        *
@@ -70551,13 +70905,14 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return this.originalResponse._response;
       }
     };
-    __name(_BlobDownloadResponse, "BlobDownloadResponse");
-    var BlobDownloadResponse = _BlobDownloadResponse;
     var AVRO_SYNC_MARKER_SIZE = 16;
     var AVRO_INIT_BYTES = new Uint8Array([79, 98, 106, 1]);
     var AVRO_CODEC_KEY = "avro.codec";
     var AVRO_SCHEMA_KEY = "avro.schema";
-    var _AvroParser = class _AvroParser {
+    var AvroParser = class _AvroParser {
+      static {
+        __name(this, "AvroParser");
+      }
       /**
        * Reads a fixed number of bytes from the stream.
        *
@@ -70683,8 +71038,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return items;
       }
     };
-    __name(_AvroParser, "AvroParser");
-    var AvroParser = _AvroParser;
     var AvroComplex;
     (function(AvroComplex2) {
       AvroComplex2["RECORD"] = "record";
@@ -70705,7 +71058,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       AvroPrimitive2["BYTES"] = "bytes";
       AvroPrimitive2["STRING"] = "string";
     })(AvroPrimitive || (AvroPrimitive = {}));
-    var _AvroType = class _AvroType {
+    var AvroType = class _AvroType {
+      static {
+        __name(this, "AvroType");
+      }
       /**
        * Determines the AvroType from the Avro Schema.
        */
@@ -70778,9 +71134,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_AvroType, "AvroType");
-    var AvroType = _AvroType;
-    var _AvroPrimitiveType = class _AvroPrimitiveType extends AvroType {
+    var AvroPrimitiveType = class extends AvroType {
+      static {
+        __name(this, "AvroPrimitiveType");
+      }
       constructor(primitive) {
         super();
         this._primitive = primitive;
@@ -70808,9 +71165,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_AvroPrimitiveType, "AvroPrimitiveType");
-    var AvroPrimitiveType = _AvroPrimitiveType;
-    var _AvroEnumType = class _AvroEnumType extends AvroType {
+    var AvroEnumType = class extends AvroType {
+      static {
+        __name(this, "AvroEnumType");
+      }
       constructor(symbols) {
         super();
         this._symbols = symbols;
@@ -70820,9 +71178,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return this._symbols[value];
       }
     };
-    __name(_AvroEnumType, "AvroEnumType");
-    var AvroEnumType = _AvroEnumType;
-    var _AvroUnionType = class _AvroUnionType extends AvroType {
+    var AvroUnionType = class extends AvroType {
+      static {
+        __name(this, "AvroUnionType");
+      }
       constructor(types) {
         super();
         this._types = types;
@@ -70832,9 +71191,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return this._types[typeIndex].read(stream2, options);
       }
     };
-    __name(_AvroUnionType, "AvroUnionType");
-    var AvroUnionType = _AvroUnionType;
-    var _AvroMapType = class _AvroMapType extends AvroType {
+    var AvroMapType = class extends AvroType {
+      static {
+        __name(this, "AvroMapType");
+      }
       constructor(itemType) {
         super();
         this._itemType = itemType;
@@ -70846,9 +71206,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return AvroParser.readMap(stream2, readItemMethod, options);
       }
     };
-    __name(_AvroMapType, "AvroMapType");
-    var AvroMapType = _AvroMapType;
-    var _AvroRecordType = class _AvroRecordType extends AvroType {
+    var AvroRecordType = class extends AvroType {
+      static {
+        __name(this, "AvroRecordType");
+      }
       constructor(fields, name) {
         super();
         this._fields = fields;
@@ -70865,8 +71226,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return record;
       }
     };
-    __name(_AvroRecordType, "AvroRecordType");
-    var AvroRecordType = _AvroRecordType;
     function arraysEqual(a, b) {
       if (a === b)
         return true;
@@ -70881,7 +71240,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       return true;
     }
     __name(arraysEqual, "arraysEqual");
-    var _AvroReader = class _AvroReader {
+    var AvroReader = class {
+      static {
+        __name(this, "AvroReader");
+      }
       constructor(dataStream, headerStream, currentBlockOffset, indexWithinCurrentBlock) {
         this._dataStream = dataStream;
         this._headerStream = headerStream || dataStream;
@@ -70969,14 +71331,16 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }, "parseObjects_1"));
       }
     };
-    __name(_AvroReader, "AvroReader");
-    var AvroReader = _AvroReader;
-    var _AvroReadable = class _AvroReadable {
+    var AvroReadable = class {
+      static {
+        __name(this, "AvroReadable");
+      }
     };
-    __name(_AvroReadable, "AvroReadable");
-    var AvroReadable = _AvroReadable;
     var ABORT_ERROR = new abortController.AbortError("Reading from the avro stream was aborted.");
-    var _AvroReadableFromStream = class _AvroReadableFromStream extends AvroReadable {
+    var AvroReadableFromStream = class extends AvroReadable {
+      static {
+        __name(this, "AvroReadableFromStream");
+      }
       constructor(readable) {
         super();
         this._readable = readable;
@@ -71047,9 +71411,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_AvroReadableFromStream, "AvroReadableFromStream");
-    var AvroReadableFromStream = _AvroReadableFromStream;
-    var _BlobQuickQueryStream = class _BlobQuickQueryStream extends stream.Readable {
+    var BlobQuickQueryStream = class extends stream.Readable {
+      static {
+        __name(this, "BlobQuickQueryStream");
+      }
       /**
        * Creates an instance of BlobQuickQueryStream.
        *
@@ -71150,9 +71515,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         } while (!avroNext.done && !this.avroPaused);
       }
     };
-    __name(_BlobQuickQueryStream, "BlobQuickQueryStream");
-    var BlobQuickQueryStream = _BlobQuickQueryStream;
-    var _BlobQueryResponse = class _BlobQueryResponse {
+    var BlobQueryResponse = class {
+      static {
+        __name(this, "BlobQueryResponse");
+      }
       /**
        * Creates an instance of BlobQueryResponse.
        *
@@ -71508,8 +71874,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return this.originalResponse._response;
       }
     };
-    __name(_BlobQueryResponse, "BlobQueryResponse");
-    var BlobQueryResponse = _BlobQueryResponse;
     exports2.BlockBlobTier = void 0;
     (function(BlockBlobTier) {
       BlockBlobTier["Hot"] = "Hot";
@@ -71575,7 +71939,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       });
     }
     __name(rangeResponseFromModel, "rangeResponseFromModel");
-    var _BlobBeginCopyFromUrlPoller = class _BlobBeginCopyFromUrlPoller extends coreLro.Poller {
+    var BlobBeginCopyFromUrlPoller = class extends coreLro.Poller {
+      static {
+        __name(this, "BlobBeginCopyFromUrlPoller");
+      }
       constructor(options) {
         const { blobClient, copySource: copySource2, intervalInMs = 15e3, onProgress, resumeFrom, startCopyFromURLOptions } = options;
         let state;
@@ -71597,8 +71964,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return coreHttp.delay(this.intervalInMs);
       }
     };
-    __name(_BlobBeginCopyFromUrlPoller, "BlobBeginCopyFromUrlPoller");
-    var BlobBeginCopyFromUrlPoller = _BlobBeginCopyFromUrlPoller;
     var cancel = /* @__PURE__ */ __name(async function cancel2(options = {}) {
       const state = this.state;
       const { copyId: copyId2 } = state;
@@ -71682,7 +72047,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       BatchStates2[BatchStates2["Good"] = 0] = "Good";
       BatchStates2[BatchStates2["Error"] = 1] = "Error";
     })(BatchStates || (BatchStates = {}));
-    var _Batch = class _Batch {
+    var Batch = class {
+      static {
+        __name(this, "Batch");
+      }
       /**
        * Creates an instance of Batch.
        * @param concurrency -
@@ -71767,9 +72135,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_Batch, "Batch");
-    var Batch = _Batch;
-    var _BuffersStream = class _BuffersStream extends stream.Readable {
+    var BuffersStream = class extends stream.Readable {
+      static {
+        __name(this, "BuffersStream");
+      }
       /**
        * Creates an instance of BuffersStream that will emit the data
        * contained in the array of buffers.
@@ -71837,10 +72206,11 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_BuffersStream, "BuffersStream");
-    var BuffersStream = _BuffersStream;
     var maxBufferLength = require("buffer").constants.MAX_LENGTH;
-    var _PooledBuffer = class _PooledBuffer {
+    var PooledBuffer = class {
+      static {
+        __name(this, "PooledBuffer");
+      }
       constructor(capacity, buffers, totalLength) {
         this.buffers = [];
         this.capacity = capacity;
@@ -71904,9 +72274,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return new BuffersStream(this.buffers, this.size);
       }
     };
-    __name(_PooledBuffer, "PooledBuffer");
-    var PooledBuffer = _PooledBuffer;
-    var _BufferScheduler = class _BufferScheduler {
+    var BufferScheduler = class {
+      static {
+        __name(this, "BufferScheduler");
+      }
       /**
        * Creates an instance of BufferScheduler.
        *
@@ -72088,8 +72459,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_BufferScheduler, "BufferScheduler");
-    var BufferScheduler = _BufferScheduler;
     async function streamToBuffer(stream2, buffer, offset, end, encoding) {
       let pos = 0;
       const count = end - offset;
@@ -72168,7 +72537,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
     __name(readStreamToLocalFile, "readStreamToLocalFile");
     var fsStat = util__namespace.promisify(fs__namespace.stat);
     var fsCreateReadStream = fs__namespace.createReadStream;
-    var _BlobClient = class _BlobClient extends StorageClient {
+    var BlobClient = class _BlobClient extends StorageClient {
+      static {
+        __name(this, "BlobClient");
+      }
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         options = options || {};
         let pipeline;
@@ -73100,9 +73472,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_BlobClient, "BlobClient");
-    var BlobClient = _BlobClient;
-    var _AppendBlobClient = class _AppendBlobClient extends BlobClient {
+    var AppendBlobClient = class _AppendBlobClient extends BlobClient {
+      static {
+        __name(this, "AppendBlobClient");
+      }
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         let pipeline;
         let url2;
@@ -73319,9 +73692,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_AppendBlobClient, "AppendBlobClient");
-    var AppendBlobClient = _AppendBlobClient;
-    var _BlockBlobClient = class _BlockBlobClient extends BlobClient {
+    var BlockBlobClient = class _BlockBlobClient extends BlobClient {
+      static {
+        __name(this, "BlockBlobClient");
+      }
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         let pipeline;
         let url2;
@@ -73919,9 +74293,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_BlockBlobClient, "BlockBlobClient");
-    var BlockBlobClient = _BlockBlobClient;
-    var _PageBlobClient = class _PageBlobClient extends BlobClient {
+    var PageBlobClient = class _PageBlobClient extends BlobClient {
+      static {
+        __name(this, "PageBlobClient");
+      }
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, blobNameOrOptions, options) {
         let pipeline;
         let url2;
@@ -74639,8 +75014,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_PageBlobClient, "PageBlobClient");
-    var PageBlobClient = _PageBlobClient;
     async function getBodyAsText(batchResponse) {
       let buffer = Buffer.alloc(BATCH_MAX_PAYLOAD_IN_BYTES);
       const responseLength = await streamToBuffer2(batchResponse.readableStreamBody, buffer);
@@ -74655,7 +75028,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
     var HTTP_HEADER_DELIMITER = ": ";
     var SPACE_DELIMITER = " ";
     var NOT_FOUND = -1;
-    var _BatchResponseParser = class _BatchResponseParser {
+    var BatchResponseParser = class {
+      static {
+        __name(this, "BatchResponseParser");
+      }
       constructor(batchResponse, subRequests) {
         if (!batchResponse || !batchResponse.contentType) {
           throw new RangeError("batchResponse is malformed or doesn't contain valid content-type.");
@@ -74747,14 +75123,15 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         };
       }
     };
-    __name(_BatchResponseParser, "BatchResponseParser");
-    var BatchResponseParser = _BatchResponseParser;
     var MutexLockStatus;
     (function(MutexLockStatus2) {
       MutexLockStatus2[MutexLockStatus2["LOCKED"] = 0] = "LOCKED";
       MutexLockStatus2[MutexLockStatus2["UNLOCKED"] = 1] = "UNLOCKED";
     })(MutexLockStatus || (MutexLockStatus = {}));
-    var _Mutex = class _Mutex {
+    var Mutex = class {
+      static {
+        __name(this, "Mutex");
+      }
       /**
        * Lock for a specific key. If the lock has been acquired by another customer, then
        * will wait until getting the lock.
@@ -74804,11 +75181,12 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_Mutex, "Mutex");
-    var Mutex = _Mutex;
     Mutex.keys = {};
     Mutex.listeners = {};
-    var _BlobBatch = class _BlobBatch {
+    var BlobBatch = class {
+      static {
+        __name(this, "BlobBatch");
+      }
       constructor() {
         this.batch = "batch";
         this.batchRequest = new InnerBatchRequest();
@@ -74925,9 +75303,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_BlobBatch, "BlobBatch");
-    var BlobBatch = _BlobBatch;
-    var _InnerBatchRequest = class _InnerBatchRequest {
+    var InnerBatchRequest = class {
+      static {
+        __name(this, "InnerBatchRequest");
+      }
       constructor() {
         this.operationCount = 0;
         this.body = "";
@@ -74994,9 +75373,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return this.subRequests;
       }
     };
-    __name(_InnerBatchRequest, "InnerBatchRequest");
-    var InnerBatchRequest = _InnerBatchRequest;
-    var _BatchRequestAssemblePolicy = class _BatchRequestAssemblePolicy extends coreHttp.BaseRequestPolicy {
+    var BatchRequestAssemblePolicy = class extends coreHttp.BaseRequestPolicy {
+      static {
+        __name(this, "BatchRequestAssemblePolicy");
+      }
       constructor(batchRequest, nextPolicy, options) {
         super(nextPolicy, options);
         this.dummyResponse = {
@@ -75011,9 +75391,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return this.dummyResponse;
       }
     };
-    __name(_BatchRequestAssemblePolicy, "BatchRequestAssemblePolicy");
-    var BatchRequestAssemblePolicy = _BatchRequestAssemblePolicy;
-    var _BatchRequestAssemblePolicyFactory = class _BatchRequestAssemblePolicyFactory {
+    var BatchRequestAssemblePolicyFactory = class {
+      static {
+        __name(this, "BatchRequestAssemblePolicyFactory");
+      }
       constructor(batchRequest) {
         this.batchRequest = batchRequest;
       }
@@ -75021,9 +75402,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return new BatchRequestAssemblePolicy(this.batchRequest, nextPolicy, options);
       }
     };
-    __name(_BatchRequestAssemblePolicyFactory, "BatchRequestAssemblePolicyFactory");
-    var BatchRequestAssemblePolicyFactory = _BatchRequestAssemblePolicyFactory;
-    var _BatchHeaderFilterPolicy = class _BatchHeaderFilterPolicy extends coreHttp.BaseRequestPolicy {
+    var BatchHeaderFilterPolicy = class extends coreHttp.BaseRequestPolicy {
+      static {
+        __name(this, "BatchHeaderFilterPolicy");
+      }
       // The base class has a protected constructor. Adding a public one to enable constructing of this class.
       /* eslint-disable-next-line @typescript-eslint/no-useless-constructor*/
       constructor(nextPolicy, options) {
@@ -75042,16 +75424,18 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return this._nextPolicy.sendRequest(request);
       }
     };
-    __name(_BatchHeaderFilterPolicy, "BatchHeaderFilterPolicy");
-    var BatchHeaderFilterPolicy = _BatchHeaderFilterPolicy;
-    var _BatchHeaderFilterPolicyFactory = class _BatchHeaderFilterPolicyFactory {
+    var BatchHeaderFilterPolicyFactory = class {
+      static {
+        __name(this, "BatchHeaderFilterPolicyFactory");
+      }
       create(nextPolicy, options) {
         return new BatchHeaderFilterPolicy(nextPolicy, options);
       }
     };
-    __name(_BatchHeaderFilterPolicyFactory, "BatchHeaderFilterPolicyFactory");
-    var BatchHeaderFilterPolicyFactory = _BatchHeaderFilterPolicyFactory;
-    var _BlobBatchClient = class _BlobBatchClient {
+    var BlobBatchClient = class {
+      static {
+        __name(this, "BlobBatchClient");
+      }
       constructor(url2, credentialOrPipeline, options) {
         let pipeline;
         if (isPipelineLike(credentialOrPipeline)) {
@@ -75166,9 +75550,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         }
       }
     };
-    __name(_BlobBatchClient, "BlobBatchClient");
-    var BlobBatchClient = _BlobBatchClient;
-    var _ContainerClient = class _ContainerClient extends StorageClient {
+    var ContainerClient = class extends StorageClient {
+      static {
+        __name(this, "ContainerClient");
+      }
       constructor(urlOrConnectionString, credentialOrPipelineOrContainerName, options) {
         let pipeline;
         let url2;
@@ -76344,9 +76729,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return new BlobBatchClient(this.url, this.pipeline);
       }
     };
-    __name(_ContainerClient, "ContainerClient");
-    var ContainerClient = _ContainerClient;
-    var _AccountSASPermissions = class _AccountSASPermissions {
+    var AccountSASPermissions = class _AccountSASPermissions {
+      static {
+        __name(this, "AccountSASPermissions");
+      }
       constructor() {
         this.read = false;
         this.write = false;
@@ -76519,9 +76905,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return permissions.join("");
       }
     };
-    __name(_AccountSASPermissions, "AccountSASPermissions");
-    var AccountSASPermissions = _AccountSASPermissions;
-    var _AccountSASResourceTypes = class _AccountSASResourceTypes {
+    var AccountSASResourceTypes = class _AccountSASResourceTypes {
+      static {
+        __name(this, "AccountSASResourceTypes");
+      }
       constructor() {
         this.service = false;
         this.container = false;
@@ -76572,9 +76959,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return resourceTypes.join("");
       }
     };
-    __name(_AccountSASResourceTypes, "AccountSASResourceTypes");
-    var AccountSASResourceTypes = _AccountSASResourceTypes;
-    var _AccountSASServices = class _AccountSASServices {
+    var AccountSASServices = class _AccountSASServices {
+      static {
+        __name(this, "AccountSASServices");
+      }
       constructor() {
         this.blob = false;
         this.file = false;
@@ -76630,8 +77018,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return services.join("");
       }
     };
-    __name(_AccountSASServices, "AccountSASServices");
-    var AccountSASServices = _AccountSASServices;
     function generateAccountSASQueryParameters(accountSASSignatureValues, sharedKeyCredential) {
       const version4 = accountSASSignatureValues.version ? accountSASSignatureValues.version : SERVICE_VERSION;
       if (accountSASSignatureValues.permissions && accountSASSignatureValues.permissions.setImmutabilityPolicy && version4 < "2020-08-04") {
@@ -76690,7 +77076,10 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
       return new SASQueryParameters(version4, signature, parsedPermissions.toString(), parsedServices, parsedResourceTypes, accountSASSignatureValues.protocol, accountSASSignatureValues.startsOn, accountSASSignatureValues.expiresOn, accountSASSignatureValues.ipRange, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, void 0, accountSASSignatureValues.encryptionScope);
     }
     __name(generateAccountSASQueryParameters, "generateAccountSASQueryParameters");
-    var _BlobServiceClient = class _BlobServiceClient extends StorageClient {
+    var BlobServiceClient = class _BlobServiceClient extends StorageClient {
+      static {
+        __name(this, "BlobServiceClient");
+      }
       constructor(url2, credentialOrPipeline, options) {
         let pipeline;
         if (isPipelineLike(credentialOrPipeline)) {
@@ -77422,8 +77811,6 @@ ${key}:${decodeURIComponent(lowercaseQueries[key])}`;
         return appendToURLQuery(this.url, sas);
       }
     };
-    __name(_BlobServiceClient, "BlobServiceClient");
-    var BlobServiceClient = _BlobServiceClient;
     exports2.KnownEncryptionAlgorithmType = void 0;
     (function(KnownEncryptionAlgorithmType) {
       KnownEncryptionAlgorithmType["AES256"] = "AES256";
@@ -77755,7 +78142,7 @@ var require_downloadUtils = __commonJS({
     exports2.downloadCacheStorageSDK = exports2.downloadCacheHttpClientConcurrent = exports2.downloadCacheHttpClient = exports2.DownloadProgress = void 0;
     var core = __importStar2(require_core());
     var http_client_1 = require_lib();
-    var storage_blob_1 = require_dist9();
+    var storage_blob_1 = require_dist10();
     var buffer = __importStar2(require("buffer"));
     var fs = __importStar2(require("fs"));
     var stream = __importStar2(require("stream"));
@@ -77771,7 +78158,10 @@ var require_downloadUtils = __commonJS({
       });
     }
     __name(pipeResponseToStream, "pipeResponseToStream");
-    var _DownloadProgress = class _DownloadProgress {
+    var DownloadProgress = class {
+      static {
+        __name(this, "DownloadProgress");
+      }
       constructor(contentLength) {
         this.contentLength = contentLength;
         this.segmentIndex = 0;
@@ -77866,8 +78256,6 @@ var require_downloadUtils = __commonJS({
         this.display();
       }
     };
-    __name(_DownloadProgress, "DownloadProgress");
-    var DownloadProgress = _DownloadProgress;
     exports2.DownloadProgress = DownloadProgress;
     function downloadCacheHttpClient(archiveLocation, archivePath) {
       return __awaiter2(this, void 0, void 0, function* () {
@@ -78793,25 +79181,27 @@ var require_cache2 = __commonJS({
     var utils = __importStar2(require_cacheUtils());
     var cacheHttpClient = __importStar2(require_cacheHttpClient());
     var tar_1 = require_tar();
-    var _ValidationError = class _ValidationError extends Error {
+    var ValidationError = class _ValidationError extends Error {
+      static {
+        __name(this, "ValidationError");
+      }
       constructor(message) {
         super(message);
         this.name = "ValidationError";
         Object.setPrototypeOf(this, _ValidationError.prototype);
       }
     };
-    __name(_ValidationError, "ValidationError");
-    var ValidationError = _ValidationError;
     exports2.ValidationError = ValidationError;
-    var _ReserveCacheError = class _ReserveCacheError extends Error {
+    var ReserveCacheError = class _ReserveCacheError extends Error {
+      static {
+        __name(this, "ReserveCacheError");
+      }
       constructor(message) {
         super(message);
         this.name = "ReserveCacheError";
         Object.setPrototypeOf(this, _ReserveCacheError.prototype);
       }
     };
-    __name(_ReserveCacheError, "ReserveCacheError");
-    var ReserveCacheError = _ReserveCacheError;
     exports2.ReserveCacheError = ReserveCacheError;
     function checkPaths(paths) {
       if (!paths || paths.length === 0) {
@@ -80372,7 +80762,10 @@ var require_retry_helper = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.RetryHelper = void 0;
     var core = __importStar2(require_core());
-    var _RetryHelper = class _RetryHelper {
+    var RetryHelper = class {
+      static {
+        __name(this, "RetryHelper");
+      }
       constructor(maxAttempts, minSeconds, maxSeconds) {
         if (maxAttempts < 1) {
           throw new Error("max attempts should be greater than or equal to 1");
@@ -80413,8 +80806,6 @@ var require_retry_helper = __commonJS({
         });
       }
     };
-    __name(_RetryHelper, "RetryHelper");
-    var RetryHelper = _RetryHelper;
     exports2.RetryHelper = RetryHelper;
   }
 });
@@ -80501,15 +80892,16 @@ var require_tool_cache = __commonJS({
     var v4_1 = __importDefault2(require_v4());
     var exec_1 = require_exec();
     var retry_helper_1 = require_retry_helper();
-    var _HTTPError = class _HTTPError extends Error {
+    var HTTPError = class extends Error {
+      static {
+        __name(this, "HTTPError");
+      }
       constructor(httpStatusCode) {
         super(`Unexpected HTTP response: ${httpStatusCode}`);
         this.httpStatusCode = httpStatusCode;
         Object.setPrototypeOf(this, new.target.prototype);
       }
     };
-    __name(_HTTPError, "HTTPError");
-    var HTTPError = _HTTPError;
     exports2.HTTPError = HTTPError;
     var IS_WINDOWS = process.platform === "win32";
     var IS_MAC = process.platform === "darwin";
