@@ -18,10 +18,18 @@ function resolveCommit (platform, version) {
     win32: 'windows-x86_64'
   }[platform]
 
-  const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
-  const variantName = `zig-${addrhost}-${version}`
+  const fileWithoutFileType = `zig-${addrhost}-${version}`
+  const downloadUrl = `https://ziglang.org/builds/${fileWithoutFileType}.${ext}`
 
-  return { downloadUrl, variantName, version }
+  const versionWithoutBuildHash = semver.clean(version)
+  const variantName = `zig-${addrhost}-${versionWithoutBuildHash}`
+
+  return {
+    downloadUrl,
+    fileWithoutFileType,
+    variantName,
+    version: versionWithoutBuildHash
+  }
 }
 
 function getJSON (opts) {
