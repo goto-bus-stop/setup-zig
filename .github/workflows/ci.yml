@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        zig-version: [0.7.0, 0.8.0, 0.9.0, 0.10.0]
+        zig-version: [0.7.0, 0.8.0, 0.9.0, 0.10.0, 0.11.0]
         include:
           - os: ubuntu-latest
             zig-version: 0.5.0
@@ -30,6 +30,11 @@ jobs:
         uses: goto-bus-stop/setup-zig@default
         with:
           version: ${{matrix.zig-version}}
-      - name: Run tests
+      - name: Run tests (zig up to v0.10.x)
+        if: ${{ !startsWith(matrix.zig-version, '0.11.') }}
         run: zig build test
-        working-directory: test
+        working-directory: test/v0.10
+      - name: Run tests (zig v0.11.x)
+        if: ${{ startsWith(matrix.zig-version, '0.11.') }}
+        run: zig build test
+        working-directory: test/v0.11
