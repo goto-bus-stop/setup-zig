@@ -81590,7 +81590,6 @@ var {
   resolveVersion
 } = require_versions();
 var TOOL_NAME = "zig";
-console.log("test");
 async function downloadZig(platform, version3, useCache = true) {
   const ext = extForPlatform(platform);
   const { downloadUrl, variantName, version: useVersion } = version3.includes("+") ? resolveCommit(platform, version3) : await resolveVersion(platform, version3);
