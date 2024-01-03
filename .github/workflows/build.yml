@@ -11,11 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm install
-      - uses: EndBug/add-and-commit@v4
+      - uses: EndBug/add-and-commit@v9
         with:
           add: dist
           message: Rebuild (automated)
-          author_name: Automated
-          author_email: github@asdf.kooi.me
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
