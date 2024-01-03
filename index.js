@@ -1,5 +1,6 @@
 'use strict'
 
+// test
 const os = require('os')
 const path = require('path')
 const semver = require('semver')
