@@ -4,7 +4,6 @@ on:
     branches:
       - 'default'
       - 'v[0-9]+'
-      - 'dependabot/github_actions/EndBug/add-and-commit-9'
 
 jobs:
   build:

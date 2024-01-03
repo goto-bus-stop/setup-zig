@@ -13,7 +13,6 @@ const {
 } = require('./versions')
 
 const TOOL_NAME = 'zig'
-console.log('test')
 
 async function downloadZig (platform, version, useCache = true) {
   const ext = extForPlatform(platform)
