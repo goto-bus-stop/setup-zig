@@ -15,7 +15,3 @@ jobs:
         with:
           add: dist
           message: Rebuild (automated)
-          author_name: Automated
-          author_email: github@asdf.kooi.me
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
