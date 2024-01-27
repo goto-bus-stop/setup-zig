@@ -10,16 +10,25 @@ function extForPlatform (platform) {
   }[platform]
 }
 
-function resolveCommit (platform, version) {
+
+function resolveCommit (arch, platform, version) {
   const ext = extForPlatform(platform)
-  const addrhost = {
-    linux: 'linux-x86_64',
-    darwin: 'macos-x86_64',
-    win32: 'windows-x86_64'
+  const resolvedOs = {
+    linux: 'linux',
+    darwin: 'macos',
+    win32: 'windows'
   }[platform]
 
-  const downloadUrl = `https://ziglang.org/builds/zig-${addrhost}-${version}.${ext}`
-  const variantName = `zig-${addrhost}-${version}`
+  const resolvedArch = {
+    arm: 'armv7a',
+    arm64: 'aarch64',
+    ppc64: 'powerpc64',
+    riscv64: 'riscv64',
+    x64: 'x86_64',
+  } [arch]
+
+  const downloadUrl = `https://ziglang.org/builds/zig-${resolvedOs}-${resolvedArch}-${version}.${ext}`
+  const variantName = `zig-${resolvedOs}-${resolvedArch}-${version}`
 
   return { downloadUrl, variantName, version }
 }
@@ -36,13 +45,23 @@ function getJSON (opts) {
   })
 }
 
-async function resolveVersion (platform, version) {
+async function resolveVersion (arch, platform, version) {
   const ext = extForPlatform(platform)
-  const host = {
-    linux: 'x86_64-linux',
-    darwin: 'x86_64-macos',
-    win32: 'x86_64-windows'
-  }[platform] || platform
+  const resolvedOs = {
+    linux: 'linux',
+    darwin: 'macos',
+    win32: 'windows'
+  }[platform]
+
+  const resolvedArch = {
+    arm: 'armv7a',
+    arm64: 'aarch64',
+    ppc64: 'powerpc64',
+    riscv64: 'riscv64',
+    x64: 'x86_64',
+  } [arch]
+
+  const host = `${resolvedArch}-${resolvedOs}`
 
   const index = await getJSON({ url: 'https://ziglang.org/download/index.json' })
 

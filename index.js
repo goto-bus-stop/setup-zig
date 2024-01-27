@@ -14,12 +14,12 @@ const {
 
 const TOOL_NAME = 'zig'
 
-async function downloadZig (platform, version, useCache = true) {
+async function downloadZig (arch, platform, version, useCache = true) {
   const ext = extForPlatform(platform)
 
   const { downloadUrl, variantName, version: useVersion } = version.includes('+')
-    ? resolveCommit(platform, version)
-    : await resolveVersion(platform, version)
+    ? resolveCommit(arch, platform, version)
+    : await resolveVersion(arch, platform, version)
 
   const cachedPath = toolCache.find(TOOL_NAME, useVersion)
   if (cachedPath) {
@@ -29,7 +29,7 @@ async function downloadZig (platform, version, useCache = true) {
 
   const cacheKey = `${TOOL_NAME}-${variantName}`
   if (useCache) {
-    const restorePath = path.join(process.env.RUNNER_TOOL_CACHE, TOOL_NAME, useVersion, os.arch())
+    const restorePath = path.join(process.env.RUNNER_TOOL_CACHE, TOOL_NAME, useVersion, arch)
     actions.info(`attempting restore of ${cacheKey} to ${restorePath}`)
     const restoredKey = await cache.restoreCache([restorePath], cacheKey)
     if (restoredKey) {
@@ -67,7 +67,7 @@ async function main () {
     return
   }
 
-  const zigPath = await downloadZig(os.platform(), version, useCache === 'true')
+  const zigPath = await downloadZig(os.arch(), os.platform(), version, useCache === 'true')
 
   // Add the `zig` binary to the $PATH
   actions.addPath(zigPath)
