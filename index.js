@@ -1,8 +1,11 @@
 'use strict'
 
 const os = require('os')
+const fs = require('node:fs/promises')
+const net = require('node:http/promises')
 const path = require('path')
 const semver = require('semver')
+const minisign = require('minisign')
 const actions = require('@actions/core')
 const cache = require('@actions/cache')
 const toolCache = require('@actions/tool-cache')
@@ -13,6 +16,7 @@ const {
 } = require('./versions')
 
 const TOOL_NAME = 'zig'
+const ZIG_PUBLIC_KEY = 'RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U'
 
 async function downloadZig (platform, version, useCache = true) {
   const ext = extForPlatform(platform)
@@ -38,8 +42,26 @@ async function downloadZig (platform, version, useCache = true) {
     }
   }
 
+  actions.info(`downloading zig and signature`)
   actions.info(`no cached version found. downloading zig ${variantName}`)
-  const downloadPath = await toolCache.downloadTool(downloadUrl)
+  const downloadSig = await http.get(downloadUrl + '.minisig')
+  const downloadPath = await toolCache.downloadTool(downloadUrl) 
+  const downloadFile = await fs.open(downloadPath)
+  const downloadBuffer = await fs.read(downloadFile)
+
+  actions.info(`downloading zig signature ${downloadUrl + '.minisig'}`)
+  const sigPath = await sigPathPromise
+  const sigFile = await fs.open(sigPath)
+  const sigBuffer = await fs.read(sigFile)
+  const sig = minisign.parseSignature(sigBuffer)
+  const pubKey = minisign.parsePubKey(ZIG_PUBLIC_KEY)
+
+  if (minisign.verifySignature(sig.signature, downloadBuffer, pubKey.publicKey)) {
+    actions.info(`trusted comment: ${sig.trustedComment}`)
+  } else {
+    actions.error(`untrusted comment: ${sign.untrustedComment}`)
+  }
+
   const zigPath = ext === 'zip'
     ? await toolCache.extractZip(downloadPath)
     : await toolCache.extractTar(downloadPath, undefined, 'x')
