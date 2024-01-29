@@ -26193,18 +26193,18 @@ var require_constants6 = __commonJS({
     (function(CacheFilename2) {
       CacheFilename2["Gzip"] = "cache.tgz";
       CacheFilename2["Zstd"] = "cache.tzst";
-    })(CacheFilename = exports2.CacheFilename || (exports2.CacheFilename = {}));
+    })(CacheFilename || (exports2.CacheFilename = CacheFilename = {}));
     var CompressionMethod;
     (function(CompressionMethod2) {
       CompressionMethod2["Gzip"] = "gzip";
       CompressionMethod2["ZstdWithoutLong"] = "zstd-without-long";
       CompressionMethod2["Zstd"] = "zstd";
-    })(CompressionMethod = exports2.CompressionMethod || (exports2.CompressionMethod = {}));
+    })(CompressionMethod || (exports2.CompressionMethod = CompressionMethod = {}));
     var ArchiveToolType;
     (function(ArchiveToolType2) {
       ArchiveToolType2["GNU"] = "gnu";
       ArchiveToolType2["BSD"] = "bsd";
-    })(ArchiveToolType = exports2.ArchiveToolType || (exports2.ArchiveToolType = {}));
+    })(ArchiveToolType || (exports2.ArchiveToolType = ArchiveToolType = {}));
     exports2.DefaultRetryAttempts = 2;
     exports2.DefaultRetryDelay = 5e3;
     exports2.SocketTimeout = 5e3;
@@ -26355,20 +26355,16 @@ var require_cacheUtils = __commonJS({
           implicitDescendants: false
         });
         try {
-          for (var _e = true, _f = __asyncValues2(globber.globGenerator()), _g; _g = yield _f.next(), _a = _g.done, !_a; ) {
+          for (var _e = true, _f = __asyncValues2(globber.globGenerator()), _g; _g = yield _f.next(), _a = _g.done, !_a; _e = true) {
             _c = _g.value;
             _e = false;
-            try {
-              const file = _c;
-              const relativeFile = path2.relative(workspace, file).replace(new RegExp(`\\${path2.sep}`, "g"), "/");
-              core.debug(`Matched: ${relativeFile}`);
-              if (relativeFile === "") {
-                paths.push(".");
-              } else {
-                paths.push(`${relativeFile}`);
-              }
-            } finally {
-              _e = true;
+            const file = _c;
+            const relativeFile = path2.relative(workspace, file).replace(new RegExp(`\\${path2.sep}`, "g"), "/");
+            core.debug(`Matched: ${relativeFile}`);
+            if (relativeFile === "") {
+              paths.push(".");
+            } else {
+              paths.push(`${relativeFile}`);
             }
           }
         } catch (e_1_1) {
@@ -78456,7 +78452,7 @@ var require_cacheHttpClient = __commonJS({
     }
     __name(createHttpClient, "createHttpClient");
     function getCacheVersion(paths, compressionMethod, enableCrossOsArchive = false) {
-      const components = paths;
+      const components = paths.slice();
       if (compressionMethod) {
         components.push(compressionMethod);
       }
