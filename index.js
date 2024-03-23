@@ -1,11 +1,13 @@
 'use strict'
 
 const os = require('os')
+const fs = require('fs/promises')
 const path = require('path')
 const semver = require('semver')
 const actions = require('@actions/core')
 const cache = require('@actions/cache')
 const toolCache = require('@actions/tool-cache')
+const { Minizign } = require('zig-minisign')
 const {
   extForPlatform,
   resolveCommit,
@@ -40,6 +42,24 @@ async function downloadZig (platform, version, useCache = true) {
 
   actions.info(`no cached version found. downloading zig ${variantName}`)
   const downloadPath = await toolCache.downloadTool(downloadUrl)
+
+  const downloadUrlSig = `${downloadUrl}.minisig`
+  actions.info(`fetching signature ${downloadUrlSig}`)
+  const downloadPathSig = await toolCache.downloadTool(downloadUrlSig)
+
+  const signatureFile = await fs.readFile(downloadPathSig)
+  const file = await fs.readFile(downloadPath)
+
+  const minizign = new Minizign()
+  await minizign.init()
+
+  // Public Key from https://ziglang.org/download
+  const pk = minizign.publicKey('RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U')
+  const signature = minizign.signature(signatureFile)
+  pk.verify(signature, file)
+  actions.info(`verified zig signature`)
+  actions.info(`Trusted comment: ${signature.getTrustedComment()}`)
+
   const zigPath = ext === 'zip'
     ? await toolCache.extractZip(downloadPath)
     : await toolCache.extractTar(downloadPath, undefined, 'x')
